@@ -17,14 +17,46 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   status: 'running',
   capabilities: ['chat', 'multi-turn', 'multimodal', 'sticky-context'],
   cliCommands: [
-    { command: 'chat status', description: 'View active chat session status and persistence metadata' },
-    { command: 'chat new <name> [options]', description: 'Create a new interactive chat session' },
-    { command: 'chat list', description: 'List all active chat sessions' },
-    { command: 'chat switch <session_id>', description: 'Switch active chat session' },
-    { command: 'chat delete <session_id>', description: 'Delete a chat session from memory and disk' },
-    { command: 'chat system "<prompt>"', description: 'Set or update sticky system directive for active session' },
-    { command: 'chat send [options] <text>', description: 'Send a message turn to active session' },
-    { command: 'chat history', description: 'View turn log for active session' }
+    {
+      command: 'chat status',
+      description: 'View active chat session status and persistence metadata'
+    },
+    {
+      command: 'chat new <name> [options]',
+      description: 'Create a new interactive chat session',
+      options: [
+        { flag: '--provider <name>, -p', description: 'Set AI provider (e.g. ollama, copilot)' },
+        { flag: '--model <name>, -m', description: 'Set model for session (e.g. gpt-4o, llama3)' },
+        { flag: '--system "<prompt>", -s', description: 'Set sticky system directive prompt' }
+      ]
+    },
+    {
+      command: 'chat list',
+      description: 'List all active chat sessions'
+    },
+    {
+      command: 'chat switch <session_id>',
+      description: 'Switch active chat session'
+    },
+    {
+      command: 'chat delete <session_id>',
+      description: 'Delete a chat session from memory and disk'
+    },
+    {
+      command: 'chat system "<prompt>"',
+      description: 'Set or update sticky system directive for active session'
+    },
+    {
+      command: 'chat send [options] <text>',
+      description: 'Send a message turn to active session',
+      options: [
+        { flag: '--image <path>, -i', description: 'Attach local image for multimodal model' }
+      ]
+    },
+    {
+      command: 'chat history',
+      description: 'View turn log for active session'
+    }
   ]
 };
 
