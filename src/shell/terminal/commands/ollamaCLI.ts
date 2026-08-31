@@ -151,7 +151,7 @@ export async function handleOllamaCLI(
 
     try {
       const result = await service.generateText(req, onStreamChunk);
-      return onStreamChunk ? '' : result.text;
+      return result.text;
     } catch (err: any) {
       return `Ollama prompt error: ${err.message || err}`;
     }

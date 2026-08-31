@@ -52,12 +52,16 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): vo
 
     if (input) {
       try {
+        let hasStreamed = false;
         const output = await interpreter.execute(input, (chunk) => {
+          hasStreamed = true;
           process.stdout.write(chunk);
         });
 
         if (output === '__CLEAR__') {
           console.clear();
+        } else if (hasStreamed) {
+          console.log(); // Clean newline after live stream completion
         } else if (output) {
           console.log(output);
         }

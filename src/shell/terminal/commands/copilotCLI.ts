@@ -16,7 +16,7 @@ export async function handleCopilotCLI(
   if (sub === 'status' || !sub) {
     const healthy = await service.checkHealth();
     return healthy
-      ? 'GitHub Copilot Service: ONLINE (Copilot CLI binary authenticated and ready)'
+      ? 'GitHub Copilot Service: ONLINE (REST API endpoint reachable and authenticated)'
       : 'GitHub Copilot Service: UNREACHABLE or UNAUTHENTICATED (Run "gh auth login" or verify config/secrets.json)';
   }
 
@@ -58,7 +58,7 @@ export async function handleCopilotCLI(
 
     try {
       const result = await service.generateText(req, onStreamChunk);
-      return onStreamChunk ? '' : result.text;
+      return result.text;
     } catch (err: any) {
       return `Copilot prompt error: ${err.message || err}`;
     }

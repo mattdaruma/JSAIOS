@@ -180,7 +180,7 @@ export async function handleChatCLI(
         images: images.length > 0 ? images : undefined,
         onChunk: onStreamChunk
       });
-      return onStreamChunk ? '' : result;
+      return result;
     } catch (err: any) {
       return `Chat engine error: ${err.message || err}`;
     }
