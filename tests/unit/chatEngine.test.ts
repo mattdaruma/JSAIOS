@@ -1,6 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { ChatSession } from '../../src/engines/chat/helpers/ChatSession';
 import { ChatEngine } from '../../src/engines/chat/ChatEngine';
@@ -9,7 +8,7 @@ import { HoneyKernel } from '../../src/kernel/HoneyKernel';
 import { ServiceRegistry } from '../../src/kernel/ServiceRegistry';
 import { EventBus } from '../../src/kernel/EventBus';
 
-const testStorageDir = path.join(os.tmpdir(), `jsaios-chat-test-${Date.now()}`);
+const testStorageDir = path.join(process.cwd(), 'tests', 'tmpdir', `chat-test-${Date.now()}`);
 
 afterAll(() => {
   if (fs.existsSync(testStorageDir)) {

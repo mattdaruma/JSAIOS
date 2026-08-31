@@ -156,3 +156,8 @@ config/*.secret.json
 chat-sessions/
 chat-sessions
 
+# Temporary Test Outputs
+tests/tmpdir/
+tests/tmpdir
+
+
