@@ -38,7 +38,12 @@ export interface MediaGenerationRequest {
   width?: number;
   height?: number;
   steps?: number;
+  cfg?: number;
   seed?: number;
+  samplerName?: string;
+  scheduler?: string;
+  checkpoint?: string;
+  workflowId?: string;
 }
 
 export interface MediaGenerationResponse {

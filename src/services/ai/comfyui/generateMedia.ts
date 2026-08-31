@@ -1,64 +1,41 @@
 /**
  * JSAIOS - Single-purpose function: generateComfyUIMedia
+ * Submits dynamic ComfyUI workflow graph payload to /prompt.
  */
 
 import type { MediaGenerationRequest, MediaGenerationResponse } from '../AIService';
+import { injectWorkflowParameters } from './buildWorkflow';
+import defaultTxt2ImgWorkflow from './workflows/txt2img.json';
 
 export async function generateComfyUIMedia(
   baseUrl: string,
   request: MediaGenerationRequest,
-  onProgress?: (percent: number, statusText: string) => void
+  onProgress?: (percent: number, statusText: string) => void,
+  customWorkflowTemplate?: Record<string, any>
 ): Promise<MediaGenerationResponse> {
-  if (onProgress) onProgress(10, 'Submitting prompt to ComfyUI...');
+  if (onProgress) onProgress(10, 'Building ComfyUI workflow graph...');
 
-  const promptPayload = {
-    prompt: {
-      "3": {
-        "inputs": {
-          "seed": request.seed || Math.floor(Math.random() * 1000000),
-          "steps": request.steps || 20,
-          "cfg": 8,
-          "sampler_name": "euler",
-          "scheduler": "normal",
-          "denoise": 1,
-          "model": ["4", 0],
-          "positive": ["6", 0],
-          "negative": ["7", 0],
-          "latent_image": ["5", 0]
-        },
-        "class_type": "KSampler"
-      },
-      "4": {
-        "inputs": { "ckpt_name": "v1-5-pruned-emaonly.safetensors" },
-        "class_type": "CheckpointLoaderSimple"
-      },
-      "5": {
-        "inputs": { "width": request.width || 512, "height": request.height || 512, "batch_size": 1 },
-        "class_type": "EmptyLatentImage"
-      },
-      "6": {
-        "inputs": { "text": request.prompt, "clip": ["4", 1] },
-        "class_type": "CLIPTextEncode"
-      },
-      "7": {
-        "inputs": { "text": request.negativePrompt || "", "clip": ["4", 1] },
-        "class_type": "CLIPTextEncode"
-      },
-      "8": {
-        "inputs": { "samples": ["3", 0], "vae": ["4", 2] },
-        "class_type": "VAEDecode"
-      },
-      "9": {
-        "inputs": { "filename_prefix": "JSAIOS", "images": ["8", 0] },
-        "class_type": "SaveImage"
-      }
-    }
-  };
+  const template = customWorkflowTemplate || defaultTxt2ImgWorkflow;
+
+  const parameterizedWorkflow = injectWorkflowParameters(template, {
+    prompt: request.prompt,
+    negativePrompt: request.negativePrompt,
+    seed: request.seed || Math.floor(Math.random() * 1000000),
+    steps: request.steps || 20,
+    cfg: request.cfg,
+    width: request.width || 512,
+    height: request.height || 512,
+    samplerName: request.samplerName,
+    scheduler: request.scheduler,
+    checkpoint: request.checkpoint
+  });
+
+  if (onProgress) onProgress(30, 'Submitting compiled workflow graph to ComfyUI...');
 
   const res = await fetch(`${baseUrl}/prompt`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(promptPayload)
+    body: JSON.stringify({ prompt: parameterizedWorkflow })
   });
 
   if (!res.ok) {

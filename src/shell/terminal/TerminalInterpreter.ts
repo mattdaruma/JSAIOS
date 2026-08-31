@@ -6,7 +6,7 @@
 import { HoneyKernel } from '../../kernel/HoneyKernel';
 import { OllamaService } from '../../services/ai/ollama/OllamaService';
 import { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
-import type { TextGenerationRequest } from '../../services/ai/AIService';
+import type { TextGenerationRequest, MediaGenerationRequest } from '../../services/ai/AIService';
 
 export interface TerminalOutputLine {
   id: string;
@@ -74,8 +74,17 @@ export class TerminalInterpreter {
       '                                          --temp <num>, -t      Set generation temperature (e.g. 0.7)',
       '                                          --system "<text>", -s Set custom system directive',
       '                                          --max-tokens <num>    Set max response token limit',
-      '  comfy status                        - Ping local ComfyUI image provider health',
-      '  comfy prompt <text>                 - Trigger image generation task in ComfyUI',
+      '  comfy status                        - Ping local ComfyUI provider health',
+      '  comfy prompt [options] <text>       - Trigger workflow execution in ComfyUI',
+      '                                        Workflow Options:',
+      '                                          --neg "<text>"        Set negative prompt text',
+      '                                          --steps <num>         Set KSampler steps (default: 20)',
+      '                                          --cfg <num>           Set KSampler CFG scale (default: 8.0)',
+      '                                          --width <num>         Set image width (default: 512)',
+      '                                          --height <num>        Set image height (default: 512)',
+      '                                          --seed <num>          Set random noise seed',
+      '                                          --sampler <name>      Set KSampler algorithm (e.g. euler)',
+      '                                          --ckpt <name>         Set Checkpoint model filename',
       '  clear                               - Clear terminal output',
       '  exit                                - Quit JSAIOS system CLI'
     ].join('\n');
@@ -129,7 +138,6 @@ export class TerminalInterpreter {
       const model = args[1];
       const rawTokens = args.slice(2);
 
-      // Parse options flags
       let think: boolean | undefined = undefined;
       let temperature: number | undefined = undefined;
       let systemDirective: string | undefined = undefined;
@@ -197,17 +205,73 @@ export class TerminalInterpreter {
     }
 
     if (sub === 'prompt' || sub === 'generate') {
-      if (args.length < 2) return 'Usage: comfy prompt <your image prompt text...>';
-      const promptText = args.slice(1).join(' ');
+      if (args.length < 2) return 'Usage: comfy prompt [options] <your prompt text...>';
+      const rawTokens = args.slice(1);
+
+      let negativePrompt: string | undefined = undefined;
+      let steps: number | undefined = undefined;
+      let cfg: number | undefined = undefined;
+      let width: number | undefined = undefined;
+      let height: number | undefined = undefined;
+      let seed: number | undefined = undefined;
+      let samplerName: string | undefined = undefined;
+      let checkpoint: string | undefined = undefined;
+      const promptParts: string[] = [];
+
+      for (let i = 0; i < rawTokens.length; i++) {
+        const token = rawTokens[i];
+
+        if (token === '--neg') {
+          negativePrompt = rawTokens[++i];
+        } else if (token.startsWith('--neg=')) {
+          negativePrompt = token.split('=').slice(1).join('=');
+        } else if (token === '--steps') {
+          const val = parseInt(rawTokens[++i], 10);
+          if (!isNaN(val)) steps = val;
+        } else if (token === '--cfg') {
+          const val = parseFloat(rawTokens[++i]);
+          if (!isNaN(val)) cfg = val;
+        } else if (token === '--width') {
+          const val = parseInt(rawTokens[++i], 10);
+          if (!isNaN(val)) width = val;
+        } else if (token === '--height') {
+          const val = parseInt(rawTokens[++i], 10);
+          if (!isNaN(val)) height = val;
+        } else if (token === '--seed') {
+          const val = parseInt(rawTokens[++i], 10);
+          if (!isNaN(val)) seed = val;
+        } else if (token === '--sampler') {
+          samplerName = rawTokens[++i];
+        } else if (token === '--ckpt') {
+          checkpoint = rawTokens[++i];
+        } else {
+          promptParts.push(token);
+        }
+      }
+
+      const promptText = promptParts.join(' ');
+      if (!promptText) return 'Error: Prompt text cannot be empty after options flags.';
+
+      const req: MediaGenerationRequest = {
+        prompt: promptText,
+        negativePrompt,
+        steps,
+        cfg,
+        width,
+        height,
+        seed,
+        samplerName,
+        checkpoint
+      };
 
       try {
-        const result = await comfy.generateMedia({ prompt: promptText });
-        return `ComfyUI task submitted successfully! Task ID: ${result.taskId}`;
+        const result = await comfy.generateMedia(req);
+        return `ComfyUI workflow graph submitted successfully! Task ID: ${result.taskId}`;
       } catch (err: any) {
         return `ComfyUI error: ${err.message || err}`;
       }
     }
 
-    return `Unknown ComfyUI command '${sub}'. Use 'comfy status' or 'comfy prompt <text>'.`;
+    return `Unknown ComfyUI command '${sub}'. Use 'comfy status' or 'comfy prompt [options] <text>'.`;
   }
 }
