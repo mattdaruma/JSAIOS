@@ -79,7 +79,7 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
     expect(reconfigured.options.maxTokens).toBe(1000);
   });
 
-  it('should persist designated default session via FileSessionStorage to _settings.json and boot into it', async () => {
+  it('should automatically set default boot session on session switch and persist to _settings.json', async () => {
     const registry = new ServiceRegistry();
     const eventBus = new EventBus();
     const kernel = new HoneyKernel(registry, eventBus);
@@ -89,9 +89,9 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
     engine.createSession('SessionA', 'ollama', 'llama3');
     engine.createSession('SessionB', 'copilot', 'gpt-4o');
 
-    // Set SessionB as default
-    const setSuccess = engine.setDefaultSession('SessionB');
-    expect(setSuccess).toBe(true);
+    // Switch to SessionB -> should auto-set default to SessionB
+    const switchSuccess = engine.setActiveSession('SessionB');
+    expect(switchSuccess).toBe(true);
     expect(engine.getDesignatedDefaultSessionId()).toBe('sessionb');
 
     // Verify _settings.json was created
@@ -125,8 +125,8 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
     const configRes = await handleChatCLI(kernel, ['config', '-m', 'claude-3.5-sonnet', '--temp', '0.8']);
     expect(configRes).toContain("Model: claude-3.5-sonnet");
 
-    // Test chat default CLI
-    const defaultRes = await handleChatCLI(kernel, ['default', 'TestSessionCLI']);
-    expect(defaultRes).toContain("Set designated boot session to 'testsessioncli'");
+    // Test session switch auto-setting default
+    const switchRes = await handleChatCLI(kernel, ['switch', 'TestSessionCLI']);
+    expect(switchRes).toContain("Switched active chat session to 'TestSessionCLI'");
   });
 });

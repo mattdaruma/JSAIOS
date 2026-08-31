@@ -22,7 +22,6 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
     { command: 'chat status', description: 'View active chat session status, options, and persistence metadata' },
     { command: 'chat new <name> [options]', description: 'Create a new interactive chat session with initial settings' },
     { command: 'chat config [options]', description: 'Alter active session settings (provider, model, temperature, etc.) mid-session' },
-    { command: 'chat default [session_id]', description: 'Set active or specified session as designated default on boot' },
     { command: 'chat list', description: 'List all active chat sessions' },
     { command: 'chat switch <session_id>', description: 'Switch active chat session' },
     { command: 'chat delete <session_id>', description: 'Delete a chat session from memory and disk' },
@@ -92,17 +91,6 @@ export async function handleChatCLI(
       `Total Sessions  : ${sessions.length} active session(s)`,
       `Storage Engine  : FileSessionStorage (${storageDir}/)`
     ].join('\n');
-  }
-
-  if (sub === 'default' || sub === 'set-default') {
-    const target = args[1] || engine.getActiveSession()?.id;
-    if (!target) return 'No active session or session ID provided. Usage: chat default [session_id]';
-
-    const success = engine.setDefaultSession(target);
-    if (!success) return `Session '${target}' not found. Type "chat list" to view sessions.`;
-
-    const currentDefault = engine.getDesignatedDefaultSessionId();
-    return `Set designated boot session to '${currentDefault}'.`;
   }
 
   if (sub === 'new' || sub === 'create') {

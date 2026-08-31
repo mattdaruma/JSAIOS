@@ -46,6 +46,7 @@ export class ChatEngine {
         this.activeSessionId = settings.defaultSessionId;
       } else if (loaded.length > 0) {
         this.activeSessionId = loaded[0].id;
+        this.designatedDefaultSessionId = loaded[0].id;
       }
     }
   }
@@ -58,22 +59,6 @@ export class ChatEngine {
     if (this.storage?.saveSettings) {
       this.storage.saveSettings({ defaultSessionId: this.designatedDefaultSessionId });
     }
-  }
-
-  public setDefaultSession(idOrName?: string): boolean {
-    const target = idOrName || this.activeSessionId;
-    if (!target) return false;
-
-    const id = sanitizeSessionId(target);
-    const session = this.sessions.get(id) || Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === target.toLowerCase());
-
-    if (session) {
-      this.designatedDefaultSessionId = session.id;
-      this.activeSessionId = session.id;
-      this.persistSettings();
-      return true;
-    }
-    return false;
   }
 
   public createSession(
@@ -98,8 +83,9 @@ export class ChatEngine {
     }
 
     this.activeSessionId = id;
+    this.designatedDefaultSessionId = id;
     this.persistSession(session);
-    if (!this.designatedDefaultSessionId) this.setDefaultSession(id);
+    this.persistSettings();
     return session;
   }
 
@@ -140,8 +126,10 @@ export class ChatEngine {
 
     if (session) {
       this.activeSessionId = session.id;
+      this.designatedDefaultSessionId = session.id;
       session.updatedAt = Date.now();
       this.persistSession(session);
+      this.persistSettings();
       return true;
     }
     return false;
@@ -154,11 +142,11 @@ export class ChatEngine {
       if (this.storage) this.storage.deleteSession(id);
 
       if (this.designatedDefaultSessionId === id) {
-        this.designatedDefaultSessionId = undefined;
+        const remaining = Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
+        this.designatedDefaultSessionId = remaining.length > 0 ? remaining[0].id : undefined;
+        this.activeSessionId = this.designatedDefaultSessionId;
         this.persistSettings();
-      }
-
-      if (this.activeSessionId === id) {
+      } else if (this.activeSessionId === id) {
         const remaining = Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
         this.activeSessionId = remaining.length > 0 ? remaining[0].id : undefined;
       }
