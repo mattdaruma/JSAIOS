@@ -75,6 +75,9 @@ export class TerminalInterpreter {
       '                                          --system "<text>", -s Set custom system directive',
       '                                          --max-tokens <num>    Set max response token limit',
       '  comfy status                        - Ping local ComfyUI provider health',
+      '  comfy workflows                     - List local JSON workflow templates in config/workflows/',
+      '  comfy nodes [filter]                - List available ComfyUI graph nodes from /object_info',
+      '  comfy node <name>                   - Inspect input/output schema for a specific node type',
       '  comfy prompt [options] <text>       - Trigger workflow execution in ComfyUI',
       '                                        Workflow Options:',
       '                                          --neg "<text>"        Set negative prompt text',
@@ -204,6 +207,52 @@ export class TerminalInterpreter {
       return healthy ? 'ComfyUI Service: ONLINE (Endpoint reachable)' : 'ComfyUI Service: UNREACHABLE (Is ComfyUI running on http://localhost:8188?)';
     }
 
+    if (sub === 'workflows' || sub === 'templates') {
+      const workflows = comfy.getWorkflows();
+      if (workflows.length === 0) return 'No local workflow JSON templates found in config/workflows/';
+      return [
+        'Available Local Workflow Templates (config/workflows/):',
+        ...workflows.map(w => ` • Workflow ID: '${w.id}' (${w.filename})`)
+      ].join('\n');
+    }
+
+    if (sub === 'nodes') {
+      const filter = (args[1] || '').toLowerCase();
+      const nodes = await comfy.getNodeInfo();
+      if (nodes.length === 0) return 'Failed to fetch ComfyUI node definitions from /object_info. Is ComfyUI running?';
+
+      const filtered = filter ? nodes.filter(n => n.name.toLowerCase().includes(filter) || n.category.toLowerCase().includes(filter)) : nodes;
+      const displayList = filtered.slice(0, 35);
+
+      return [
+        `ComfyUI Node Types (${filtered.length} total found${filter ? ` matching '${filter}'` : ''}):`,
+        ...displayList.map(n => ` • ${n.name} (Category: ${n.category})`),
+        ...(filtered.length > 35 ? [` ...and ${filtered.length - 35} more node types. Use 'comfy nodes <search_term>' to filter.`] : [])
+      ].join('\n');
+    }
+
+    if (sub === 'node') {
+      if (!args[1]) return 'Usage: comfy node <node_name> (e.g. comfy node KSampler)';
+      const nodeName = args[1];
+      const nodes = await comfy.getNodeInfo(nodeName);
+      if (nodes.length === 0) return `Node type '${nodeName}' not found in ComfyUI /object_info catalog.`;
+
+      const node = nodes[0];
+      const requiredInputs = Object.keys(node.inputsRequired).map(k => `    - ${k}: ${JSON.stringify(node.inputsRequired[k][0])}`);
+      const optionalInputs = Object.keys(node.inputsOptional || {}).map(k => `    - ${k}: ${JSON.stringify(node.inputsOptional![k][0])}`);
+
+      return [
+        `=== ComfyUI Node Schema: ${node.name} ===`,
+        `Category: ${node.category}`,
+        `Description: ${node.description || 'N/A'}`,
+        'Required Inputs:',
+        ...(requiredInputs.length > 0 ? requiredInputs : ['    (None)']),
+        'Optional Inputs:',
+        ...(optionalInputs.length > 0 ? optionalInputs : ['    (None)']),
+        `Output Types: [${node.outputTypes.join(', ')}]`
+      ].join('\n');
+    }
+
     if (sub === 'prompt' || sub === 'generate') {
       if (args.length < 2) return 'Usage: comfy prompt [options] <your prompt text...>';
       const rawTokens = args.slice(1);
@@ -272,6 +321,6 @@ export class TerminalInterpreter {
       }
     }
 
-    return `Unknown ComfyUI command '${sub}'. Use 'comfy status' or 'comfy prompt [options] <text>'.`;
+    return `Unknown ComfyUI command '${sub}'. Use 'comfy status', 'comfy workflows', 'comfy nodes', 'comfy node <name>', or 'comfy prompt [options] <text>'.`;
   }
 }

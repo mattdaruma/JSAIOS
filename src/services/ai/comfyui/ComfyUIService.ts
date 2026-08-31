@@ -9,6 +9,8 @@ import type { ServiceDescriptor } from '../../../kernel/types';
 import { checkComfyUIHealth } from './checkHealth';
 import { fetchComfyUIModels } from './getModels';
 import { generateComfyUIMedia } from './generateMedia';
+import { listLocalWorkflows, WorkflowFileInfo } from './listWorkflows';
+import { fetchComfyNodeInfo, ComfyNodeSchema } from './getNodeInfo';
 
 export class ComfyUIService extends AIService {
   public readonly id = 'comfyui';
@@ -50,6 +52,14 @@ export class ComfyUIService extends AIService {
 
   public async getModels(): Promise<ModelInfo[]> {
     return fetchComfyUIModels(this.baseUrl);
+  }
+
+  public getWorkflows(): WorkflowFileInfo[] {
+    return listLocalWorkflows();
+  }
+
+  public async getNodeInfo(nodeName?: string): Promise<ComfyNodeSchema[]> {
+    return fetchComfyNodeInfo(this.baseUrl, nodeName);
   }
 
   public async generateText(
