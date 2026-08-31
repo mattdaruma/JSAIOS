@@ -58,8 +58,17 @@ describe('JSAIOS HoneyKernel Core & Service Registry', () => {
     const interpreter = new TerminalInterpreter(kernel);
 
     const helpOutput = await interpreter.execute('help');
-    expect(helpOutput).toContain('Available JSAIOS Terminal Commands');
-    expect(helpOutput).toContain('--no-think');
+    expect(helpOutput).toContain('JSAIOS HoneyKernel Core Terminal Reference');
+    expect(helpOutput).toContain('ollama');
+
+    const ollamaHelp = await interpreter.execute('help ollama');
+    expect(ollamaHelp).toContain('--think');
+
+    const chatHelp = await interpreter.execute('help chat');
+    expect(chatHelp).toContain('JSAIOS Chat Engine');
+
+    const chatHelpAlt = await interpreter.execute('chat help');
+    expect(chatHelpAlt).toContain('JSAIOS Chat Engine');
 
     const statusOutput = await interpreter.execute('status');
     expect(statusOutput).toContain('JSAIOS HoneyKernel Status');
@@ -67,5 +76,13 @@ describe('JSAIOS HoneyKernel Core & Service Registry', () => {
 
     const servicesOutput = await interpreter.execute('services');
     expect(servicesOutput).toContain('Ollama Transport Driver');
+
+    const comfy = new ComfyUIService();
+    kernel.registerService(comfy);
+    const workflowsOutput = await interpreter.execute('comfy workflows');
+    expect(workflowsOutput).toBeDefined();
+
+    const optionsOutput = await interpreter.execute('comfy options test_workflow');
+    expect(optionsOutput).toContain('test_workflow');
   });
 });

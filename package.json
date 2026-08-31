@@ -6,7 +6,8 @@
   "main": "src/bootloaders/cliBootloader.ts",
   "scripts": {
     "start": "tsx src/bootloaders/cliBootloader.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "report:lines": "tsx scripts/countLines.ts"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

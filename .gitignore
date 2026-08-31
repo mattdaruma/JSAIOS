@@ -141,3 +141,13 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Local Dev Reports
+reports/
+
+# Secrets and Local Credentials
+config/secrets.json
+config/*.secret.json
+.env
+.env.*
+!.env.example

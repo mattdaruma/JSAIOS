@@ -6,9 +6,10 @@
 import { AIService } from '../AIService';
 import type { ModelInfo, TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse } from '../AIService';
 import type { ServiceDescriptor } from '../../../kernel/types';
-import { checkOllamaHealth } from './checkHealth';
-import { fetchOllamaModels } from './fetchModels';
-import { generateOllamaText } from './generateText';
+import { checkOllamaHealth } from './helpers/checkHealth';
+import { fetchOllamaModels } from './helpers/fetchModels';
+import { generateOllamaText } from './helpers/generateText';
+import { handleOllamaCLI } from '../../../shell/terminal/commands/ollamaCLI';
 
 export class OllamaService extends AIService {
   public readonly id = 'ollama';
@@ -40,11 +41,21 @@ export class OllamaService extends AIService {
           command: 'ollama prompt <model> [options] <text>',
           description: 'Stream raw text prompt to specified Ollama model',
           options: [
-            { flag: '--no-think', description: 'Disable thinking/reasoning mode' },
-            { flag: '--think', description: 'Explicitly enable thinking mode' },
+            { flag: '--think [true|false]', description: 'Enable or disable reasoning mode (default: true if flag present)' },
             { flag: '--temp <num>, -t', description: 'Set generation temperature (e.g. 0.7)' },
-            { flag: '--system "<text>", -s', description: 'Set custom system directive' },
-            { flag: '--max-tokens <num>', description: 'Set max response token limit' }
+            { flag: '--system "<text>", -s', description: 'Set custom system directive prompt' },
+            { flag: '--max-tokens <num>', description: 'Set max response token limit (num_predict)' },
+            { flag: '--top-p <num>', description: 'Set top_p sampling threshold' },
+            { flag: '--top-k <num>', description: 'Set top_k sampling limit' },
+            { flag: '--min-p <num>', description: 'Set min_p sampling threshold' },
+            { flag: '--seed <num>', description: 'Set RNG seed' },
+            { flag: '--ctx <num>', description: 'Set context window size (num_ctx e.g. 8192)' },
+            { flag: '--repeat-penalty <num>', description: 'Set repetition penalty factor' },
+            { flag: '--stop "<token>"', description: 'Set stop token sequence' },
+            { flag: '--format <json>', description: 'Set output format structure (e.g. json)' },
+            { flag: '--raw', description: 'Bypass template formatting' },
+            { flag: '--image <path>, -i', description: 'Attach local image file for multimodal LLMs' },
+            { flag: '--keep-alive <time>', description: 'Set model unload timeout (e.g. 5m, 0)' }
           ]
         }
       ]
@@ -92,5 +103,9 @@ export class OllamaService extends AIService {
     _onProgress?: (percent: number, statusText: string) => void
   ): Promise<MediaGenerationResponse> {
     throw new Error('[OllamaService] Media generation not supported by Ollama driver.');
+  }
+
+  public async executeCLICommand(args: string[], onChunk?: (chunkText: string) => void): Promise<string> {
+    return handleOllamaCLI(this, args, onChunk);
   }
 }

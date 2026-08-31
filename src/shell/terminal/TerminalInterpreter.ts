@@ -1,13 +1,12 @@
 /**
  * JSAIOS - TerminalInterpreter
- * Shell command parser and execution dispatcher for HoneyKernel.
- * Dynamically formats CLI help documentation based on loaded micro-services.
+ * Provider-agnostic shell command parser and execution dispatcher for HoneyKernel.
  */
 
 import { HoneyKernel } from '../../kernel/HoneyKernel';
-import { OllamaService } from '../../services/ai/ollama/OllamaService';
-import { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
-import type { TextGenerationRequest, MediaGenerationRequest } from '../../services/ai/AIService';
+import { tokenizeCommandLine } from './tokenize';
+import { handleChatCLI, CHAT_ENGINE_DESCRIPTOR } from './commands/chatCLI';
+import type { ServiceDescriptor } from '../../kernel/types';
 
 export interface TerminalOutputLine {
   id: string;
@@ -30,13 +29,16 @@ export class TerminalInterpreter {
     const trimmed = commandLine.trim();
     if (!trimmed) return '';
 
-    const parts = trimmed.split(' ');
+    const parts = tokenizeCommandLine(trimmed);
+    if (parts.length === 0) return '';
+
     const mainCommand = parts[0].toLowerCase();
     const args = parts.slice(1);
 
+    // 1. Core Kernel Shell Commands
     switch (mainCommand) {
       case 'help':
-        return this.handleHelp();
+        return this.handleHelp(args[0]);
 
       case 'status':
         return this.handleStatus();
@@ -44,57 +46,119 @@ export class TerminalInterpreter {
       case 'services':
         return this.handleServices();
 
-      case 'ollama':
-        return this.handleOllama(args, onStreamChunk);
-
-      case 'comfy':
-      case 'comfyui':
-        return this.handleComfy(args);
+      case 'chat':
+        if (args[0] === 'help') return this.handleServiceHelp('chat');
+        return handleChatCLI(this.kernel, args, onStreamChunk);
 
       case 'clear':
         return '__CLEAR__';
-
-      default:
-        return `Command not recognized: '${mainCommand}'. Type 'help' for available CLI commands.`;
     }
+
+    // 2. Dynamic Service Driver Command Dispatcher
+    const activeServices = this.kernel.getStatus().activeServices;
+    const matchedDescriptor = activeServices.find(
+      s => s.id.toLowerCase() === mainCommand || (mainCommand === 'comfy' && s.id === 'comfyui')
+    );
+
+    if (matchedDescriptor) {
+      if (args[0] === 'help') {
+        return this.handleServiceHelp(matchedDescriptor.id);
+      }
+
+      const activeService = this.kernel.getService(matchedDescriptor.id);
+      if (activeService && activeService.executeCLICommand) {
+        return activeService.executeCLICommand(args, onStreamChunk);
+      }
+    }
+
+    return `Command not recognized: '${mainCommand}'. Type 'help' for available CLI commands.`;
   }
 
   /**
-   * Dynamically construct help reference based on loaded kernel services
+   * Render core kernel reference or delegate to service/engine help
    */
-  private handleHelp(): string {
-    const lines: string[] = [
-      '=======================================================================',
-      ' Available JSAIOS Terminal Commands (Dynamically Rendered)',
-      '=======================================================================',
-      ' Core Kernel Commands:',
-      '  help                                - Show this dynamically rendered command reference',
-      '  status                              - Display HoneyKernel status and system uptime',
-      '  services                            - List registered micro-service drivers and status',
-      '  clear                               - Clear terminal output',
-      '  exit                                - Quit JSAIOS system CLI'
-    ];
+  private handleHelp(targetId?: string): string {
+    if (targetId) {
+      return this.handleServiceHelp(targetId);
+    }
 
     const activeServices = this.kernel.getStatus().activeServices;
 
-    for (const service of activeServices) {
-      if (service.cliCommands && service.cliCommands.length > 0) {
+    const lines: string[] = [
+      '=======================================================================',
+      ' JSAIOS HoneyKernel Core Terminal Reference',
+      '=======================================================================',
+      ' Core Kernel Commands:',
+      '  help [target]                       - Show core reference or help for a specific engine/service',
+      '  status                              - Display HoneyKernel status and system uptime',
+      '  services                            - List registered micro-service drivers and status',
+      '  clear                               - Clear terminal output',
+      '  exit                                - Quit JSAIOS system CLI',
+      '',
+      ' Registered Engines & Modules:',
+      "  • chat         - JSAIOS Interactive Chat Engine (Use 'help chat' or 'chat help')"
+    ];
+
+    if (activeServices.length > 0) {
+      lines.push('');
+      lines.push(' Registered Service Drivers (Type "help <service_id>" for detailed options):');
+      for (const service of activeServices) {
+        lines.push(`  • ${service.id.padEnd(12)} - ${service.name} (Use 'help ${service.id}')`);
+      }
+    }
+
+    lines.push('\n=======================================================================');
+    return lines.join('\n');
+  }
+
+  /**
+   * Render detailed CLI commands and options for a specific engine or micro-service
+   */
+  private handleServiceHelp(targetId: string): string {
+    const query = targetId.toLowerCase().trim();
+
+    if (query === 'chat') {
+      return this.renderDescriptorHelp(CHAT_ENGINE_DESCRIPTOR);
+    }
+
+    const activeServices = this.kernel.getStatus().activeServices;
+    const service = activeServices.find(
+      s => s.id.toLowerCase() === query || s.name.toLowerCase().includes(query) || (query === 'comfy' && s.id === 'comfyui')
+    );
+
+    if (!service) {
+      return `Target '${targetId}' not found. Type 'help' to view active engines and service drivers.`;
+    }
+
+    return this.renderDescriptorHelp(service);
+  }
+
+  /**
+   * Universal descriptor help renderer
+   */
+  private renderDescriptorHelp(descriptor: ServiceDescriptor): string {
+    const lines: string[] = [
+      '=======================================================================',
+      ` Reference: ${descriptor.name} (${descriptor.id} v${descriptor.version})`,
+      '======================================================================='
+    ];
+
+    if (descriptor.cliCommands && descriptor.cliCommands.length > 0) {
+      for (const cmd of descriptor.cliCommands) {
         lines.push('');
-        lines.push(` Micro-Service: ${service.name} (${service.id} v${service.version}):`);
+        const cmdPadding = ' '.repeat(Math.max(2, 37 - cmd.command.length));
+        lines.push(`  ${cmd.command}${cmdPadding}- ${cmd.description}`);
 
-        for (const cmd of service.cliCommands) {
-          const cmdPadding = ' '.repeat(Math.max(2, 37 - cmd.command.length));
-          lines.push(`  ${cmd.command}${cmdPadding}- ${cmd.description}`);
-
-          if (cmd.options && cmd.options.length > 0) {
-            lines.push('                                        Options:');
-            for (const opt of cmd.options) {
-              const optPadding = ' '.repeat(Math.max(2, 22 - opt.flag.length));
-              lines.push(`                                          ${opt.flag}${optPadding}${opt.description}`);
-            }
+        if (cmd.options && cmd.options.length > 0) {
+          lines.push('                                        Options:');
+          for (const opt of cmd.options) {
+            const optPadding = ' '.repeat(Math.max(2, 22 - opt.flag.length));
+            lines.push(`                                          ${opt.flag}${optPadding}${opt.description}`);
           }
         }
       }
+    } else {
+      lines.push('  No CLI commands documented.');
     }
 
     lines.push('\n=======================================================================');
@@ -118,217 +182,9 @@ export class TerminalInterpreter {
 
     return [
       'Registered Micro-Services:',
-      ...status.activeServices.map(s => 
+      ...status.activeServices.map(s =>
         `• Service ID: '${s.id}' | Name: ${s.name} | Capabilities: [${s.capabilities.join(', ')}]`
       )
     ].join('\n');
-  }
-
-  private async handleOllama(args: string[], onStreamChunk?: (chunk: string) => void): Promise<string> {
-    const ollama = this.kernel.getService<OllamaService>('ollama');
-    if (!ollama) return 'Error: OllamaService is not registered or active in this JSAIOS session.';
-
-    const sub = (args[0] || '').toLowerCase();
-
-    if (sub === 'status' || !sub) {
-      const healthy = await ollama.checkHealth();
-      return healthy ? 'Ollama Service: ONLINE (Endpoint reachable)' : 'Ollama Service: UNREACHABLE (Is Ollama running on http://localhost:11434?)';
-    }
-
-    if (sub === 'models' || sub === 'list') {
-      const models = await ollama.getModels();
-      if (models.length === 0) return 'No Ollama models found or connection failed.';
-      return [
-        'Available Ollama Models:',
-        ...models.map(m => ` • ${m.name} (Family: ${m.family}, Size: ${m.sizeBytes ? Math.round(m.sizeBytes / 1024 / 1024) + 'MB' : 'unknown'})`)
-      ].join('\n');
-    }
-
-    if (sub === 'prompt' || sub === 'ask') {
-      if (args.length < 3) return 'Usage: ollama prompt <model> [options] <your prompt text...>';
-      const model = args[1];
-      const rawTokens = args.slice(2);
-
-      let think: boolean | undefined = undefined;
-      let temperature: number | undefined = undefined;
-      let systemDirective: string | undefined = undefined;
-      let maxTokens: number | undefined = undefined;
-      const promptParts: string[] = [];
-
-      for (let i = 0; i < rawTokens.length; i++) {
-        const token = rawTokens[i];
-
-        if (token === '--no-think' || token === '--think=false') {
-          think = false;
-        } else if (token === '--think' || token === '--think=true') {
-          think = true;
-        } else if (token === '--temp' || token === '-t') {
-          const val = parseFloat(rawTokens[++i]);
-          if (!isNaN(val)) temperature = val;
-        } else if (token.startsWith('--temp=')) {
-          const val = parseFloat(token.split('=')[1]);
-          if (!isNaN(val)) temperature = val;
-        } else if (token === '--system' || token === '-s') {
-          systemDirective = rawTokens[++i];
-        } else if (token.startsWith('--system=')) {
-          systemDirective = token.split('=').slice(1).join('=');
-        } else if (token === '--max-tokens') {
-          const val = parseInt(rawTokens[++i], 10);
-          if (!isNaN(val)) maxTokens = val;
-        } else {
-          promptParts.push(token);
-        }
-      }
-
-      const promptText = promptParts.join(' ');
-      if (!promptText) return 'Error: Prompt text cannot be empty after options flags.';
-
-      const req: TextGenerationRequest = {
-        model,
-        prompt: promptText,
-        think,
-        temperature,
-        systemDirective,
-        maxTokens,
-        stream: true
-      };
-
-      try {
-        const result = await ollama.generateText(req, onStreamChunk);
-        return result.text;
-      } catch (err: any) {
-        return `Ollama prompt error: ${err.message || err}`;
-      }
-    }
-
-    return `Unknown Ollama command '${sub}'. Use 'ollama status', 'ollama models', or 'ollama prompt <model> [options] <text>'.`;
-  }
-
-  private async handleComfy(args: string[]): Promise<string> {
-    const comfy = this.kernel.getService<ComfyUIService>('comfyui');
-    if (!comfy) return 'Error: ComfyUIService is not registered or active in this JSAIOS session.';
-
-    const sub = (args[0] || '').toLowerCase();
-
-    if (sub === 'status' || !sub) {
-      const healthy = await comfy.checkHealth();
-      return healthy ? 'ComfyUI Service: ONLINE (Endpoint reachable)' : 'ComfyUI Service: UNREACHABLE (Is ComfyUI running on http://localhost:8188?)';
-    }
-
-    if (sub === 'workflows' || sub === 'templates') {
-      const workflows = comfy.getWorkflows();
-      if (workflows.length === 0) return 'No local workflow JSON templates found in config/workflows/';
-      return [
-        'Available Local Workflow Templates (config/workflows/):',
-        ...workflows.map(w => ` • Workflow ID: '${w.id}' (${w.filename})`)
-      ].join('\n');
-    }
-
-    if (sub === 'nodes') {
-      const filter = (args[1] || '').toLowerCase();
-      const nodes = await comfy.getNodeInfo();
-      if (nodes.length === 0) return 'Failed to fetch ComfyUI node definitions from /object_info. Is ComfyUI running?';
-
-      const filtered = filter ? nodes.filter(n => n.name.toLowerCase().includes(filter) || n.category.toLowerCase().includes(filter)) : nodes;
-      const displayList = filtered.slice(0, 35);
-
-      return [
-        `ComfyUI Node Types (${filtered.length} total found${filter ? ` matching '${filter}'` : ''}):`,
-        ...displayList.map(n => ` • ${n.name} (Category: ${n.category})`),
-        ...(filtered.length > 35 ? [` ...and ${filtered.length - 35} more node types. Use 'comfy nodes <search_term>' to filter.`] : [])
-      ].join('\n');
-    }
-
-    if (sub === 'node') {
-      if (!args[1]) return 'Usage: comfy node <node_name> (e.g. comfy node KSampler)';
-      const nodeName = args[1];
-      const nodes = await comfy.getNodeInfo(nodeName);
-      if (nodes.length === 0) return `Node type '${nodeName}' not found in ComfyUI /object_info catalog.`;
-
-      const node = nodes[0];
-      const requiredInputs = Object.keys(node.inputsRequired).map(k => `    - ${k}: ${JSON.stringify(node.inputsRequired[k][0])}`);
-      const optionalInputs = Object.keys(node.inputsOptional || {}).map(k => `    - ${k}: ${JSON.stringify(node.inputsOptional![k][0])}`);
-
-      return [
-        `=== ComfyUI Node Schema: ${node.name} ===`,
-        `Category: ${node.category}`,
-        `Description: ${node.description || 'N/A'}`,
-        'Required Inputs:',
-        ...(requiredInputs.length > 0 ? requiredInputs : ['    (None)']),
-        'Optional Inputs:',
-        ...(optionalInputs.length > 0 ? optionalInputs : ['    (None)']),
-        `Output Types: [${node.outputTypes.join(', ')}]`
-      ].join('\n');
-    }
-
-    if (sub === 'prompt' || sub === 'generate') {
-      if (args.length < 2) return 'Usage: comfy prompt [options] <your prompt text...>';
-      const rawTokens = args.slice(1);
-
-      let negativePrompt: string | undefined = undefined;
-      let steps: number | undefined = undefined;
-      let cfg: number | undefined = undefined;
-      let width: number | undefined = undefined;
-      let height: number | undefined = undefined;
-      let seed: number | undefined = undefined;
-      let samplerName: string | undefined = undefined;
-      let checkpoint: string | undefined = undefined;
-      const promptParts: string[] = [];
-
-      for (let i = 0; i < rawTokens.length; i++) {
-        const token = rawTokens[i];
-
-        if (token === '--neg') {
-          negativePrompt = rawTokens[++i];
-        } else if (token.startsWith('--neg=')) {
-          negativePrompt = token.split('=').slice(1).join('=');
-        } else if (token === '--steps') {
-          const val = parseInt(rawTokens[++i], 10);
-          if (!isNaN(val)) steps = val;
-        } else if (token === '--cfg') {
-          const val = parseFloat(rawTokens[++i]);
-          if (!isNaN(val)) cfg = val;
-        } else if (token === '--width') {
-          const val = parseInt(rawTokens[++i], 10);
-          if (!isNaN(val)) width = val;
-        } else if (token === '--height') {
-          const val = parseInt(rawTokens[++i], 10);
-          if (!isNaN(val)) height = val;
-        } else if (token === '--seed') {
-          const val = parseInt(rawTokens[++i], 10);
-          if (!isNaN(val)) seed = val;
-        } else if (token === '--sampler') {
-          samplerName = rawTokens[++i];
-        } else if (token === '--ckpt') {
-          checkpoint = rawTokens[++i];
-        } else {
-          promptParts.push(token);
-        }
-      }
-
-      const promptText = promptParts.join(' ');
-      if (!promptText) return 'Error: Prompt text cannot be empty after options flags.';
-
-      const req: MediaGenerationRequest = {
-        prompt: promptText,
-        negativePrompt,
-        steps,
-        cfg,
-        width,
-        height,
-        seed,
-        samplerName,
-        checkpoint
-      };
-
-      try {
-        const result = await comfy.generateMedia(req);
-        return `ComfyUI workflow graph submitted successfully! Task ID: ${result.taskId}`;
-      } catch (err: any) {
-        return `ComfyUI error: ${err.message || err}`;
-      }
-    }
-
-    return `Unknown ComfyUI command '${sub}'. Use 'comfy status', 'comfy workflows', 'comfy nodes', 'comfy node <name>', or 'comfy prompt [options] <text>'.`;
   }
 }

@@ -30,6 +30,7 @@ export interface IKernelService {
   initialize(): Promise<void>;
   checkHealth(): Promise<boolean>;
   shutdown(): Promise<void>;
+  executeCLICommand?(args: string[], onChunk?: (chunkText: string) => void): Promise<string>;
 }
 
 export interface KernelStatus {
@@ -57,7 +58,6 @@ export interface ServiceConfig {
   driver: string;
   endpoint: string;
   enabled: boolean;
-  workflowsDir?: string;
 }
 
 export interface ShellConfig {

@@ -20,9 +20,22 @@ export interface TextGenerationRequest {
   temperature?: number;
   topP?: number;
   topK?: number;
+  minP?: number;
+  typicalP?: number;
+  repeatPenalty?: number;
+  presencePenalty?: number;
+  frequencyPenalty?: number;
+  seed?: number;
+  numCtx?: number;
+  stop?: string[];
   maxTokens?: number;
   think?: boolean;
+  raw?: boolean;
+  format?: string;
+  keepAlive?: string;
   stream?: boolean;
+  images?: string[];
+  options?: Record<string, any>;
 }
 
 export interface TextGenerationResponse {

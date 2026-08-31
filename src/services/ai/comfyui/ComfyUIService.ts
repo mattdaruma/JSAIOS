@@ -6,11 +6,13 @@
 import { AIService } from '../AIService';
 import type { ModelInfo, TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse } from '../AIService';
 import type { ServiceDescriptor } from '../../../kernel/types';
-import { checkComfyUIHealth } from './checkHealth';
-import { fetchComfyUIModels } from './getModels';
-import { generateComfyUIMedia } from './generateMedia';
-import { listLocalWorkflows, WorkflowFileInfo } from './listWorkflows';
-import { fetchComfyNodeInfo, ComfyNodeSchema } from './getNodeInfo';
+import { checkComfyUIHealth } from './helpers/checkHealth';
+import { fetchComfyUIModels } from './helpers/getModels';
+import { generateComfyUIMedia } from './helpers/generateMedia';
+import { fetchComfyWorkflows, type WorkflowFileInfo } from './helpers/listWorkflows';
+import { fetchComfyNodeInfo, type ComfyNodeSchema } from './helpers/getNodeInfo';
+import { inspectComfyWorkflow, type WorkflowInspectionResult } from './helpers/inspectWorkflow';
+import { handleComfyCLI } from '../../../shell/terminal/commands/comfyCLI';
 
 export class ComfyUIService extends AIService {
   public readonly id = 'comfyui';
@@ -42,7 +44,11 @@ export class ComfyUIService extends AIService {
         },
         {
           command: 'comfy workflows',
-          description: 'List local JSON workflow templates in config/workflows/'
+          description: 'List saved workflows reported by ComfyUI server'
+        },
+        {
+          command: 'comfy options <workflow>',
+          description: 'Inspect configurable node input options for a specific workflow'
         },
         {
           command: 'comfy nodes [filter]',
@@ -86,12 +92,16 @@ export class ComfyUIService extends AIService {
     return fetchComfyUIModels(this.baseUrl);
   }
 
-  public getWorkflows(): WorkflowFileInfo[] {
-    return listLocalWorkflows();
+  public async getWorkflows(): Promise<WorkflowFileInfo[]> {
+    return fetchComfyWorkflows(this.baseUrl);
   }
 
   public async getNodeInfo(nodeName?: string): Promise<ComfyNodeSchema[]> {
     return fetchComfyNodeInfo(this.baseUrl, nodeName);
+  }
+
+  public async inspectWorkflow(workflowId: string): Promise<WorkflowInspectionResult | null> {
+    return inspectComfyWorkflow(this.baseUrl, workflowId);
   }
 
   public async generateText(
@@ -106,5 +116,9 @@ export class ComfyUIService extends AIService {
     onProgress?: (percent: number, statusText: string) => void
   ): Promise<MediaGenerationResponse> {
     return generateComfyUIMedia(this.baseUrl, request, onProgress);
+  }
+
+  public async executeCLICommand(args: string[]): Promise<string> {
+    return handleComfyCLI(this, args);
   }
 }

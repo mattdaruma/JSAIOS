@@ -8,7 +8,7 @@ Microkernel Architecture featuring **HoneyKernel Core**, Declarative JSON Manife
 
 1. **Separation of Code & Configuration (`src/` vs. `config/`)**:
    - `src/` is strictly reserved for generic driver logic and core microkernel code.
-   - `config/` contains all declarative JSON manifests (`config/jsaios.config.json`) and workflow templates (`config/workflows/`).
+   - `config/` contains all declarative JSON manifests (`config/jsaios.config.json`).
 2. **Teeny Tiny Single-Purpose Code Files**:
    - Every file is bite-sized, single-purpose, and modular.
 3. **Platform-Agnostic HoneyKernel**:

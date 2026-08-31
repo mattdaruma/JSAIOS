@@ -5,10 +5,14 @@
 
 import { HoneyKernel, kernel } from '../kernel/HoneyKernel';
 import { loadManifest } from '../kernel/ManifestLoader';
+import { loadSecrets } from '../kernel/loadSecrets';
 import { createServiceFromConfig } from '../services/ai/ServiceFactory';
 import { startCLITerminal } from '../shell/terminal/cliTerminal';
 
 export async function bootCLISystem(manifestPath?: string): Promise<HoneyKernel> {
+  // Load local secrets from gitignored config/secrets.json into process.env
+  loadSecrets();
+
   // Load declarative JSON manifest
   const manifest = loadManifest(manifestPath);
   console.log(`[Bootloader] Booting ${manifest.system.name} v${manifest.system.version} from JSON manifest...`);

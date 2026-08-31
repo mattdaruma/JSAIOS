@@ -6,6 +6,7 @@
 import type { ServiceConfig, IKernelService } from '../../kernel/types';
 import { OllamaService } from './ollama/OllamaService';
 import { ComfyUIService } from './comfyui/ComfyUIService';
+import { CopilotService } from './copilot/CopilotService';
 
 export function createServiceFromConfig(config: ServiceConfig): IKernelService | null {
   if (!config.enabled) return null;
@@ -16,6 +17,9 @@ export function createServiceFromConfig(config: ServiceConfig): IKernelService |
 
     case 'ComfyUIService':
       return new ComfyUIService(config.endpoint);
+
+    case 'CopilotService':
+      return new CopilotService(config.endpoint);
 
     default:
       console.warn(`[ServiceFactory] Unknown service driver: '${config.driver}'`);

@@ -17,8 +17,14 @@
       "type": "ai",
       "driver": "ComfyUIService",
       "endpoint": "http://localhost:8188",
-      "enabled": true,
-      "workflowsDir": "./config/workflows"
+      "enabled": true
+    },
+    {
+      "id": "copilot",
+      "type": "ai",
+      "driver": "CopilotService",
+      "endpoint": "local",
+      "enabled": true
     }
   ],
   "shell": {
