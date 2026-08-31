@@ -7,6 +7,7 @@ import { HoneyKernel } from '../../kernel/HoneyKernel';
 import { tokenizeCommandLine } from './tokenize';
 import { handleChatCLI, CHAT_ENGINE_DESCRIPTOR } from './commands/chatCLI';
 import type { ServiceDescriptor } from '../../kernel/types';
+import { ANSI } from './helpers/cliColors';
 
 export interface TerminalOutputLine {
   id: string;
@@ -71,7 +72,7 @@ export class TerminalInterpreter {
       }
     }
 
-    return `Command not recognized: '${mainCommand}'. Type 'help' for available CLI commands.`;
+    return `${ANSI.brightRed}Command not recognized: '${mainCommand}'. Type 'help' for available CLI commands.${ANSI.reset}`;
   }
 
   /**
@@ -85,29 +86,29 @@ export class TerminalInterpreter {
     const activeServices = this.kernel.getStatus().activeServices;
 
     const lines: string[] = [
-      '=======================================================================',
-      ' JSAIOS HoneyKernel Core Terminal Reference',
-      '=======================================================================',
-      ' Core Kernel Commands:',
-      '  help [target]                       - Show core reference or help for a specific engine/service',
-      '  status                              - Display HoneyKernel status and system uptime',
-      '  services                            - List registered micro-service drivers and status',
-      '  clear                               - Clear terminal output',
-      '  exit                                - Quit JSAIOS system CLI',
+      `${ANSI.brightCyan}=======================================================================${ANSI.reset}`,
+      ` ${ANSI.brightYellow}${ANSI.bold}JSAIOS HoneyKernel Core Terminal Reference${ANSI.reset}`,
+      `${ANSI.brightCyan}=======================================================================${ANSI.reset}`,
+      ` ${ANSI.bold}Core Kernel Commands:${ANSI.reset}`,
+      `  ${ANSI.brightYellow}help [target]${ANSI.reset}                       - Show core reference or help for a specific engine/service`,
+      `  ${ANSI.brightYellow}status${ANSI.reset}                              - Display HoneyKernel status and system uptime`,
+      `  ${ANSI.brightYellow}services${ANSI.reset}                            - List registered micro-service drivers and status`,
+      `  ${ANSI.brightYellow}clear${ANSI.reset}                               - Clear terminal output`,
+      `  ${ANSI.brightYellow}exit${ANSI.reset}                                - Quit JSAIOS system CLI`,
       '',
-      ' Registered Engines & Modules:',
-      "  • chat         - JSAIOS Interactive Chat Engine (Use 'help chat' or 'chat help')"
+      ` ${ANSI.bold}Registered Engines & Modules:${ANSI.reset}`,
+      `  • ${ANSI.brightYellow}chat${ANSI.reset}         - JSAIOS Interactive Chat Engine (Use 'help chat' or 'chat help')`
     ];
 
     if (activeServices.length > 0) {
       lines.push('');
-      lines.push(' Registered Service Drivers (Type "help <service_id>" for detailed options):');
+      lines.push(` ${ANSI.bold}Registered Service Drivers (Type "help <service_id>" for detailed options):${ANSI.reset}`);
       for (const service of activeServices) {
-        lines.push(`  • ${service.id.padEnd(12)} - ${service.name} (Use 'help ${service.id}')`);
+        lines.push(`  • ${ANSI.brightYellow}${service.id.padEnd(12)}${ANSI.reset} - ${service.name} (Use 'help ${service.id}')`);
       }
     }
 
-    lines.push('\n=======================================================================');
+    lines.push(`\n${ANSI.brightCyan}=======================================================================${ANSI.reset}`);
     return lines.join('\n');
   }
 
@@ -127,7 +128,7 @@ export class TerminalInterpreter {
     );
 
     if (!service) {
-      return `Target '${targetId}' not found. Type 'help' to view active engines and service drivers.`;
+      return `${ANSI.brightRed}Target '${targetId}' not found. Type 'help' to view active engines and service drivers.${ANSI.reset}`;
     }
 
     return this.renderDescriptorHelp(service);
@@ -138,22 +139,22 @@ export class TerminalInterpreter {
    */
   private renderDescriptorHelp(descriptor: ServiceDescriptor): string {
     const lines: string[] = [
-      '=======================================================================',
-      ` Reference: ${descriptor.name} (${descriptor.id} v${descriptor.version})`,
-      '======================================================================='
+      `${ANSI.brightCyan}=======================================================================${ANSI.reset}`,
+      ` ${ANSI.bold}Reference:${ANSI.reset} ${descriptor.name} (${descriptor.id} v${descriptor.version})`,
+      `${ANSI.brightCyan}=======================================================================${ANSI.reset}`
     ];
 
     if (descriptor.cliCommands && descriptor.cliCommands.length > 0) {
       for (const cmd of descriptor.cliCommands) {
         lines.push('');
         const cmdPadding = ' '.repeat(Math.max(2, 37 - cmd.command.length));
-        lines.push(`  ${cmd.command}${cmdPadding}- ${cmd.description}`);
+        lines.push(`  ${ANSI.brightYellow}${cmd.command}${ANSI.reset}${cmdPadding}- ${cmd.description}`);
 
         if (cmd.options && cmd.options.length > 0) {
-          lines.push('                                        Options:');
+          lines.push(`                                        ${ANSI.dim}Options:${ANSI.reset}`);
           for (const opt of cmd.options) {
             const optPadding = ' '.repeat(Math.max(2, 22 - opt.flag.length));
-            lines.push(`                                          ${opt.flag}${optPadding}${opt.description}`);
+            lines.push(`                                          ${ANSI.brightMagenta}${opt.flag}${ANSI.reset}${optPadding}${opt.description}`);
           }
         }
       }
@@ -161,7 +162,7 @@ export class TerminalInterpreter {
       lines.push('  No CLI commands documented.');
     }
 
-    lines.push('\n=======================================================================');
+    lines.push(`\n${ANSI.brightCyan}=======================================================================${ANSI.reset}`);
     return lines.join('\n');
   }
 
