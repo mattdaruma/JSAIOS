@@ -72,7 +72,9 @@ export abstract class AIService implements IKernelService {
 
   public abstract initialize(): Promise<void>;
   public abstract checkHealth(): Promise<boolean>;
-  public abstract shutdown(): Promise<void>;
+  public async shutdown(): Promise<void> {
+    this.status = 'stopped';
+  }
   public abstract getModels(): Promise<ModelInfo[]>;
 
   public abstract generateText(

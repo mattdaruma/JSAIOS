@@ -56,6 +56,11 @@ export class CopilotService extends AIService {
     return checkCopilotHealth();
   }
 
+  public async shutdown(): Promise<void> {
+    this.status = 'stopped';
+    console.log('[CopilotService] Driver shutdown complete.');
+  }
+
   public async getModels(): Promise<ModelInfo[]> {
     return fetchCopilotModels();
   }

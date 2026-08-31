@@ -64,7 +64,9 @@ export class HoneyKernel {
     for (const service of services) {
       try {
         console.log(`[HoneyKernel] Shutting down service '${service.id}'...`);
-        await service.shutdown();
+        if (typeof service.shutdown === 'function') {
+          await service.shutdown();
+        }
       } catch (err) {
         console.error(`[HoneyKernel] Error during shutdown of service '${service.id}':`, err);
       }
