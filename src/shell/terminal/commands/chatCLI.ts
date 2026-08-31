@@ -108,7 +108,7 @@ export async function handleChatCLI(
       `Model          : ${active.model}`,
       `Messages Count : ${active.messages.length} message(s) (${active.messages.filter((m) => m.role === 'user').length} user, ${active.messages.filter((m) => m.role === 'assistant').length} assistant)`,
       `System Context : ${sys ? `"${sys.content}"` : 'None'}`,
-      `Session Options: ${optsStr || 'Default Defaults'}`,
+      `Session Options : ${optsStr || 'Default Defaults'}`,
       `Total Sessions : ${sessions.length} active session(s)`,
       `Storage Engine : Disk Persisted (${storageDir}/)`
     ].join('\n');
