@@ -17,46 +17,14 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   status: 'running',
   capabilities: ['chat', 'multi-turn', 'multimodal', 'sticky-context'],
   cliCommands: [
-    {
-      command: 'chat status',
-      description: 'View active chat session status and persistence metadata'
-    },
-    {
-      command: 'chat new <name> [options]',
-      description: 'Create a new interactive chat session',
-      options: [
-        { flag: '--provider <name>, -p', description: 'Set AI provider (e.g. ollama, copilot)' },
-        { flag: '--model <name>, -m', description: 'Set model for session (e.g. gpt-4o, llama3)' },
-        { flag: '--system "<prompt>", -s', description: 'Set sticky system directive prompt' }
-      ]
-    },
-    {
-      command: 'chat list',
-      description: 'List all active chat sessions'
-    },
-    {
-      command: 'chat switch <session_id>',
-      description: 'Switch active chat session'
-    },
-    {
-      command: 'chat delete <session_id>',
-      description: 'Delete a chat session from memory and disk'
-    },
-    {
-      command: 'chat system "<prompt>"',
-      description: 'Set or update sticky system directive for active session'
-    },
-    {
-      command: 'chat send [options] <text>',
-      description: 'Send a message turn to active session',
-      options: [
-        { flag: '--image <path>, -i', description: 'Attach local image for multimodal model' }
-      ]
-    },
-    {
-      command: 'chat history',
-      description: 'View turn log for active session'
-    }
+    { command: 'chat status', description: 'View active chat session status and persistence metadata' },
+    { command: 'chat new <name> [options]', description: 'Create a new interactive chat session' },
+    { command: 'chat list', description: 'List all active chat sessions' },
+    { command: 'chat switch <session_id>', description: 'Switch active chat session' },
+    { command: 'chat delete <session_id>', description: 'Delete a chat session from memory and disk' },
+    { command: 'chat system "<prompt>"', description: 'Set or update sticky system directive for active session' },
+    { command: 'chat send [options] <text>', description: 'Send a message turn to active session' },
+    { command: 'chat history [page] [limit] [--all]', description: 'View paginated turn log for active session (default: page 1, 10 messages)' }
   ]
 };
 
@@ -168,10 +136,40 @@ export async function handleChatCLI(
   if (sub === 'history' || sub === 'log') {
     const active = engine.getActiveSession();
     if (!active) return 'No active chat session. Create one with "chat new <name>".';
+
+    const messages = active.messages;
+    if (messages.length === 0) return `Chat session '${active.name}' has no messages log yet.`;
+
+    if (args.includes('--all') || args.includes('-a')) {
+      return [
+        `=== Full Chat History Log: '${active.name}' (${messages.length} messages) ===`,
+        ...messages.map((m) => `[${m.role.toUpperCase()}${m.sticky ? ' (STICKY)' : ''}] ${m.content}${m.images ? ` [${m.images.length} image(s)]` : ''}`)
+      ].join('\n');
+    }
+
+    let page = 1, limit = 10;
+    const nums = args.slice(1).filter((a) => !a.startsWith('-')).map(Number).filter((n) => !isNaN(n) && n > 0);
+    if (nums.length >= 1) page = Math.floor(nums[0]);
+    if (nums.length >= 2) limit = Math.floor(nums[1]);
+
+    const total = messages.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const effPage = Math.min(page, totalPages);
+
+    const startIdx = Math.max(0, total - effPage * limit);
+    const endIdx = total - (effPage - 1) * limit;
+    const paged = messages.slice(startIdx, endIdx);
+
+    const header = `=== Chat History Log: '${active.name}' (Page ${effPage} of ${totalPages}, ${total} messages total) ===`;
+    const navFooter = totalPages > 1
+      ? `\n[Page ${effPage} of ${totalPages} | Use "chat history ${effPage + 1 <= totalPages ? effPage + 1 : totalPages}" for previous page | "chat history --all" for full log]`
+      : '';
+
     return [
-      `=== Chat History Log: '${active.name}' (${active.model}) ===`,
-      ...active.messages.map((m) => `[${m.role.toUpperCase()}${m.sticky ? ' (STICKY)' : ''}] ${m.content}${m.images ? ` [${m.images.length} image(s)]` : ''}`)
-    ].join('\n');
+      header,
+      ...paged.map((m) => `[${m.role.toUpperCase()}${m.sticky ? ' (STICKY)' : ''}] ${m.content}${m.images ? ` [${m.images.length} image(s)]` : ''}`),
+      navFooter
+    ].filter(Boolean).join('\n');
   }
 
   if (sub === 'send' || sub === 'ask') {
