@@ -1,14 +1,16 @@
 /**
  * JSAIOS - Single-purpose helper: loadManifest
- * Reads and validates declarative JSON system manifests.
+ * Reads and validates declarative JSON system manifests from config/ directory.
  */
 
 import fs from 'fs';
 import path from 'path';
 import type { JSAIOSManifest } from './types';
 
-export function loadManifest(manifestPath?: string): JSAIOSManifest {
-  const targetPath = manifestPath || path.resolve(process.cwd(), 'jsaios.config.json');
+export function loadManifest(customPath?: string): JSAIOSManifest {
+  const defaultPath = path.resolve(process.cwd(), 'config', 'jsaios.config.json');
+  const fallbackPath = path.resolve(process.cwd(), 'jsaios.config.json');
+  const targetPath = customPath || (fs.existsSync(defaultPath) ? defaultPath : fallbackPath);
 
   if (!fs.existsSync(targetPath)) {
     throw new Error(`[ManifestLoader] Manifest file not found at path: '${targetPath}'`);

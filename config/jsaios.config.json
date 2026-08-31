@@ -17,7 +17,8 @@
       "type": "ai",
       "driver": "ComfyUIService",
       "endpoint": "http://localhost:8188",
-      "enabled": true
+      "enabled": true,
+      "workflowsDir": "./config/workflows"
     }
   ],
   "shell": {

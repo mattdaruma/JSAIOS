@@ -1,11 +1,12 @@
 /**
  * JSAIOS - Single-purpose function: generateComfyUIMedia
- * Submits dynamic ComfyUI workflow graph payload to /prompt.
+ * Dynamically loads workflow graph JSON from config/workflows/ and submits to /prompt.
  */
 
+import fs from 'fs';
+import path from 'path';
 import type { MediaGenerationRequest, MediaGenerationResponse } from '../AIService';
 import { injectWorkflowParameters } from './buildWorkflow';
-import defaultTxt2ImgWorkflow from './workflows/txt2img.json';
 
 export async function generateComfyUIMedia(
   baseUrl: string,
@@ -13,11 +14,23 @@ export async function generateComfyUIMedia(
   onProgress?: (percent: number, statusText: string) => void,
   customWorkflowTemplate?: Record<string, any>
 ): Promise<MediaGenerationResponse> {
-  if (onProgress) onProgress(10, 'Building ComfyUI workflow graph...');
+  if (onProgress) onProgress(10, 'Loading ComfyUI workflow template from config...');
 
-  const template = customWorkflowTemplate || defaultTxt2ImgWorkflow;
+  let template = customWorkflowTemplate;
 
-  const parameterizedWorkflow = injectWorkflowParameters(template, {
+  if (!template) {
+    const workflowName = request.workflowId || 'txt2img';
+    const workflowPath = path.resolve(process.cwd(), 'config', 'workflows', `${workflowName}.json`);
+
+    if (!fs.existsSync(workflowPath)) {
+      throw new Error(`[ComfyUI Driver] Workflow JSON file not found at: '${workflowPath}'`);
+    }
+
+    const rawJson = fs.readFileSync(workflowPath, 'utf-8');
+    template = JSON.parse(rawJson);
+  }
+
+  const parameterizedWorkflow = injectWorkflowParameters(template!, {
     prompt: request.prompt,
     negativePrompt: request.negativePrompt,
     seed: request.seed || Math.floor(Math.random() * 1000000),
