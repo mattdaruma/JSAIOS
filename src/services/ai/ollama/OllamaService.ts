@@ -1,7 +1,6 @@
 /**
  * JSAIOS - OllamaService Master Driver Script
  * Clean orchestrator inheriting AIService and calling imported single-purpose functions.
- * Manages active AbortController instances for graceful resource cleanup on shutdown.
  */
 
 import { AIService } from '../AIService';
@@ -27,7 +26,28 @@ export class OllamaService extends AIService {
       name: 'Ollama Transport Driver',
       version: '1.0.0',
       status: 'running',
-      capabilities: ['text-generation', 'streaming', 'chat', 'model-enumeration']
+      capabilities: ['text-generation', 'streaming', 'chat', 'model-enumeration'],
+      cliCommands: [
+        {
+          command: 'ollama status',
+          description: 'Ping local Ollama LLM provider health'
+        },
+        {
+          command: 'ollama models',
+          description: 'List available Ollama models'
+        },
+        {
+          command: 'ollama prompt <model> [options] <text>',
+          description: 'Stream raw text prompt to specified Ollama model',
+          options: [
+            { flag: '--no-think', description: 'Disable thinking/reasoning mode' },
+            { flag: '--think', description: 'Explicitly enable thinking mode' },
+            { flag: '--temp <num>, -t', description: 'Set generation temperature (e.g. 0.7)' },
+            { flag: '--system "<text>", -s', description: 'Set custom system directive' },
+            { flag: '--max-tokens <num>', description: 'Set max response token limit' }
+          ]
+        }
+      ]
     };
   }
 

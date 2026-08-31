@@ -4,12 +4,24 @@
 
 export type ServiceStatus = 'uninitialized' | 'initializing' | 'running' | 'degraded' | 'failed' | 'stopped';
 
+export interface CLICommandOption {
+  flag: string;
+  description: string;
+}
+
+export interface CLICommandDoc {
+  command: string;
+  description: string;
+  options?: CLICommandOption[];
+}
+
 export interface ServiceDescriptor {
   id: string;
   name: string;
   version: string;
   status: ServiceStatus;
   capabilities: string[];
+  cliCommands?: CLICommandDoc[];
 }
 
 export interface IKernelService {
@@ -45,6 +57,7 @@ export interface ServiceConfig {
   driver: string;
   endpoint: string;
   enabled: boolean;
+  workflowsDir?: string;
 }
 
 export interface ShellConfig {

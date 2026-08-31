@@ -34,6 +34,38 @@ export class ComfyUIService extends AIService {
         'video-synthesis',
         'audio-synthesis',
         '3d-synthesis'
+      ],
+      cliCommands: [
+        {
+          command: 'comfy status',
+          description: 'Ping local ComfyUI provider health'
+        },
+        {
+          command: 'comfy workflows',
+          description: 'List local JSON workflow templates in config/workflows/'
+        },
+        {
+          command: 'comfy nodes [filter]',
+          description: 'List available ComfyUI graph nodes from /object_info'
+        },
+        {
+          command: 'comfy node <name>',
+          description: 'Inspect input/output schema for a specific node type'
+        },
+        {
+          command: 'comfy prompt [options] <text>',
+          description: 'Trigger workflow execution in ComfyUI',
+          options: [
+            { flag: '--neg "<text>"', description: 'Set negative prompt text' },
+            { flag: '--steps <num>', description: 'Set KSampler steps (default: 20)' },
+            { flag: '--cfg <num>', description: 'Set KSampler CFG scale (default: 8.0)' },
+            { flag: '--width <num>', description: 'Set image width (default: 512)' },
+            { flag: '--height <num>', description: 'Set image height (default: 512)' },
+            { flag: '--seed <num>', description: 'Set random noise seed' },
+            { flag: '--sampler <name>', description: 'Set KSampler algorithm (e.g. euler)' },
+            { flag: '--ckpt <name>', description: 'Set Checkpoint model filename' }
+          ]
+        }
       ]
     };
   }

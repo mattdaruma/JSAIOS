@@ -1,6 +1,7 @@
 /**
  * JSAIOS - TerminalInterpreter
  * Shell command parser and execution dispatcher for HoneyKernel.
+ * Dynamically formats CLI help documentation based on loaded micro-services.
  */
 
 import { HoneyKernel } from '../../kernel/HoneyKernel';
@@ -58,39 +59,46 @@ export class TerminalInterpreter {
     }
   }
 
+  /**
+   * Dynamically construct help reference based on loaded kernel services
+   */
   private handleHelp(): string {
-    return [
-      'Available JSAIOS Terminal Commands:',
-      '  help                                - Show this command reference',
+    const lines: string[] = [
+      '=======================================================================',
+      ' Available JSAIOS Terminal Commands (Dynamically Rendered)',
+      '=======================================================================',
+      ' Core Kernel Commands:',
+      '  help                                - Show this dynamically rendered command reference',
       '  status                              - Display HoneyKernel status and system uptime',
       '  services                            - List registered micro-service drivers and status',
-      '  ollama status                       - Ping local Ollama LLM provider health',
-      '  ollama models                       - List available Ollama models',
-      '  ollama prompt <model> [options] <text>',
-      '                                      - Stream raw text prompt to specified Ollama model',
-      '                                        Prompt Options:',
-      '                                          --no-think            Disable thinking/reasoning mode',
-      '                                          --think               Explicitly enable thinking mode',
-      '                                          --temp <num>, -t      Set generation temperature (e.g. 0.7)',
-      '                                          --system "<text>", -s Set custom system directive',
-      '                                          --max-tokens <num>    Set max response token limit',
-      '  comfy status                        - Ping local ComfyUI provider health',
-      '  comfy workflows                     - List local JSON workflow templates in config/workflows/',
-      '  comfy nodes [filter]                - List available ComfyUI graph nodes from /object_info',
-      '  comfy node <name>                   - Inspect input/output schema for a specific node type',
-      '  comfy prompt [options] <text>       - Trigger workflow execution in ComfyUI',
-      '                                        Workflow Options:',
-      '                                          --neg "<text>"        Set negative prompt text',
-      '                                          --steps <num>         Set KSampler steps (default: 20)',
-      '                                          --cfg <num>           Set KSampler CFG scale (default: 8.0)',
-      '                                          --width <num>         Set image width (default: 512)',
-      '                                          --height <num>        Set image height (default: 512)',
-      '                                          --seed <num>          Set random noise seed',
-      '                                          --sampler <name>      Set KSampler algorithm (e.g. euler)',
-      '                                          --ckpt <name>         Set Checkpoint model filename',
       '  clear                               - Clear terminal output',
       '  exit                                - Quit JSAIOS system CLI'
-    ].join('\n');
+    ];
+
+    const activeServices = this.kernel.getStatus().activeServices;
+
+    for (const service of activeServices) {
+      if (service.cliCommands && service.cliCommands.length > 0) {
+        lines.push('');
+        lines.push(` Micro-Service: ${service.name} (${service.id} v${service.version}):`);
+
+        for (const cmd of service.cliCommands) {
+          const cmdPadding = ' '.repeat(Math.max(2, 37 - cmd.command.length));
+          lines.push(`  ${cmd.command}${cmdPadding}- ${cmd.description}`);
+
+          if (cmd.options && cmd.options.length > 0) {
+            lines.push('                                        Options:');
+            for (const opt of cmd.options) {
+              const optPadding = ' '.repeat(Math.max(2, 22 - opt.flag.length));
+              lines.push(`                                          ${opt.flag}${optPadding}${opt.description}`);
+            }
+          }
+        }
+      }
+    }
+
+    lines.push('\n=======================================================================');
+    return lines.join('\n');
   }
 
   private handleStatus(): string {
@@ -118,7 +126,7 @@ export class TerminalInterpreter {
 
   private async handleOllama(args: string[], onStreamChunk?: (chunk: string) => void): Promise<string> {
     const ollama = this.kernel.getService<OllamaService>('ollama');
-    if (!ollama) return 'Error: OllamaService is not registered in HoneyKernel.';
+    if (!ollama) return 'Error: OllamaService is not registered or active in this JSAIOS session.';
 
     const sub = (args[0] || '').toLowerCase();
 
@@ -198,7 +206,7 @@ export class TerminalInterpreter {
 
   private async handleComfy(args: string[]): Promise<string> {
     const comfy = this.kernel.getService<ComfyUIService>('comfyui');
-    if (!comfy) return 'Error: ComfyUIService is not registered in HoneyKernel.';
+    if (!comfy) return 'Error: ComfyUIService is not registered or active in this JSAIOS session.';
 
     const sub = (args[0] || '').toLowerCase();
 
