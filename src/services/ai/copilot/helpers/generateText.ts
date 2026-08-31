@@ -4,7 +4,6 @@
  */
 
 import type { TextGenerationRequest, TextGenerationResponse } from '../../AIService';
-import { fetchCopilotSessionToken } from './fetchCopilotToken';
 
 export async function generateCopilotText(
   request: TextGenerationRequest,
@@ -15,10 +14,6 @@ export async function generateCopilotText(
     throw new Error('Copilot REST API error: GITHUB_TOKEN is not configured in config/secrets.json.');
   }
 
-  const sessionToken = await fetchCopilotSessionToken();
-  const apiEndpoint = sessionToken?.apiEndpoint || 'https://api.individual.githubcopilot.com/v1/chat/completions';
-  const authToken = sessionToken?.token || token;
-
   const messages: { role: string; content: string }[] = [];
   if (request.systemDirective) {
     messages.push({ role: 'system', content: request.systemDirective });
@@ -26,16 +21,16 @@ export async function generateCopilotText(
   messages.push({ role: 'user', content: request.prompt });
 
   const bodyPayload = {
-    model: request.model || 'gpt-4o',
+    model: request.model && request.model !== 'default' && request.model !== 'auto' ? request.model : 'gpt-4o',
     messages,
     temperature: request.temperature ?? 0.7,
     stream: !!onChunk
   };
 
-  const res = await fetch(apiEndpoint, {
+  const res = await fetch('https://api.githubcopilot.com/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${authToken}`,
+      'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
       'User-Agent': 'GitHubCopilot/1.250.0',
       'Editor-Version': 'vscode/1.95.0',
@@ -72,7 +67,7 @@ export async function generateCopilotText(
               onChunk(delta);
             }
           } catch {
-            // Ignore incomplete SSE JSON chunks
+            // Ignore incomplete SSE chunks
           }
         }
       }
