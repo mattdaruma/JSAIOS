@@ -6,6 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { ChatEngine } from '../../../engines/chat/ChatEngine';
+import { FileSessionStorage } from '../storage/FileSessionStorage';
 import { loadLocalImageBase64 } from '../../../services/ai/ollama/helpers/loadImage';
 import { parseChatCLIArgs } from '../../../engines/chat/helpers/chatOptions';
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
@@ -19,39 +20,14 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   capabilities: ['chat', 'multi-turn', 'multimodal', 'sticky-context'],
   cliCommands: [
     { command: 'chat status', description: 'View active chat session status, options, and persistence metadata' },
-    {
-      command: 'chat new <name> [options]',
-      description: 'Create a new interactive chat session with initial settings',
-      options: [
-        { flag: '--provider <name>, -p', description: 'Set AI provider (e.g. ollama, copilot)' },
-        { flag: '--model <name>, -m', description: 'Set model for session (e.g. gpt-4o, llama3)' },
-        { flag: '--temp <num>, -t', description: 'Set generation temperature (e.g. 0.7)' },
-        { flag: '--system "<prompt>", -s', description: 'Set sticky system directive prompt' }
-      ]
-    },
-    {
-      command: 'chat config [options]',
-      description: 'Alter active session settings (provider, model, temperature, etc.) mid-session',
-      options: [
-        { flag: '--provider <name>, -p', description: 'Switch AI provider (e.g. ollama, copilot)' },
-        { flag: '--model <name>, -m', description: 'Switch model for active session' },
-        { flag: '--temp <num>, -t', description: 'Update generation temperature' },
-        { flag: '--ollama-think [true|false]', description: 'Set Ollama reasoning mode (Ollama provider only)' }
-      ]
-    },
+    { command: 'chat new <name> [options]', description: 'Create a new interactive chat session with initial settings' },
+    { command: 'chat config [options]', description: 'Alter active session settings (provider, model, temperature, etc.) mid-session' },
     { command: 'chat default [session_id]', description: 'Set active or specified session as designated default on boot' },
     { command: 'chat list', description: 'List all active chat sessions' },
     { command: 'chat switch <session_id>', description: 'Switch active chat session' },
     { command: 'chat delete <session_id>', description: 'Delete a chat session from memory and disk' },
     { command: 'chat system "<prompt>"', description: 'Set or update sticky system directive for active session' },
-    {
-      command: 'chat send [options] <text>',
-      description: 'Send a message turn to active session (supports single-turn option overrides)',
-      options: [
-        { flag: '--temp <num>, -t', description: 'One-off temperature override for prompt' },
-        { flag: '--image <path>, -i', description: 'Attach local image for multimodal model' }
-      ]
-    },
+    { command: 'chat send [options] <text>', description: 'Send a message turn to active session (supports single-turn option overrides)' },
     { command: 'chat history [page] [limit] [--all]', description: 'View paginated turn log for active session' }
   ]
 };
@@ -70,7 +46,8 @@ export function getOrCreateChatEngine(kernel: HoneyKernel): ChatEngine {
     } catch {
       // Fallback
     }
-    globalChatEngine = new ChatEngine(kernel, storageDir);
+    const storageDriver = new FileSessionStorage(storageDir);
+    globalChatEngine = new ChatEngine(kernel, storageDriver);
   }
   return globalChatEngine;
 }
@@ -85,7 +62,9 @@ export async function handleChatCLI(
 
   if (sub === 'status') {
     const active = engine.getActiveSession();
-    const sessions = engine.listSessions(), storageDir = engine.getStorageDir();
+    const sessions = engine.listSessions();
+    const storageDriver = engine.getStorage() as FileSessionStorage | undefined;
+    const storageDir = storageDriver?.getStorageDir() || 'In-Memory';
     const defaultId = engine.getDesignatedDefaultSessionId();
 
     if (!active) {
@@ -94,7 +73,7 @@ export async function handleChatCLI(
         'Active Session  : NONE (No active session created)',
         `Default Session : ${defaultId || 'None'}`,
         `Total Sessions  : ${sessions.length} session(s)`,
-        `Storage Engine  : Disk Persisted (${storageDir}/)`
+        `Storage Engine  : FileSessionStorage (${storageDir}/)`
       ].join('\n');
     }
 
@@ -111,7 +90,7 @@ export async function handleChatCLI(
       `System Context  : ${sys ? `"${sys.content}"` : 'None'}`,
       `Session Options : ${optsStr || 'Default Defaults'}`,
       `Total Sessions  : ${sessions.length} active session(s)`,
-      `Storage Engine  : Disk Persisted (${storageDir}/)`
+      `Storage Engine  : FileSessionStorage (${storageDir}/)`
     ].join('\n');
   }
 
@@ -123,7 +102,7 @@ export async function handleChatCLI(
     if (!success) return `Session '${target}' not found. Type "chat list" to view sessions.`;
 
     const currentDefault = engine.getDesignatedDefaultSessionId();
-    return `Set designated boot session to '${currentDefault}' (persisted to ${engine.getStorageDir()}/_settings.json).`;
+    return `Set designated boot session to '${currentDefault}'.`;
   }
 
   if (sub === 'new' || sub === 'create') {

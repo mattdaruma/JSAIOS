@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { ChatSession } from '../../src/engines/chat/helpers/ChatSession';
 import { ChatEngine } from '../../src/engines/chat/ChatEngine';
+import { FileSessionStorage } from '../../src/shell/terminal/storage/FileSessionStorage';
 import { sanitizeSessionId } from '../../src/engines/chat/helpers/sanitizeId';
 import { HoneyKernel } from '../../src/kernel/HoneyKernel';
 import { ServiceRegistry } from '../../src/kernel/ServiceRegistry';
@@ -16,7 +17,7 @@ afterAll(() => {
   }
 });
 
-describe('JSAIOS Chat Engine & Session Options', () => {
+describe('JSAIOS Chat Engine & Storage Decoupling', () => {
   it('should sanitize session names into clean CLI-friendly IDs', () => {
     expect(sanitizeSessionId('Copilot Chat!')).toBe('copilot_chat');
     expect(sanitizeSessionId('   my-session_1  ')).toBe('my-session_1');
@@ -48,11 +49,12 @@ describe('JSAIOS Chat Engine & Session Options', () => {
     expect(session.messages).toHaveLength(5);
   });
 
-  it('should support creation options and mid-session reconfiguration', async () => {
+  it('should support creation options and mid-session reconfiguration with FileSessionStorage driver', async () => {
     const registry = new ServiceRegistry();
     const eventBus = new EventBus();
     const kernel = new HoneyKernel(registry, eventBus);
-    const engine = new ChatEngine(kernel, testStorageDir);
+    const storageDriver = new FileSessionStorage(testStorageDir);
+    const engine = new ChatEngine(kernel, storageDriver);
 
     const session = engine.createSession('OptionSession', 'ollama', 'llama3', 'System directive', {
       temperature: 0.3,
@@ -77,11 +79,12 @@ describe('JSAIOS Chat Engine & Session Options', () => {
     expect(reconfigured.options.maxTokens).toBe(1000);
   });
 
-  it('should persist designated default session to _settings.json and boot into it', async () => {
+  it('should persist designated default session via FileSessionStorage to _settings.json and boot into it', async () => {
     const registry = new ServiceRegistry();
     const eventBus = new EventBus();
     const kernel = new HoneyKernel(registry, eventBus);
-    const engine = new ChatEngine(kernel, testStorageDir);
+    const storageDriver = new FileSessionStorage(testStorageDir);
+    const engine = new ChatEngine(kernel, storageDriver);
 
     engine.createSession('SessionA', 'ollama', 'llama3');
     engine.createSession('SessionB', 'copilot', 'gpt-4o');
@@ -98,7 +101,8 @@ describe('JSAIOS Chat Engine & Session Options', () => {
     expect(settingsRaw.defaultSessionId).toBe('sessionb');
 
     // Re-instantiate engine to test boot selection
-    const engineReboot = new ChatEngine(kernel, testStorageDir);
+    const storageDriver2 = new FileSessionStorage(testStorageDir);
+    const engineReboot = new ChatEngine(kernel, storageDriver2);
     expect(engineReboot.getActiveSession()?.id).toBe('sessionb');
   });
 

@@ -5,6 +5,7 @@ import { CopilotService } from '../../src/services/ai/copilot/CopilotService';
 import { fetchCopilotModels } from '../../src/services/ai/copilot/helpers/fetchModels';
 import { fetchCopilotSessionToken } from '../../src/services/ai/copilot/helpers/fetchCopilotToken';
 import { ChatEngine } from '../../src/engines/chat/ChatEngine';
+import { FileSessionStorage } from '../../src/shell/terminal/storage/FileSessionStorage';
 import { HoneyKernel } from '../../src/kernel/HoneyKernel';
 import { ServiceRegistry } from '../../src/kernel/ServiceRegistry';
 import { EventBus } from '../../src/kernel/EventBus';
@@ -46,7 +47,8 @@ describe('GitHub Copilot AI Service Driver (Pure HTTP REST)', () => {
     kernel.registerService(copilot);
 
     const testDir = path.join(process.cwd(), 'tests', 'tmpdir', `copilot-test-${Date.now()}`);
-    const engine = new ChatEngine(kernel, testDir);
+    const storageDriver = new FileSessionStorage(testDir);
+    const engine = new ChatEngine(kernel, storageDriver);
     const session = engine.createSession('Copilot Chat', 'copilot', 'default');
 
     expect(session.providerId).toBe('copilot');

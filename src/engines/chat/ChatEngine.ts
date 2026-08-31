@@ -1,52 +1,62 @@
 /**
  * JSAIOS - Single-purpose class: ChatEngine
  * High-level business logic engine that manages active chat sessions and orchestrates multi-turn chat interactions with HoneyKernel AI providers.
+ * Pure Ring 0 driver logic: 100% platform-agnostic, receiving storage persistence via IChatSessionStorage adapter.
  */
 
 import { HoneyKernel } from '../../kernel/HoneyKernel';
 import { ChatSession } from './helpers/ChatSession';
-import type { ChatTurnParams, ChatSessionOptions } from './helpers/types';
+import type { ChatTurnParams, ChatSessionOptions, IChatSessionStorage } from './helpers/types';
 import type { AIService } from '../../services/ai/AIService';
-import { saveSessionToDisk, loadSessionsFromDisk, deleteSessionFromDisk } from './helpers/persistence';
-import { loadEngineSettings, saveEngineSettings } from './helpers/settingsPersistence';
 import { sanitizeSessionId } from './helpers/sanitizeId';
 import { mergeChatOptions, buildTextGenRequest } from './helpers/chatOptions';
 
 export class ChatEngine {
   private kernel: HoneyKernel;
-  private storageDir: string;
+  private storage?: IChatSessionStorage;
   private sessions: Map<string, ChatSession> = new Map();
   private activeSessionId?: string;
   private designatedDefaultSessionId?: string;
 
-  constructor(kernel: HoneyKernel, storageDir: string = 'chat-sessions') {
+  constructor(kernel: HoneyKernel, storage?: IChatSessionStorage) {
     this.kernel = kernel;
-    this.storageDir = storageDir;
-    this.initSessionsFromDisk();
+    this.storage = storage;
+    this.initSessionsFromStorage();
   }
 
-  public getStorageDir(): string {
-    return this.storageDir;
+  public getStorage(): IChatSessionStorage | undefined {
+    return this.storage;
   }
 
   public getDesignatedDefaultSessionId(): string | undefined {
     return this.designatedDefaultSessionId;
   }
 
-  private initSessionsFromDisk(): void {
-    const loaded = loadSessionsFromDisk(this.storageDir);
-    loaded.sort((a, b) => b.updatedAt - a.updatedAt);
+  private initSessionsFromStorage(): void {
+    if (!this.storage) return;
 
-    for (const session of loaded) {
-      this.sessions.set(session.id, session);
+    const loaded = (this.storage.loadSessions() || []) as ChatSession[];
+    if (Array.isArray(loaded)) {
+      loaded.sort((a, b) => b.updatedAt - a.updatedAt);
+      for (const session of loaded) this.sessions.set(session.id, session);
+
+      const settings = (this.storage.loadSettings ? this.storage.loadSettings() : {}) as any;
+      if (settings?.defaultSessionId && this.sessions.has(settings.defaultSessionId)) {
+        this.designatedDefaultSessionId = settings.defaultSessionId;
+        this.activeSessionId = settings.defaultSessionId;
+      } else if (loaded.length > 0) {
+        this.activeSessionId = loaded[0].id;
+      }
     }
+  }
 
-    const settings = loadEngineSettings(this.storageDir);
-    if (settings.defaultSessionId && this.sessions.has(settings.defaultSessionId)) {
-      this.designatedDefaultSessionId = settings.defaultSessionId;
-      this.activeSessionId = settings.defaultSessionId;
-    } else if (loaded.length > 0) {
-      this.activeSessionId = loaded[0].id;
+  private persistSession(session: ChatSession): void {
+    if (this.storage) this.storage.saveSession(session);
+  }
+
+  private persistSettings(): void {
+    if (this.storage?.saveSettings) {
+      this.storage.saveSettings({ defaultSessionId: this.designatedDefaultSessionId });
     }
   }
 
@@ -55,21 +65,14 @@ export class ChatEngine {
     if (!target) return false;
 
     const id = sanitizeSessionId(target);
-    if (this.sessions.has(id)) {
-      this.designatedDefaultSessionId = id;
-      this.activeSessionId = id;
-      saveEngineSettings(this.storageDir, { defaultSessionId: id });
+    const session = this.sessions.get(id) || Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === target.toLowerCase());
+
+    if (session) {
+      this.designatedDefaultSessionId = session.id;
+      this.activeSessionId = session.id;
+      this.persistSettings();
       return true;
     }
-
-    const match = Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === target.toLowerCase());
-    if (match) {
-      this.designatedDefaultSessionId = match.id;
-      this.activeSessionId = match.id;
-      saveEngineSettings(this.storageDir, { defaultSessionId: match.id });
-      return true;
-    }
-
     return false;
   }
 
@@ -95,12 +98,8 @@ export class ChatEngine {
     }
 
     this.activeSessionId = id;
-    saveSessionToDisk(this.storageDir, session);
-
-    if (!this.designatedDefaultSessionId) {
-      this.setDefaultSession(id);
-    }
-
+    this.persistSession(session);
+    if (!this.designatedDefaultSessionId) this.setDefaultSession(id);
     return session;
   }
 
@@ -114,9 +113,7 @@ export class ChatEngine {
     }
   ): ChatSession {
     const session = this.sessions.get(sessionId) || this.getActiveSession();
-    if (!session) {
-      throw new Error(`Session '${sessionId}' not found.`);
-    }
+    if (!session) throw new Error(`Session '${sessionId}' not found.`);
 
     if (updates.providerId) session.providerId = updates.providerId;
     if (updates.model) session.model = updates.model;
@@ -124,18 +121,14 @@ export class ChatEngine {
     if (updates.options) session.updateOptions(updates.options);
 
     session.updatedAt = Date.now();
-    saveSessionToDisk(this.storageDir, session);
+    this.persistSession(session);
     return session;
   }
 
   public getActiveSession(): ChatSession | null {
     if (!this.activeSessionId && this.sessions.size > 0) {
-      if (this.designatedDefaultSessionId && this.sessions.has(this.designatedDefaultSessionId)) {
-        this.activeSessionId = this.designatedDefaultSessionId;
-      } else {
-        const sorted = Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
-        this.activeSessionId = sorted[0].id;
-      }
+      const defId = this.designatedDefaultSessionId;
+      this.activeSessionId = defId && this.sessions.has(defId) ? defId : Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt)[0].id;
     }
     if (!this.activeSessionId) return null;
     return this.sessions.get(this.activeSessionId) || null;
@@ -143,21 +136,12 @@ export class ChatEngine {
 
   public setActiveSession(idOrName: string): boolean {
     const id = sanitizeSessionId(idOrName);
-    if (this.sessions.has(id)) {
-      this.activeSessionId = id;
-      const s = this.sessions.get(id);
-      if (s) {
-        s.updatedAt = Date.now();
-        saveSessionToDisk(this.storageDir, s);
-      }
-      return true;
-    }
+    const session = this.sessions.get(id) || Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === idOrName.toLowerCase());
 
-    const match = Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === idOrName.toLowerCase());
-    if (match) {
-      this.activeSessionId = match.id;
-      match.updatedAt = Date.now();
-      saveSessionToDisk(this.storageDir, match);
+    if (session) {
+      this.activeSessionId = session.id;
+      session.updatedAt = Date.now();
+      this.persistSession(session);
       return true;
     }
     return false;
@@ -167,11 +151,11 @@ export class ChatEngine {
     const id = sanitizeSessionId(idOrName);
     if (this.sessions.has(id)) {
       this.sessions.delete(id);
-      deleteSessionFromDisk(this.storageDir, id);
+      if (this.storage) this.storage.deleteSession(id);
 
       if (this.designatedDefaultSessionId === id) {
         this.designatedDefaultSessionId = undefined;
-        saveEngineSettings(this.storageDir, { defaultSessionId: undefined });
+        this.persistSettings();
       }
 
       if (this.activeSessionId === id) {
@@ -189,18 +173,14 @@ export class ChatEngine {
 
   public async executeTurn(params: ChatTurnParams): Promise<string> {
     const session = this.sessions.get(params.sessionId) || this.getActiveSession();
-    if (!session) {
-      throw new Error('No active chat session found. Create a session with "chat new <name>".');
-    }
+    if (!session) throw new Error('No active chat session found. Create a session with "chat new <name>".');
 
     session.addMessage('user', params.userPrompt, params.images);
-    saveSessionToDisk(this.storageDir, session);
+    this.persistSession(session);
 
     const providerId = session.providerId || 'ollama';
     const aiService = this.kernel.getService<AIService>(providerId);
-    if (!aiService) {
-      throw new Error(`AI Service provider '${providerId}' is not registered or active in HoneyKernel.`);
-    }
+    if (!aiService) throw new Error(`AI Service provider '${providerId}' is not registered or active in HoneyKernel.`);
 
     const systemMsg = session.messages.find((m) => m.role === 'system');
     const conversationTurns = session.messages
@@ -225,7 +205,7 @@ export class ChatEngine {
 
     const finalText = response.text || assistantResponse;
     session.addMessage('assistant', finalText);
-    saveSessionToDisk(this.storageDir, session);
+    this.persistSession(session);
 
     return finalText;
   }

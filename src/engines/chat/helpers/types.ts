@@ -52,3 +52,16 @@ export interface ChatTurnParams {
   turnOptions?: Partial<ChatSessionOptions>;
   onChunk?: (chunk: string) => void;
 }
+
+export interface ChatEngineSettings {
+  defaultSessionId?: string;
+  updatedAt?: number;
+}
+
+export interface IChatSessionStorage {
+  loadSessions(): any[] | Promise<any[]>;
+  saveSession(session: any): void | Promise<void>;
+  deleteSession(sessionId: string): void | Promise<void>;
+  loadSettings?(): ChatEngineSettings | Promise<ChatEngineSettings>;
+  saveSettings?(settings: ChatEngineSettings): void | Promise<void>;
+}
