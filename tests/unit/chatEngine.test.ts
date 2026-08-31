@@ -1,5 +1,6 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { ChatSession } from '../../src/engines/chat/helpers/ChatSession';
 import { ChatEngine } from '../../src/engines/chat/ChatEngine';
@@ -8,12 +9,11 @@ import { HoneyKernel } from '../../src/kernel/HoneyKernel';
 import { ServiceRegistry } from '../../src/kernel/ServiceRegistry';
 import { EventBus } from '../../src/kernel/EventBus';
 
-const testStorageDir = 'test-chat-sessions';
+const testStorageDir = path.join(os.tmpdir(), `jsaios-chat-test-${Date.now()}`);
 
 afterAll(() => {
-  const fullDir = path.join(process.cwd(), testStorageDir);
-  if (fs.existsSync(fullDir)) {
-    fs.rmSync(fullDir, { recursive: true, force: true });
+  if (fs.existsSync(testStorageDir)) {
+    fs.rmSync(testStorageDir, { recursive: true, force: true });
   }
 });
 
@@ -58,7 +58,7 @@ describe('JSAIOS Chat Engine & Session ID Sanitization', () => {
     const session = engine.createSession('My Copilot Session', 'copilot', 'gpt-4o', 'System directive text');
     expect(session.id).toBe('my_copilot_session');
 
-    const fileCreatedPath = path.join(process.cwd(), testStorageDir, `${session.id}.json`);
+    const fileCreatedPath = path.join(testStorageDir, `${session.id}.json`);
     expect(fs.existsSync(fileCreatedPath)).toBe(true);
 
     const raw = fs.readFileSync(fileCreatedPath, 'utf-8');

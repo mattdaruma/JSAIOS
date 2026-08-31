@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { CopilotService } from '../../src/services/ai/copilot/CopilotService';
 import { fetchCopilotModels } from '../../src/services/ai/copilot/helpers/fetchModels';
@@ -45,7 +46,7 @@ describe('GitHub Copilot AI Service Driver (Pure HTTP REST)', () => {
 
     kernel.registerService(copilot);
 
-    const testDir = `test-copilot-sessions-${Date.now()}`;
+    const testDir = path.join(os.tmpdir(), `jsaios-copilot-test-${Date.now()}`);
     const engine = new ChatEngine(kernel, testDir);
     const session = engine.createSession('Copilot Chat', 'copilot', 'default');
 
@@ -66,8 +67,7 @@ describe('GitHub Copilot AI Service Driver (Pure HTTP REST)', () => {
     expect(session.messages).toHaveLength(2); // user, assistant
     expect(session.messages[1].content).toBe('Hello from Copilot REST!');
 
-    // Cleanup temporary test directory
-    const fullDir = path.join(process.cwd(), testDir);
-    if (fs.existsSync(fullDir)) fs.rmSync(fullDir, { recursive: true, force: true });
+    // Cleanup temporary OS test directory
+    if (fs.existsSync(testDir)) fs.rmSync(testDir, { recursive: true, force: true });
   });
 });
