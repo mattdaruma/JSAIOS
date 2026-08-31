@@ -154,11 +154,11 @@ export async function handleChatCLI(
     const messages = active.messages;
     if (messages.length === 0) return `Chat session '${active.name}' has no messages log yet.`;
 
+    const formatMsg = (m: any) => `[${m.role.toUpperCase()}${m.sticky ? ' (STICKY)' : ''}] ${m.content}${m.images ? ` [${m.images.length} image(s)]` : ''}`;
+
     if (args.includes('--all') || args.includes('-a')) {
-      return [
-        `=== Full Chat History Log: '${active.name}' (${messages.length} messages) ===`,
-        ...messages.map((m) => `[${m.role.toUpperCase()}${m.sticky ? ' (STICKY)' : ''}] ${m.content}${m.images ? ` [${m.images.length} image(s)]` : ''}`)
-      ].join('\n');
+      const formattedMsgs = messages.map(formatMsg).join('\n\n');
+      return `=== Full Chat History Log: '${active.name}' (${messages.length} messages) ===\n\n${formattedMsgs}`;
     }
 
     let page = 1, limit = 10;
@@ -168,12 +168,10 @@ export async function handleChatCLI(
 
     const total = messages.length, totalPages = Math.max(1, Math.ceil(total / limit)), effPage = Math.min(page, totalPages);
     const paged = messages.slice(Math.max(0, total - effPage * limit), total - (effPage - 1) * limit);
+    const formattedMsgs = paged.map(formatMsg).join('\n\n');
+    const footer = totalPages > 1 ? `\n\n[Page ${effPage} of ${totalPages} | Use "chat history ${effPage + 1 <= totalPages ? effPage + 1 : totalPages}" for previous page | "chat history --all" for full log]` : '';
 
-    return [
-      `=== Chat History Log: '${active.name}' (Page ${effPage} of ${totalPages}, ${total} messages total) ===`,
-      ...paged.map((m) => `[${m.role.toUpperCase()}${m.sticky ? ' (STICKY)' : ''}] ${m.content}${m.images ? ` [${m.images.length} image(s)]` : ''}`),
-      totalPages > 1 ? `\n[Page ${effPage} of ${totalPages} | Use "chat history ${effPage + 1 <= totalPages ? effPage + 1 : totalPages}" for previous page | "chat history --all" for full log]` : ''
-    ].filter(Boolean).join('\n');
+    return `=== Chat History Log: '${active.name}' (Page ${effPage} of ${totalPages}, ${total} messages total) ===\n\n${formattedMsgs}${footer}`;
   }
 
   if (sub === 'send' || sub === 'ask') {
