@@ -78,4 +78,21 @@ describe('JSAIOS Chat Engine & Provider Agnosticism', () => {
     const res2 = await engine.executeTurn({ sessionId: secondarySession.id, userPrompt: 'Hi Secondary' });
     expect(res2).toBe('Secondary Provider Response');
   });
+
+  it('should render chat status metadata in handleChatCLI', async () => {
+    const { handleChatCLI } = await import('../../src/shell/terminal/commands/chatCLI');
+    const registry = new ServiceRegistry();
+    const eventBus = new EventBus();
+    const kernel = new HoneyKernel(registry, eventBus);
+
+    const statusNoSession = await handleChatCLI(kernel, ['status']);
+    expect(statusNoSession).toContain('=== JSAIOS ChatEngine Status ===');
+    expect(statusNoSession).toContain('Active Session : NONE');
+
+    await handleChatCLI(kernel, ['new', 'TestSession', '-p', 'copilot', '-m', 'gpt-4o']);
+    const statusWithSession = await handleChatCLI(kernel, ['status']);
+    expect(statusWithSession).toContain('Active Session : TestSession');
+    expect(statusWithSession).toContain('Provider       : copilot');
+    expect(statusWithSession).toContain('Model          : gpt-4o');
+  });
 });

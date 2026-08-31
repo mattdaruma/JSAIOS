@@ -16,6 +16,10 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   capabilities: ['chat', 'multi-turn', 'multimodal', 'sticky-context'],
   cliCommands: [
     {
+      command: 'chat status',
+      description: 'View active chat session status and engine metadata'
+    },
+    {
       command: 'chat new <name> [options]',
       description: 'Create a new interactive chat session',
       options: [
@@ -66,6 +70,33 @@ export async function handleChatCLI(
 ): Promise<string> {
   const engine = getOrCreateChatEngine(kernel);
   const sub = (args[0] || '').toLowerCase();
+
+  if (sub === 'status') {
+    const active = engine.getActiveSession();
+    const sessions = engine.listSessions();
+    if (!active) {
+      return [
+        '=== JSAIOS ChatEngine Status ===',
+        'Active Session : NONE (No active session created)',
+        `Total Sessions : ${sessions.length} session(s)`,
+        'Storage Engine : In-Memory (src/engines/chat/helpers/ChatSession.ts)',
+        'Hint           : Run "chat new <name>" to start a session.'
+      ].join('\n');
+    }
+
+    const systemMsg = active.messages.find((m) => m.role === 'system');
+
+    return [
+      '=== JSAIOS ChatEngine Status ===',
+      `Active Session : ${active.name} (ID: ${active.id})`,
+      `Provider       : ${active.providerId}`,
+      `Model          : ${active.model}`,
+      `Messages Count : ${active.messages.length} message(s) (${active.messages.filter((m) => m.role === 'user').length} user, ${active.messages.filter((m) => m.role === 'assistant').length} assistant)`,
+      `System Context : ${systemMsg ? `"${systemMsg.content}"` : 'None'}`,
+      `Total Sessions : ${sessions.length} active session(s)`,
+      'Storage Engine : In-Memory (Map<string, ChatSession>)'
+    ].join('\n');
+  }
 
   if (sub === 'new' || sub === 'create') {
     let name = 'default';
