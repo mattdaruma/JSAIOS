@@ -27,6 +27,11 @@
       "enabled": true
     }
   ],
+  "engines": {
+    "chat": {
+      "storageDir": "chat-sessions"
+    }
+  },
   "shell": {
     "type": "cli",
     "prompt": "jsaios@honeykernel:~$ "

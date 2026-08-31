@@ -151,3 +151,8 @@ config/*.secret.json
 .env
 .env.*
 !.env.example
+
+# Local Chat Session Data
+chat-sessions/
+chat-sessions
+

@@ -7,14 +7,32 @@ import { HoneyKernel } from '../../kernel/HoneyKernel';
 import { ChatSession } from './helpers/ChatSession';
 import type { ChatTurnParams } from './helpers/types';
 import type { AIService, TextGenerationRequest } from '../../services/ai/AIService';
+import { saveSessionToDisk, loadSessionsFromDisk, deleteSessionFromDisk } from './helpers/persistence';
 
 export class ChatEngine {
   private kernel: HoneyKernel;
+  private storageDir: string;
   private sessions: Map<string, ChatSession> = new Map();
   private activeSessionId?: string;
 
-  constructor(kernel: HoneyKernel) {
+  constructor(kernel: HoneyKernel, storageDir: string = 'chat-sessions') {
     this.kernel = kernel;
+    this.storageDir = storageDir;
+    this.initSessionsFromDisk();
+  }
+
+  public getStorageDir(): string {
+    return this.storageDir;
+  }
+
+  private initSessionsFromDisk(): void {
+    const loaded = loadSessionsFromDisk(this.storageDir);
+    for (const session of loaded) {
+      this.sessions.set(session.id, session);
+    }
+    if (this.sessions.size > 0) {
+      this.activeSessionId = Array.from(this.sessions.keys())[0];
+    }
   }
 
   public createSession(
@@ -27,6 +45,7 @@ export class ChatEngine {
     const session = new ChatSession(id, name, providerId, model, systemDirective);
     this.sessions.set(id, session);
     this.activeSessionId = id;
+    saveSessionToDisk(this.storageDir, session);
     return session;
   }
 
@@ -46,6 +65,18 @@ export class ChatEngine {
     return false;
   }
 
+  public deleteSession(id: string): boolean {
+    if (this.sessions.has(id)) {
+      this.sessions.delete(id);
+      deleteSessionFromDisk(this.storageDir, id);
+      if (this.activeSessionId === id) {
+        this.activeSessionId = Array.from(this.sessions.keys())[0];
+      }
+      return true;
+    }
+    return false;
+  }
+
   public listSessions(): ChatSession[] {
     return Array.from(this.sessions.values());
   }
@@ -58,6 +89,7 @@ export class ChatEngine {
 
     // Append user turn
     session.addMessage('user', params.userPrompt, params.images);
+    saveSessionToDisk(this.storageDir, session);
 
     // Resolve provider dynamically (e.g. 'ollama', 'copilot')
     const providerId = session.providerId || 'ollama';
@@ -89,6 +121,7 @@ export class ChatEngine {
 
     const finalText = response.text || assistantResponse;
     session.addMessage('assistant', finalText);
+    saveSessionToDisk(this.storageDir, session);
 
     return finalText;
   }
