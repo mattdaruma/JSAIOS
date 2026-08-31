@@ -83,9 +83,13 @@ export class ChatEngine {
     }
 
     this.activeSessionId = id;
-    this.designatedDefaultSessionId = id;
     this.persistSession(session);
-    this.persistSettings();
+
+    if (!this.designatedDefaultSessionId) {
+      this.designatedDefaultSessionId = id;
+      this.persistSettings();
+    }
+
     return session;
   }
 
