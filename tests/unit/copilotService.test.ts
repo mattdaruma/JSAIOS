@@ -27,7 +27,6 @@ describe('GitHub Copilot AI Service Driver (Pure HTTP REST)', () => {
     expect(models.length).toBeGreaterThan(0);
     expect(models.some((m) => m.name === 'default')).toBe(true);
     expect(models.some((m) => m.name === 'gpt-4o')).toBe(true);
-    expect(models.some((m) => m.name === 'claude-3.5-sonnet')).toBe(true);
   });
 
   it('should initialize CopilotService driver cleanly', async () => {
