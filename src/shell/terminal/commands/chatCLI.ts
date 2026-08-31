@@ -26,7 +26,6 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
         { flag: '--provider <name>, -p', description: 'Set AI provider (e.g. ollama, copilot)' },
         { flag: '--model <name>, -m', description: 'Set model for session (e.g. gpt-4o, llama3)' },
         { flag: '--temp <num>, -t', description: 'Set generation temperature (e.g. 0.7)' },
-        { flag: '--max-tokens <num>', description: 'Set max token response limit' },
         { flag: '--system "<prompt>", -s', description: 'Set sticky system directive prompt' }
       ]
     },
@@ -37,10 +36,10 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
         { flag: '--provider <name>, -p', description: 'Switch AI provider (e.g. ollama, copilot)' },
         { flag: '--model <name>, -m', description: 'Switch model for active session' },
         { flag: '--temp <num>, -t', description: 'Update generation temperature' },
-        { flag: '--system "<prompt>", -s', description: 'Update sticky system directive' },
         { flag: '--ollama-think [true|false]', description: 'Set Ollama reasoning mode (Ollama provider only)' }
       ]
     },
+    { command: 'chat default [session_id]', description: 'Set active or specified session as designated default on boot' },
     { command: 'chat list', description: 'List all active chat sessions' },
     { command: 'chat switch <session_id>', description: 'Switch active chat session' },
     { command: 'chat delete <session_id>', description: 'Delete a chat session from memory and disk' },
@@ -87,14 +86,15 @@ export async function handleChatCLI(
   if (sub === 'status') {
     const active = engine.getActiveSession();
     const sessions = engine.listSessions(), storageDir = engine.getStorageDir();
+    const defaultId = engine.getDesignatedDefaultSessionId();
 
     if (!active) {
       return [
         '=== JSAIOS ChatEngine Status ===',
-        'Active Session : NONE (No active session created)',
-        `Total Sessions : ${sessions.length} session(s)`,
-        `Storage Engine : Disk Persisted (${storageDir}/)`,
-        'Hint           : Run "chat new <name>" to start a session.'
+        'Active Session  : NONE (No active session created)',
+        `Default Session : ${defaultId || 'None'}`,
+        `Total Sessions  : ${sessions.length} session(s)`,
+        `Storage Engine  : Disk Persisted (${storageDir}/)`
       ].join('\n');
     }
 
@@ -103,15 +103,27 @@ export async function handleChatCLI(
 
     return [
       '=== JSAIOS ChatEngine Status ===',
-      `Active Session : ${active.name} (ID: ${active.id})`,
-      `Provider       : ${active.providerId}`,
-      `Model          : ${active.model}`,
-      `Messages Count : ${active.messages.length} message(s) (${active.messages.filter((m) => m.role === 'user').length} user, ${active.messages.filter((m) => m.role === 'assistant').length} assistant)`,
-      `System Context : ${sys ? `"${sys.content}"` : 'None'}`,
+      `Active Session  : ${active.name} (ID: ${active.id})`,
+      `Default Session : ${defaultId ? `${defaultId}${defaultId === active.id ? ' (Active)' : ''}` : 'None'}`,
+      `Provider        : ${active.providerId}`,
+      `Model           : ${active.model}`,
+      `Messages Count  : ${active.messages.length} message(s) (${active.messages.filter((m) => m.role === 'user').length} user, ${active.messages.filter((m) => m.role === 'assistant').length} assistant)`,
+      `System Context  : ${sys ? `"${sys.content}"` : 'None'}`,
       `Session Options : ${optsStr || 'Default Defaults'}`,
-      `Total Sessions : ${sessions.length} active session(s)`,
-      `Storage Engine : Disk Persisted (${storageDir}/)`
+      `Total Sessions  : ${sessions.length} active session(s)`,
+      `Storage Engine  : Disk Persisted (${storageDir}/)`
     ].join('\n');
+  }
+
+  if (sub === 'default' || sub === 'set-default') {
+    const target = args[1] || engine.getActiveSession()?.id;
+    if (!target) return 'No active session or session ID provided. Usage: chat default [session_id]';
+
+    const success = engine.setDefaultSession(target);
+    if (!success) return `Session '${target}' not found. Type "chat list" to view sessions.`;
+
+    const currentDefault = engine.getDesignatedDefaultSessionId();
+    return `Set designated boot session to '${currentDefault}' (persisted to ${engine.getStorageDir()}/_settings.json).`;
   }
 
   if (sub === 'new' || sub === 'create') {
@@ -139,9 +151,10 @@ export async function handleChatCLI(
     const sessions = engine.listSessions();
     if (sessions.length === 0) return 'No active chat sessions found. Type "chat new <name>" to create one.';
     const active = engine.getActiveSession();
+    const defaultId = engine.getDesignatedDefaultSessionId();
     return [
       'Active JSAIOS Chat Sessions:',
-      ...sessions.map((s) => ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (Provider: ${s.providerId}, Model: ${s.model}, Turns: ${s.messages.length})`)
+      ...sessions.map((s) => ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (Provider: ${s.providerId}, Model: ${s.model}, Turns: ${s.messages.length})${s.id === defaultId ? ' [DEFAULT]' : ''}`)
     ].join('\n');
   }
 

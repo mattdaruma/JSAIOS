@@ -44,7 +44,7 @@ export function loadSessionsFromDisk(storageDir: string): ChatSession[] {
   const sessions: ChatSession[] = [];
   try {
     const dir = ensureStorageDirectory(storageDir);
-    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
+    const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
 
     for (const file of files) {
       try {

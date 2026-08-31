@@ -8,6 +8,7 @@ import { ChatSession } from './helpers/ChatSession';
 import type { ChatTurnParams, ChatSessionOptions } from './helpers/types';
 import type { AIService } from '../../services/ai/AIService';
 import { saveSessionToDisk, loadSessionsFromDisk, deleteSessionFromDisk } from './helpers/persistence';
+import { loadEngineSettings, saveEngineSettings } from './helpers/settingsPersistence';
 import { sanitizeSessionId } from './helpers/sanitizeId';
 import { mergeChatOptions, buildTextGenRequest } from './helpers/chatOptions';
 
@@ -16,6 +17,7 @@ export class ChatEngine {
   private storageDir: string;
   private sessions: Map<string, ChatSession> = new Map();
   private activeSessionId?: string;
+  private designatedDefaultSessionId?: string;
 
   constructor(kernel: HoneyKernel, storageDir: string = 'chat-sessions') {
     this.kernel = kernel;
@@ -27,6 +29,10 @@ export class ChatEngine {
     return this.storageDir;
   }
 
+  public getDesignatedDefaultSessionId(): string | undefined {
+    return this.designatedDefaultSessionId;
+  }
+
   private initSessionsFromDisk(): void {
     const loaded = loadSessionsFromDisk(this.storageDir);
     loaded.sort((a, b) => b.updatedAt - a.updatedAt);
@@ -35,9 +41,36 @@ export class ChatEngine {
       this.sessions.set(session.id, session);
     }
 
-    if (loaded.length > 0) {
+    const settings = loadEngineSettings(this.storageDir);
+    if (settings.defaultSessionId && this.sessions.has(settings.defaultSessionId)) {
+      this.designatedDefaultSessionId = settings.defaultSessionId;
+      this.activeSessionId = settings.defaultSessionId;
+    } else if (loaded.length > 0) {
       this.activeSessionId = loaded[0].id;
     }
+  }
+
+  public setDefaultSession(idOrName?: string): boolean {
+    const target = idOrName || this.activeSessionId;
+    if (!target) return false;
+
+    const id = sanitizeSessionId(target);
+    if (this.sessions.has(id)) {
+      this.designatedDefaultSessionId = id;
+      this.activeSessionId = id;
+      saveEngineSettings(this.storageDir, { defaultSessionId: id });
+      return true;
+    }
+
+    const match = Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === target.toLowerCase());
+    if (match) {
+      this.designatedDefaultSessionId = match.id;
+      this.activeSessionId = match.id;
+      saveEngineSettings(this.storageDir, { defaultSessionId: match.id });
+      return true;
+    }
+
+    return false;
   }
 
   public createSession(
@@ -63,6 +96,11 @@ export class ChatEngine {
 
     this.activeSessionId = id;
     saveSessionToDisk(this.storageDir, session);
+
+    if (!this.designatedDefaultSessionId) {
+      this.setDefaultSession(id);
+    }
+
     return session;
   }
 
@@ -92,8 +130,12 @@ export class ChatEngine {
 
   public getActiveSession(): ChatSession | null {
     if (!this.activeSessionId && this.sessions.size > 0) {
-      const sorted = Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
-      this.activeSessionId = sorted[0].id;
+      if (this.designatedDefaultSessionId && this.sessions.has(this.designatedDefaultSessionId)) {
+        this.activeSessionId = this.designatedDefaultSessionId;
+      } else {
+        const sorted = Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
+        this.activeSessionId = sorted[0].id;
+      }
     }
     if (!this.activeSessionId) return null;
     return this.sessions.get(this.activeSessionId) || null;
@@ -126,6 +168,12 @@ export class ChatEngine {
     if (this.sessions.has(id)) {
       this.sessions.delete(id);
       deleteSessionFromDisk(this.storageDir, id);
+
+      if (this.designatedDefaultSessionId === id) {
+        this.designatedDefaultSessionId = undefined;
+        saveEngineSettings(this.storageDir, { defaultSessionId: undefined });
+      }
+
       if (this.activeSessionId === id) {
         const remaining = Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
         this.activeSessionId = remaining.length > 0 ? remaining[0].id : undefined;
@@ -145,18 +193,15 @@ export class ChatEngine {
       throw new Error('No active chat session found. Create a session with "chat new <name>".');
     }
 
-    // Append user turn
     session.addMessage('user', params.userPrompt, params.images);
     saveSessionToDisk(this.storageDir, session);
 
-    // Resolve provider dynamically (e.g. 'ollama', 'copilot')
     const providerId = session.providerId || 'ollama';
     const aiService = this.kernel.getService<AIService>(providerId);
     if (!aiService) {
       throw new Error(`AI Service provider '${providerId}' is not registered or active in HoneyKernel.`);
     }
 
-    // Build prompt combining sticky system directives, previous turns, and prompt
     const systemMsg = session.messages.find((m) => m.role === 'system');
     const conversationTurns = session.messages
       .filter((m) => m.role !== 'system')

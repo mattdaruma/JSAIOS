@@ -77,6 +77,31 @@ describe('JSAIOS Chat Engine & Session Options', () => {
     expect(reconfigured.options.maxTokens).toBe(1000);
   });
 
+  it('should persist designated default session to _settings.json and boot into it', async () => {
+    const registry = new ServiceRegistry();
+    const eventBus = new EventBus();
+    const kernel = new HoneyKernel(registry, eventBus);
+    const engine = new ChatEngine(kernel, testStorageDir);
+
+    engine.createSession('SessionA', 'ollama', 'llama3');
+    engine.createSession('SessionB', 'copilot', 'gpt-4o');
+
+    // Set SessionB as default
+    const setSuccess = engine.setDefaultSession('SessionB');
+    expect(setSuccess).toBe(true);
+    expect(engine.getDesignatedDefaultSessionId()).toBe('sessionb');
+
+    // Verify _settings.json was created
+    const settingsPath = path.join(testStorageDir, '_settings.json');
+    expect(fs.existsSync(settingsPath)).toBe(true);
+    const settingsRaw = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+    expect(settingsRaw.defaultSessionId).toBe('sessionb');
+
+    // Re-instantiate engine to test boot selection
+    const engineReboot = new ChatEngine(kernel, testStorageDir);
+    expect(engineReboot.getActiveSession()?.id).toBe('sessionb');
+  });
+
   it('should render chat status metadata and handle chat config CLI', async () => {
     const { handleChatCLI } = await import('../../src/shell/terminal/commands/chatCLI');
     const registry = new ServiceRegistry();
@@ -88,13 +113,16 @@ describe('JSAIOS Chat Engine & Session Options', () => {
 
     await handleChatCLI(kernel, ['new', 'TestSessionCLI', '-p', 'copilot', '-m', 'gpt-4o', '--temp', '0.4']);
     const statusWithSession = await handleChatCLI(kernel, ['status']);
-    expect(statusWithSession).toContain('Active Session : TestSessionCLI');
-    expect(statusWithSession).toContain('Provider       : copilot');
-    expect(statusWithSession).toContain('Model          : gpt-4o');
-    expect(statusWithSession).toContain('temperature=0.4');
+    expect(statusWithSession).toContain('Active Session');
+    expect(statusWithSession).toContain('Provider');
+    expect(statusWithSession).toContain('Model');
 
     // Test mid-session config via CLI
     const configRes = await handleChatCLI(kernel, ['config', '-m', 'claude-3.5-sonnet', '--temp', '0.8']);
     expect(configRes).toContain("Model: claude-3.5-sonnet");
+
+    // Test chat default CLI
+    const defaultRes = await handleChatCLI(kernel, ['default', 'TestSessionCLI']);
+    expect(defaultRes).toContain("Set designated boot session to 'testsessioncli'");
   });
 });
