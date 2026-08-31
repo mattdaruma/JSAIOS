@@ -5,10 +5,11 @@
 
 import { HoneyKernel } from '../../kernel/HoneyKernel';
 import { ChatSession } from './helpers/ChatSession';
-import type { ChatTurnParams } from './helpers/types';
-import type { AIService, TextGenerationRequest } from '../../services/ai/AIService';
+import type { ChatTurnParams, ChatSessionOptions } from './helpers/types';
+import type { AIService } from '../../services/ai/AIService';
 import { saveSessionToDisk, loadSessionsFromDisk, deleteSessionFromDisk } from './helpers/persistence';
 import { sanitizeSessionId } from './helpers/sanitizeId';
+import { mergeChatOptions, buildTextGenRequest } from './helpers/chatOptions';
 
 export class ChatEngine {
   private kernel: HoneyKernel;
@@ -28,7 +29,6 @@ export class ChatEngine {
 
   private initSessionsFromDisk(): void {
     const loaded = loadSessionsFromDisk(this.storageDir);
-    // Sort sessions by most recently updated timestamp descending
     loaded.sort((a, b) => b.updatedAt - a.updatedAt);
 
     for (const session of loaded) {
@@ -44,7 +44,8 @@ export class ChatEngine {
     name: string = 'default',
     providerId: string = 'ollama',
     model: string = 'llama3',
-    systemDirective?: string
+    systemDirective?: string,
+    initialOptions?: Partial<ChatSessionOptions>
   ): ChatSession {
     const id = sanitizeSessionId(name);
     let session = this.sessions.get(id);
@@ -53,13 +54,38 @@ export class ChatEngine {
       session.providerId = providerId;
       session.model = model;
       if (systemDirective) session.setSystemDirective(systemDirective);
+      if (initialOptions) session.updateOptions(initialOptions);
       session.updatedAt = Date.now();
     } else {
-      session = new ChatSession(id, name, providerId, model, systemDirective);
+      session = new ChatSession(id, name, providerId, model, systemDirective, initialOptions);
       this.sessions.set(id, session);
     }
 
     this.activeSessionId = id;
+    saveSessionToDisk(this.storageDir, session);
+    return session;
+  }
+
+  public updateSessionConfig(
+    sessionId: string,
+    updates: {
+      providerId?: string;
+      model?: string;
+      systemDirective?: string;
+      options?: Partial<ChatSessionOptions>;
+    }
+  ): ChatSession {
+    const session = this.sessions.get(sessionId) || this.getActiveSession();
+    if (!session) {
+      throw new Error(`Session '${sessionId}' not found.`);
+    }
+
+    if (updates.providerId) session.providerId = updates.providerId;
+    if (updates.model) session.model = updates.model;
+    if (updates.systemDirective) session.setSystemDirective(updates.systemDirective);
+    if (updates.options) session.updateOptions(updates.options);
+
+    session.updatedAt = Date.now();
     saveSessionToDisk(this.storageDir, session);
     return session;
   }
@@ -137,13 +163,14 @@ export class ChatEngine {
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
       .join('\n\n');
 
-    const req: TextGenerationRequest = {
-      model: session.model,
-      prompt: conversationTurns,
-      systemDirective: systemMsg?.content,
-      images: params.images,
-      stream: true
-    };
+    const mergedOptions = mergeChatOptions(session.options, params.turnOptions);
+    const req = buildTextGenRequest(
+      session.model,
+      conversationTurns,
+      systemMsg?.content,
+      mergedOptions,
+      params.images
+    );
 
     let assistantResponse = '';
     const response = await aiService.generateText(req, (chunk) => {

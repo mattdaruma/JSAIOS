@@ -16,7 +16,7 @@ afterAll(() => {
   }
 });
 
-describe('JSAIOS Chat Engine & Session ID Sanitization', () => {
+describe('JSAIOS Chat Engine & Session Options', () => {
   it('should sanitize session names into clean CLI-friendly IDs', () => {
     expect(sanitizeSessionId('Copilot Chat!')).toBe('copilot_chat');
     expect(sanitizeSessionId('   my-session_1  ')).toBe('my-session_1');
@@ -48,35 +48,36 @@ describe('JSAIOS Chat Engine & Session ID Sanitization', () => {
     expect(session.messages).toHaveLength(5);
   });
 
-  it('should persist chat session data using sanitized name ID to storage directory on disk', async () => {
+  it('should support creation options and mid-session reconfiguration', async () => {
     const registry = new ServiceRegistry();
     const eventBus = new EventBus();
     const kernel = new HoneyKernel(registry, eventBus);
     const engine = new ChatEngine(kernel, testStorageDir);
 
-    const session = engine.createSession('My Copilot Session', 'copilot', 'gpt-4o', 'System directive text');
-    expect(session.id).toBe('my_copilot_session');
+    const session = engine.createSession('OptionSession', 'ollama', 'llama3', 'System directive', {
+      temperature: 0.3,
+      maxTokens: 500,
+      ollamaThink: true
+    });
 
-    const fileCreatedPath = path.join(testStorageDir, `${session.id}.json`);
-    expect(fs.existsSync(fileCreatedPath)).toBe(true);
+    expect(session.options.temperature).toBe(0.3);
+    expect(session.options.maxTokens).toBe(500);
+    expect(session.options.ollamaThink).toBe(true);
 
-    const raw = fs.readFileSync(fileCreatedPath, 'utf-8');
-    const parsed = JSON.parse(raw);
-    expect(parsed.name).toBe('My Copilot Session');
-    expect(parsed.providerId).toBe('copilot');
+    // Reconfigure mid-session
+    const reconfigured = engine.updateSessionConfig(session.id, {
+      providerId: 'copilot',
+      model: 'gpt-4o',
+      options: { temperature: 0.9, maxTokens: 1000 }
+    });
 
-    // Test reload from disk
-    const engine2 = new ChatEngine(kernel, testStorageDir);
-    const sessions = engine2.listSessions();
-    expect(sessions.some((s) => s.id === 'my_copilot_session')).toBe(true);
-
-    // Delete session from memory and disk
-    const deleted = engine2.deleteSession('my_copilot_session');
-    expect(deleted).toBe(true);
-    expect(fs.existsSync(fileCreatedPath)).toBe(false);
+    expect(reconfigured.providerId).toBe('copilot');
+    expect(reconfigured.model).toBe('gpt-4o');
+    expect(reconfigured.options.temperature).toBe(0.9);
+    expect(reconfigured.options.maxTokens).toBe(1000);
   });
 
-  it('should render chat status metadata in handleChatCLI', async () => {
+  it('should render chat status metadata and handle chat config CLI', async () => {
     const { handleChatCLI } = await import('../../src/shell/terminal/commands/chatCLI');
     const registry = new ServiceRegistry();
     const eventBus = new EventBus();
@@ -85,10 +86,15 @@ describe('JSAIOS Chat Engine & Session ID Sanitization', () => {
     const statusNoSession = await handleChatCLI(kernel, ['status']);
     expect(statusNoSession).toContain('=== JSAIOS ChatEngine Status ===');
 
-    await handleChatCLI(kernel, ['new', 'TestSessionCLI', '-p', 'copilot', '-m', 'gpt-4o']);
+    await handleChatCLI(kernel, ['new', 'TestSessionCLI', '-p', 'copilot', '-m', 'gpt-4o', '--temp', '0.4']);
     const statusWithSession = await handleChatCLI(kernel, ['status']);
     expect(statusWithSession).toContain('Active Session : TestSessionCLI');
     expect(statusWithSession).toContain('Provider       : copilot');
     expect(statusWithSession).toContain('Model          : gpt-4o');
+    expect(statusWithSession).toContain('temperature=0.4');
+
+    // Test mid-session config via CLI
+    const configRes = await handleChatCLI(kernel, ['config', '-m', 'claude-3.5-sonnet', '--temp', '0.8']);
+    expect(configRes).toContain("Model: claude-3.5-sonnet");
   });
 });

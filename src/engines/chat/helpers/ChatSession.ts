@@ -54,6 +54,14 @@ export class ChatSession {
     this.updatedAt = Date.now();
   }
 
+  public updateOptions(newOptions: Partial<ChatSessionOptions>): void {
+    this.options = {
+      ...this.options,
+      ...newOptions
+    };
+    this.updatedAt = Date.now();
+  }
+
   public addMessage(role: ChatRole, content: string, images?: string[], sticky: boolean = false): ChatMessage {
     const msg: ChatMessage = {
       id: `${role}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,

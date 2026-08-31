@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { ChatEngine } from '../../../engines/chat/ChatEngine';
 import { loadLocalImageBase64 } from '../../../services/ai/ollama/helpers/loadImage';
+import { parseChatCLIArgs } from '../../../engines/chat/helpers/chatOptions';
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
 import type { ServiceDescriptor } from '../../../kernel/types';
 
@@ -17,14 +18,42 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   status: 'running',
   capabilities: ['chat', 'multi-turn', 'multimodal', 'sticky-context'],
   cliCommands: [
-    { command: 'chat status', description: 'View active chat session status and persistence metadata' },
-    { command: 'chat new <name> [options]', description: 'Create a new interactive chat session' },
+    { command: 'chat status', description: 'View active chat session status, options, and persistence metadata' },
+    {
+      command: 'chat new <name> [options]',
+      description: 'Create a new interactive chat session with initial settings',
+      options: [
+        { flag: '--provider <name>, -p', description: 'Set AI provider (e.g. ollama, copilot)' },
+        { flag: '--model <name>, -m', description: 'Set model for session (e.g. gpt-4o, llama3)' },
+        { flag: '--temp <num>, -t', description: 'Set generation temperature (e.g. 0.7)' },
+        { flag: '--max-tokens <num>', description: 'Set max token response limit' },
+        { flag: '--system "<prompt>", -s', description: 'Set sticky system directive prompt' }
+      ]
+    },
+    {
+      command: 'chat config [options]',
+      description: 'Alter active session settings (provider, model, temperature, etc.) mid-session',
+      options: [
+        { flag: '--provider <name>, -p', description: 'Switch AI provider (e.g. ollama, copilot)' },
+        { flag: '--model <name>, -m', description: 'Switch model for active session' },
+        { flag: '--temp <num>, -t', description: 'Update generation temperature' },
+        { flag: '--system "<prompt>", -s', description: 'Update sticky system directive' },
+        { flag: '--ollama-think [true|false]', description: 'Set Ollama reasoning mode (Ollama provider only)' }
+      ]
+    },
     { command: 'chat list', description: 'List all active chat sessions' },
     { command: 'chat switch <session_id>', description: 'Switch active chat session' },
     { command: 'chat delete <session_id>', description: 'Delete a chat session from memory and disk' },
     { command: 'chat system "<prompt>"', description: 'Set or update sticky system directive for active session' },
-    { command: 'chat send [options] <text>', description: 'Send a message turn to active session' },
-    { command: 'chat history [page] [limit] [--all]', description: 'View paginated turn log for active session (default: page 1, 10 messages)' }
+    {
+      command: 'chat send [options] <text>',
+      description: 'Send a message turn to active session (supports single-turn option overrides)',
+      options: [
+        { flag: '--temp <num>, -t', description: 'One-off temperature override for prompt' },
+        { flag: '--image <path>, -i', description: 'Attach local image for multimodal model' }
+      ]
+    },
+    { command: 'chat history [page] [limit] [--all]', description: 'View paginated turn log for active session' }
   ]
 };
 
@@ -40,7 +69,7 @@ export function getOrCreateChatEngine(kernel: HoneyKernel): ChatEngine {
         if (parsed.engines?.chat?.storageDir) storageDir = parsed.engines.chat.storageDir;
       }
     } catch {
-      // Fallback on read failure
+      // Fallback
     }
     globalChatEngine = new ChatEngine(kernel, storageDir);
   }
@@ -57,8 +86,7 @@ export async function handleChatCLI(
 
   if (sub === 'status') {
     const active = engine.getActiveSession();
-    const sessions = engine.listSessions();
-    const storageDir = engine.getStorageDir();
+    const sessions = engine.listSessions(), storageDir = engine.getStorageDir();
 
     if (!active) {
       return [
@@ -71,6 +99,8 @@ export async function handleChatCLI(
     }
 
     const sys = active.messages.find((m) => m.role === 'system');
+    const optsStr = Object.entries(active.options).map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(',') : v}`).join(', ');
+
     return [
       '=== JSAIOS ChatEngine Status ===',
       `Active Session : ${active.name} (ID: ${active.id})`,
@@ -78,26 +108,31 @@ export async function handleChatCLI(
       `Model          : ${active.model}`,
       `Messages Count : ${active.messages.length} message(s) (${active.messages.filter((m) => m.role === 'user').length} user, ${active.messages.filter((m) => m.role === 'assistant').length} assistant)`,
       `System Context : ${sys ? `"${sys.content}"` : 'None'}`,
+      `Session Options: ${optsStr || 'Default Defaults'}`,
       `Total Sessions : ${sessions.length} active session(s)`,
       `Storage Engine : Disk Persisted (${storageDir}/)`
     ].join('\n');
   }
 
   if (sub === 'new' || sub === 'create') {
-    let name = 'default', provider = 'ollama', model = 'llama3', systemDirective: string | undefined = undefined;
-    const rawTokens = args.slice(1), nameParts: string[] = [];
-
-    for (let i = 0; i < rawTokens.length; i++) {
-      const token = rawTokens[i];
-      if (token === '--provider' || token === '-p') provider = rawTokens[++i] || provider;
-      else if (token === '--model' || token === '-m') model = rawTokens[++i] || model;
-      else if (token === '--system' || token === '-s') systemDirective = rawTokens[++i];
-      else nameParts.push(token);
-    }
-    if (nameParts.length > 0) name = nameParts.join(' ');
-
-    const session = engine.createSession(name, provider, model, systemDirective);
+    const parsed = parseChatCLIArgs(args.slice(1));
+    const name = parsed.cleanTextParts.join(' ').trim() || 'default';
+    const session = engine.createSession(name, parsed.providerId || 'ollama', parsed.model || 'llama3', parsed.systemDirective, parsed.options);
     return `Created new chat session '${session.name}' (ID: ${session.id}) using provider '${session.providerId}' (Model: ${session.model}).`;
+  }
+
+  if (sub === 'config' || sub === 'set') {
+    const active = engine.getActiveSession();
+    if (!active) return 'No active chat session found. Create one with "chat new <name>".';
+
+    const parsed = parseChatCLIArgs(args.slice(1), active.providerId);
+    const updated = engine.updateSessionConfig(active.id, {
+      providerId: parsed.providerId,
+      model: parsed.model,
+      systemDirective: parsed.systemDirective,
+      options: parsed.options
+    });
+    return `Updated settings for active chat session '${updated.name}' (Provider: ${updated.providerId}, Model: ${updated.model}).`;
   }
 
   if (sub === 'list' || sub === 'ls') {
@@ -136,7 +171,6 @@ export async function handleChatCLI(
   if (sub === 'history' || sub === 'log') {
     const active = engine.getActiveSession();
     if (!active) return 'No active chat session. Create one with "chat new <name>".';
-
     const messages = active.messages;
     if (messages.length === 0) return `Chat session '${active.name}' has no messages log yet.`;
 
@@ -152,23 +186,13 @@ export async function handleChatCLI(
     if (nums.length >= 1) page = Math.floor(nums[0]);
     if (nums.length >= 2) limit = Math.floor(nums[1]);
 
-    const total = messages.length;
-    const totalPages = Math.max(1, Math.ceil(total / limit));
-    const effPage = Math.min(page, totalPages);
-
-    const startIdx = Math.max(0, total - effPage * limit);
-    const endIdx = total - (effPage - 1) * limit;
-    const paged = messages.slice(startIdx, endIdx);
-
-    const header = `=== Chat History Log: '${active.name}' (Page ${effPage} of ${totalPages}, ${total} messages total) ===`;
-    const navFooter = totalPages > 1
-      ? `\n[Page ${effPage} of ${totalPages} | Use "chat history ${effPage + 1 <= totalPages ? effPage + 1 : totalPages}" for previous page | "chat history --all" for full log]`
-      : '';
+    const total = messages.length, totalPages = Math.max(1, Math.ceil(total / limit)), effPage = Math.min(page, totalPages);
+    const paged = messages.slice(Math.max(0, total - effPage * limit), total - (effPage - 1) * limit);
 
     return [
-      header,
+      `=== Chat History Log: '${active.name}' (Page ${effPage} of ${totalPages}, ${total} messages total) ===`,
       ...paged.map((m) => `[${m.role.toUpperCase()}${m.sticky ? ' (STICKY)' : ''}] ${m.content}${m.images ? ` [${m.images.length} image(s)]` : ''}`),
-      navFooter
+      totalPages > 1 ? `\n[Page ${effPage} of ${totalPages} | Use "chat history ${effPage + 1 <= totalPages ? effPage + 1 : totalPages}" for previous page | "chat history --all" for full log]` : ''
     ].filter(Boolean).join('\n');
   }
 
@@ -176,11 +200,13 @@ export async function handleChatCLI(
     let active = engine.getActiveSession();
     if (!active) active = engine.createSession('default', 'ollama', 'llama3');
 
-    const rawTokens = args.slice(1), images: string[] = [], promptParts: string[] = [];
-    for (let i = 0; i < rawTokens.length; i++) {
-      const token = rawTokens[i];
+    const parsed = parseChatCLIArgs(args.slice(1), active.providerId);
+    const images: string[] = [], promptParts: string[] = [];
+
+    for (let i = 0; i < parsed.cleanTextParts.length; i++) {
+      const token = parsed.cleanTextParts[i];
       if (token === '--image' || token === '-i') {
-        const imgPath = rawTokens[++i];
+        const imgPath = parsed.cleanTextParts[++i];
         if (imgPath) {
           try { images.push(loadLocalImageBase64(imgPath)); }
           catch (err: any) { return `Error loading image: ${err.message || err}`; }
@@ -196,6 +222,7 @@ export async function handleChatCLI(
         sessionId: active.id,
         userPrompt,
         images: images.length > 0 ? images : undefined,
+        turnOptions: parsed.options,
         onChunk: onStreamChunk
       });
     } catch (err: any) {

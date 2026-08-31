@@ -29,6 +29,7 @@ export function saveSessionToDisk(storageDir: string, session: ChatSession): voi
       providerId: session.providerId,
       model: session.model,
       messages: session.messages,
+      options: session.options,
       createdAt: session.createdAt,
       updatedAt: session.updatedAt
     };
@@ -57,6 +58,7 @@ export function loadSessionsFromDisk(storageDir: string): ChatSession[] {
             parsed.model || 'llama3'
           );
           session.messages = parsed.messages;
+          if (parsed.options) session.options = parsed.options;
           if (parsed.createdAt) session.createdAt = parsed.createdAt;
           if (parsed.updatedAt) session.updatedAt = parsed.updatedAt;
           sessions.push(session);

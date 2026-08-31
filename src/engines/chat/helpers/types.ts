@@ -16,6 +16,21 @@ export interface ChatMessage {
 export interface ChatSessionOptions {
   maxTurns?: number;
   maxChars?: number;
+  // OpenAI Standard Options
+  temperature?: number;
+  topP?: number;
+  maxTokens?: number;
+  presencePenalty?: number;
+  frequencyPenalty?: number;
+  stop?: string[];
+  seed?: number;
+  // Ollama-Specific Options
+  ollamaThink?: boolean;
+  ollamaNumCtx?: number;
+  ollamaKeepAlive?: string;
+  ollamaRepeatPenalty?: number;
+  ollamaTopK?: number;
+  ollamaMinP?: number;
 }
 
 export interface ChatSessionData {
@@ -34,5 +49,6 @@ export interface ChatTurnParams {
   sessionId: string;
   userPrompt: string;
   images?: string[];
+  turnOptions?: Partial<ChatSessionOptions>;
   onChunk?: (chunk: string) => void;
 }
