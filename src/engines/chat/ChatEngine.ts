@@ -28,11 +28,15 @@ export class ChatEngine {
 
   private initSessionsFromDisk(): void {
     const loaded = loadSessionsFromDisk(this.storageDir);
+    // Sort sessions by most recently updated timestamp descending
+    loaded.sort((a, b) => b.updatedAt - a.updatedAt);
+
     for (const session of loaded) {
       this.sessions.set(session.id, session);
     }
-    if (this.sessions.size > 0) {
-      this.activeSessionId = Array.from(this.sessions.keys())[0];
+
+    if (loaded.length > 0) {
+      this.activeSessionId = loaded[0].id;
     }
   }
 
@@ -49,6 +53,7 @@ export class ChatEngine {
       session.providerId = providerId;
       session.model = model;
       if (systemDirective) session.setSystemDirective(systemDirective);
+      session.updatedAt = Date.now();
     } else {
       session = new ChatSession(id, name, providerId, model, systemDirective);
       this.sessions.set(id, session);
@@ -61,7 +66,8 @@ export class ChatEngine {
 
   public getActiveSession(): ChatSession | null {
     if (!this.activeSessionId && this.sessions.size > 0) {
-      this.activeSessionId = Array.from(this.sessions.keys())[0];
+      const sorted = Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
+      this.activeSessionId = sorted[0].id;
     }
     if (!this.activeSessionId) return null;
     return this.sessions.get(this.activeSessionId) || null;
@@ -71,11 +77,19 @@ export class ChatEngine {
     const id = sanitizeSessionId(idOrName);
     if (this.sessions.has(id)) {
       this.activeSessionId = id;
+      const s = this.sessions.get(id);
+      if (s) {
+        s.updatedAt = Date.now();
+        saveSessionToDisk(this.storageDir, s);
+      }
       return true;
     }
+
     const match = Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === idOrName.toLowerCase());
     if (match) {
       this.activeSessionId = match.id;
+      match.updatedAt = Date.now();
+      saveSessionToDisk(this.storageDir, match);
       return true;
     }
     return false;
@@ -87,7 +101,8 @@ export class ChatEngine {
       this.sessions.delete(id);
       deleteSessionFromDisk(this.storageDir, id);
       if (this.activeSessionId === id) {
-        this.activeSessionId = Array.from(this.sessions.keys())[0];
+        const remaining = Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
+        this.activeSessionId = remaining.length > 0 ? remaining[0].id : undefined;
       }
       return true;
     }
@@ -95,7 +110,7 @@ export class ChatEngine {
   }
 
   public listSessions(): ChatSession[] {
-    return Array.from(this.sessions.values());
+    return Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
   }
 
   public async executeTurn(params: ChatTurnParams): Promise<string> {
