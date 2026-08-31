@@ -1,0 +1,27 @@
+{
+  "system": {
+    "name": "JSAIOS",
+    "version": "1.0.0",
+    "environment": "cli"
+  },
+  "services": [
+    {
+      "id": "ollama",
+      "type": "ai",
+      "driver": "OllamaService",
+      "endpoint": "http://localhost:11434",
+      "enabled": true
+    },
+    {
+      "id": "comfyui",
+      "type": "ai",
+      "driver": "ComfyUIService",
+      "endpoint": "http://localhost:8188",
+      "enabled": true
+    }
+  ],
+  "shell": {
+    "type": "cli",
+    "prompt": "jsaios@honeykernel:~$ "
+  }
+}

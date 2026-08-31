@@ -1,0 +1,17 @@
+{
+  "name": "jsaios",
+  "version": "1.0.0",
+  "description": "JavaScript AI Operating System (HoneyKernel Core)",
+  "type": "module",
+  "main": "src/bootloaders/cliBootloader.ts",
+  "scripts": {
+    "start": "tsx src/bootloaders/cliBootloader.ts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  }
+}
