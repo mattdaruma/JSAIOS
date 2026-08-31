@@ -8,6 +8,7 @@ import { ChatSession } from './helpers/ChatSession';
 import type { ChatTurnParams } from './helpers/types';
 import type { AIService, TextGenerationRequest } from '../../services/ai/AIService';
 import { saveSessionToDisk, loadSessionsFromDisk, deleteSessionFromDisk } from './helpers/persistence';
+import { sanitizeSessionId } from './helpers/sanitizeId';
 
 export class ChatEngine {
   private kernel: HoneyKernel;
@@ -41,9 +42,18 @@ export class ChatEngine {
     model: string = 'llama3',
     systemDirective?: string
   ): ChatSession {
-    const id = `session_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    const session = new ChatSession(id, name, providerId, model, systemDirective);
-    this.sessions.set(id, session);
+    const id = sanitizeSessionId(name);
+    let session = this.sessions.get(id);
+
+    if (session) {
+      session.providerId = providerId;
+      session.model = model;
+      if (systemDirective) session.setSystemDirective(systemDirective);
+    } else {
+      session = new ChatSession(id, name, providerId, model, systemDirective);
+      this.sessions.set(id, session);
+    }
+
     this.activeSessionId = id;
     saveSessionToDisk(this.storageDir, session);
     return session;
@@ -57,15 +67,22 @@ export class ChatEngine {
     return this.sessions.get(this.activeSessionId) || null;
   }
 
-  public setActiveSession(id: string): boolean {
+  public setActiveSession(idOrName: string): boolean {
+    const id = sanitizeSessionId(idOrName);
     if (this.sessions.has(id)) {
       this.activeSessionId = id;
+      return true;
+    }
+    const match = Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === idOrName.toLowerCase());
+    if (match) {
+      this.activeSessionId = match.id;
       return true;
     }
     return false;
   }
 
-  public deleteSession(id: string): boolean {
+  public deleteSession(idOrName: string): boolean {
+    const id = sanitizeSessionId(idOrName);
     if (this.sessions.has(id)) {
       this.sessions.delete(id);
       deleteSessionFromDisk(this.storageDir, id);

@@ -3,21 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import { ChatSession } from '../../src/engines/chat/helpers/ChatSession';
 import { ChatEngine } from '../../src/engines/chat/ChatEngine';
+import { sanitizeSessionId } from '../../src/engines/chat/helpers/sanitizeId';
 import { HoneyKernel } from '../../src/kernel/HoneyKernel';
 import { ServiceRegistry } from '../../src/kernel/ServiceRegistry';
 import { EventBus } from '../../src/kernel/EventBus';
-import { OllamaService } from '../../src/services/ai/ollama/OllamaService';
-import { AIService } from '../../src/services/ai/AIService';
-
-class MockSecondaryAIService extends AIService {
-  public readonly id = 'mock_provider';
-  public descriptor = { id: 'mock_provider', name: 'Mock Provider', version: '1.0.0', status: 'running' as const, capabilities: ['text-generation'] };
-  public async initialize(): Promise<void> {}
-  public async checkHealth(): Promise<boolean> { return true; }
-  public async getModels() { return []; }
-  public async generateText() { return { text: 'Secondary Provider Response', done: true }; }
-  public async generateMedia() { throw new Error('Not implemented'); }
-}
 
 const testStorageDir = 'test-chat-sessions';
 
@@ -28,7 +17,13 @@ afterAll(() => {
   }
 });
 
-describe('JSAIOS Chat Engine & Provider Agnosticism', () => {
+describe('JSAIOS Chat Engine & Session ID Sanitization', () => {
+  it('should sanitize session names into clean CLI-friendly IDs', () => {
+    expect(sanitizeSessionId('Copilot Chat!')).toBe('copilot_chat');
+    expect(sanitizeSessionId('   my-session_1  ')).toBe('my-session_1');
+    expect(sanitizeSessionId('!!!')).toBe('default');
+  });
+
   it('should anchor sticky system directive at head of message history', () => {
     const session = new ChatSession('sess_1', 'Test Session', 'ollama', 'llama3', 'You are a helpful coding assistant.');
 
@@ -54,30 +49,30 @@ describe('JSAIOS Chat Engine & Provider Agnosticism', () => {
     expect(session.messages).toHaveLength(5);
   });
 
-  it('should persist chat session data to configured storage directory on disk', async () => {
+  it('should persist chat session data using sanitized name ID to storage directory on disk', async () => {
     const registry = new ServiceRegistry();
     const eventBus = new EventBus();
     const kernel = new HoneyKernel(registry, eventBus);
     const engine = new ChatEngine(kernel, testStorageDir);
 
-    const session = engine.createSession('PersistedSession', 'copilot', 'gpt-4o', 'System directive text');
-    expect(engine.getStorageDir()).toBe(testStorageDir);
+    const session = engine.createSession('My Copilot Session', 'copilot', 'gpt-4o', 'System directive text');
+    expect(session.id).toBe('my_copilot_session');
 
     const fileCreatedPath = path.join(process.cwd(), testStorageDir, `${session.id}.json`);
     expect(fs.existsSync(fileCreatedPath)).toBe(true);
 
     const raw = fs.readFileSync(fileCreatedPath, 'utf-8');
     const parsed = JSON.parse(raw);
-    expect(parsed.name).toBe('PersistedSession');
+    expect(parsed.name).toBe('My Copilot Session');
     expect(parsed.providerId).toBe('copilot');
 
     // Test reload from disk
     const engine2 = new ChatEngine(kernel, testStorageDir);
     const sessions = engine2.listSessions();
-    expect(sessions.some((s) => s.id === session.id)).toBe(true);
+    expect(sessions.some((s) => s.id === 'my_copilot_session')).toBe(true);
 
     // Delete session from memory and disk
-    const deleted = engine2.deleteSession(session.id);
+    const deleted = engine2.deleteSession('my_copilot_session');
     expect(deleted).toBe(true);
     expect(fs.existsSync(fileCreatedPath)).toBe(false);
   });
