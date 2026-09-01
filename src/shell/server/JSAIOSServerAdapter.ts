@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Driving Adapter: JSAIOSServerAdapter
- * Pure Node.js HTTP REST API server adapter exposing kernel & chat engine ports.
+ * Data-Driven HTTP REST API Server Adapter. Reads route mappings and CORS rules from declarative JSON manifests.
  */
 
 import http from 'http';
@@ -8,25 +8,65 @@ import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import { getOrCreateChatEngine } from '../terminal/commands/chatCLI';
+import { dispatchServerAction } from './helpers/serverActionDispatcher';
+
+export interface RouteConfig {
+  id: string;
+  path: string;
+  method: string;
+  action: string;
+}
+
+export interface CorsConfig {
+  enabled: boolean;
+  allowOrigin: string;
+  allowMethods: string;
+  allowHeaders: string;
+}
 
 export class JSAIOSServerAdapter {
   private server: http.Server | null = null;
+  private routes: RouteConfig[] = [];
+  private cors: CorsConfig = {
+    enabled: true,
+    allowOrigin: '*',
+    allowMethods: 'GET, POST, OPTIONS',
+    allowHeaders: 'Content-Type, Authorization'
+  };
 
   constructor(
     private kernel: HoneyKernel,
     private port: number = 3000,
-    private host: string = 'localhost'
-  ) {}
+    private host: string = 'localhost',
+    routesManifestPath?: string
+  ) {
+    this.loadConfiguration(routesManifestPath);
+  }
+
+  private loadConfiguration(customManifestPath?: string): void {
+    try {
+      const manifestPath = customManifestPath || path.join(process.cwd(), 'config', 'jsaios.routes.json');
+      if (fs.existsSync(manifestPath)) {
+        const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
+        if (parsed.routes) this.routes = parsed.routes;
+        if (parsed.cors) this.cors = { ...this.cors, ...parsed.cors };
+      }
+    } catch {
+      // Fallback
+    }
+  }
 
   public start(): Promise<void> {
     return new Promise((resolve) => {
       const engine = getOrCreateChatEngine(this.kernel);
 
       this.server = http.createServer(async (req, res) => {
-        // Enable CORS for development flexibility
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+        // Apply Declarative CORS Rules
+        if (this.cors.enabled) {
+          res.setHeader('Access-Control-Allow-Origin', this.cors.allowOrigin);
+          res.setHeader('Access-Control-Allow-Methods', this.cors.allowMethods);
+          res.setHeader('Access-Control-Allow-Headers', this.cors.allowHeaders);
+        }
 
         if (req.method === 'OPTIONS') {
           res.writeHead(204);
@@ -36,118 +76,19 @@ export class JSAIOSServerAdapter {
 
         const urlParts = new URL(req.url || '/', `http://${req.headers.host}`);
         const pathname = urlParts.pathname;
+        const method = (req.method || 'GET').toUpperCase();
 
-        // API Endpoint Routing
-        if (pathname === '/api/status' && req.method === 'GET') {
-          const active = engine.getActiveSession();
-          const sessions = engine.listSessions();
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            status: 'online',
-            kernel: this.kernel.getStatus(),
-            activeSession: active ? {
-              id: active.id,
-              name: active.name,
-              providerId: active.providerId,
-              model: active.model,
-              messagesCount: active.messages.length,
-              options: active.options
-            } : null,
-            totalSessions: sessions.length
-          }));
+        // Declarative Route Dispatcher
+        const matchedRoute = this.routes.find(
+          (r) => r.path === pathname && r.method.toUpperCase() === method
+        );
+
+        if (matchedRoute) {
+          await dispatchServerAction(matchedRoute.action, req, res, urlParts, engine, this.kernel);
           return;
         }
 
-        if (pathname === '/api/services' && req.method === 'GET') {
-          const services = this.kernel.Registry.listDescriptors();
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ services }));
-          return;
-        }
-
-        if (pathname === '/api/chat/sessions' && req.method === 'GET') {
-          const sessions = engine.listSessions();
-          const active = engine.getActiveSession();
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            activeId: active?.id || null,
-            sessions: sessions.map((s) => ({
-              id: s.id,
-              name: s.name,
-              providerId: s.providerId,
-              model: s.model,
-              turnsCount: s.messages.length
-            }))
-          }));
-          return;
-        }
-
-        if (pathname === '/api/chat/sessions' && req.method === 'POST') {
-          const body = await this.readRequestBody(req);
-          const { name, providerId, model, systemDirective, options } = JSON.parse(body || '{}');
-          const session = engine.createSession(
-            name || 'default',
-            providerId || 'ollama',
-            model || 'llama3',
-            systemDirective,
-            options
-          );
-          res.writeHead(201, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ session: { id: session.id, name: session.name, providerId: session.providerId, model: session.model } }));
-          return;
-        }
-
-        if (pathname === '/api/chat/history' && req.method === 'GET') {
-          const sessionId = urlParts.searchParams.get('sessionId');
-          const allSessions = engine.listSessions();
-          const session = sessionId ? allSessions.find((s) => s.id === sessionId) : engine.getActiveSession();
-          if (!session) {
-            res.writeHead(404, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: 'Session not found' }));
-            return;
-          }
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({
-            sessionId: session.id,
-            name: session.name,
-            messages: session.messages
-          }));
-          return;
-        }
-
-        if (pathname === '/api/chat/send' && req.method === 'POST') {
-          const body = await this.readRequestBody(req);
-          const { userPrompt, sessionId, options, images } = JSON.parse(body || '{}');
-
-          const allSessions = engine.listSessions();
-          let active = sessionId ? allSessions.find((s) => s.id === sessionId) : engine.getActiveSession();
-          if (!active) active = engine.createSession('default', 'ollama', 'llama3');
-
-          // Standard HTTP Response Body Chunked Streaming
-          res.writeHead(200, {
-            'Content-Type': 'text/plain; charset=utf-8',
-            'Transfer-Encoding': 'chunked'
-          });
-
-          try {
-            await engine.executeTurn({
-              sessionId: active.id,
-              userPrompt,
-              images,
-              turnOptions: options,
-              onChunk: (chunk: string) => {
-                res.write(chunk);
-              }
-            });
-            res.end();
-          } catch (err: any) {
-            res.write(`\n\nChat error: ${err.message || err}`);
-            res.end();
-          }
-          return;
-        }
-
-        // Static Web UI File Serving
+        // Static Web UI File Serving Fallback
         const distDir = path.join(process.cwd(), 'dist', 'browser');
         let filePath = path.join(distDir, pathname === '/' ? 'index.html' : pathname);
 
@@ -168,11 +109,11 @@ export class JSAIOSServerAdapter {
         }
 
         res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Endpoint or file not found' }));
+        res.end(JSON.stringify({ error: `Route '${method} ${pathname}' not found in server manifest` }));
       });
 
       this.server.listen(this.port, this.host, () => {
-        console.log(`[JSAIOSServerAdapter] HTTP REST Server listening on http://${this.host}:${this.port}`);
+        console.log(`[JSAIOSServerAdapter] Data-Driven Server listening on http://${this.host}:${this.port} (${this.routes.length} routes registered)`);
         resolve();
       });
     });
@@ -188,15 +129,6 @@ export class JSAIOSServerAdapter {
       } else {
         resolve();
       }
-    });
-  }
-
-  private readRequestBody(req: http.IncomingMessage): Promise<string> {
-    return new Promise((resolve, reject) => {
-      let body = '';
-      req.on('data', (chunk) => { body += chunk; });
-      req.on('end', () => resolve(body));
-      req.on('error', (err) => reject(err));
     });
   }
 }

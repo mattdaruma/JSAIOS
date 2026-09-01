@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Server Bootloader
- * Boots HoneyKernel Core, registers micro-services, and starts JSAIOSServerAdapter.
+ * Boots HoneyKernel Core, registers micro-services, and starts data-driven JSAIOSServerAdapter.
  */
 
 import path from 'path';
@@ -13,12 +13,13 @@ import { JSAIOSServerAdapter } from '../shell/server/JSAIOSServerAdapter';
 
 export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter: JSAIOSServerAdapter }> {
   console.log('=====================================================');
-  console.log(' JSAIOS Server Bootloader - HTTP REST Server Mode');
+  console.log(' JSAIOS Server Bootloader - Data-Driven REST Server');
   console.log('=====================================================');
 
   const kernel = new HoneyKernel();
   let port = 3000;
   let host = 'localhost';
+  let routesFile = path.join(process.cwd(), 'config', 'jsaios.routes.json');
 
   try {
     const configPath = path.join(process.cwd(), 'config', 'jsaios.config.json');
@@ -26,6 +27,7 @@ export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter
       const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
       if (config.server?.port) port = config.server.port;
       if (config.server?.host) host = config.server.host;
+      if (config.server?.routesFile) routesFile = path.join(process.cwd(), config.server.routesFile);
     }
   } catch {
     // Fallback defaults
@@ -38,7 +40,7 @@ export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter
 
   await kernel.boot();
 
-  const serverAdapter = new JSAIOSServerAdapter(kernel, port, host);
+  const serverAdapter = new JSAIOSServerAdapter(kernel, port, host, routesFile);
   await serverAdapter.start();
 
   return { kernel, serverAdapter };

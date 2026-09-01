@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "cors": {
+    "enabled": true,
+    "allowOrigin": "*",
+    "allowMethods": "GET, POST, OPTIONS",
+    "allowHeaders": "Content-Type, Authorization"
+  },
+  "routes": [
+    {
+      "id": "status",
+      "path": "/api/status",
+      "method": "GET",
+      "action": "systemStatus"
+    },
+    {
+      "id": "services",
+      "path": "/api/services",
+      "method": "GET",
+      "action": "listServices"
+    },
+    {
+      "id": "list-sessions",
+      "path": "/api/chat/sessions",
+      "method": "GET",
+      "action": "listChatSessions"
+    },
+    {
+      "id": "create-session",
+      "path": "/api/chat/sessions",
+      "method": "POST",
+      "action": "createChatSession"
+    },
+    {
+      "id": "chat-history",
+      "path": "/api/chat/history",
+      "method": "GET",
+      "action": "getChatHistory"
+    },
+    {
+      "id": "chat-send-stream",
+      "path": "/api/chat/send",
+      "method": "POST",
+      "action": "executeChatTurnStream"
+    }
+  ]
+}

@@ -1,10 +1,11 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
-"src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",203,180,8,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",202,169,4,250,false
 "src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",192,158,18,250,false
 "src/shell/terminal/commands/comfyCLI.ts","comfyCLI.ts",".ts","TypeScript Logic",163,138,4,250,false
 "src/shell/terminal/commands/ollamaCLI.ts","ollamaCLI.ts",".ts","TypeScript Logic",162,149,4,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",149,135,5,250,false
+"src/shell/server/helpers/serverActionDispatcher.ts","serverActionDispatcher.ts",".ts","TypeScript Logic",136,123,4,250,false
+"src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",135,117,8,250,false
 "src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",131,111,28,250,false
 "src/shell/terminal/storage/FileSessionStorage.ts","FileSessionStorage.ts",".ts","TypeScript Logic",127,113,7,250,false
 "src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",126,115,7,250,false
@@ -35,9 +36,9 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/services/ai/copilot/helpers/fetchCopilotToken.ts","fetchCopilotToken.ts",".ts","TypeScript Logic",58,47,4,250,false
 "src/shell/browser/components/Textarea.tsx","Textarea.tsx",".tsx","React Component",57,50,4,250,false
 "src/shell/terminal/commands/chat/handleChatSessions.ts","handleChatSessions.ts",".ts","TypeScript Logic",57,50,4,250,false
+"src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",56,46,7,250,false
 "src/kernel/ServiceRegistry.ts","ServiceRegistry.ts",".ts","TypeScript Logic",56,47,22,250,false
 "src/shell/browser/layouts/Layout.tsx","Layout.tsx",".tsx","React Component",55,49,4,250,false
-"src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",54,44,7,250,false
 "src/services/ai/copilot/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",52,44,5,250,false
 "src/shell/browser/BrowserClientAdapter.ts","BrowserClientAdapter.ts",".ts","TypeScript Logic",50,42,4,250,false
 "src/shell/browser/components/CodeEditor.tsx","CodeEditor.tsx",".tsx","React Component",45,40,4,250,false
