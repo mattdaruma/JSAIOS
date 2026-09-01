@@ -22,6 +22,33 @@
       "tags": ["honeykernel", "eventbus", "serviceregistry", "kernel"]
     },
     {
+      "id": "kernel-daemon",
+      "title": "JSAIOS Kernel Daemon (jsaiosd)",
+      "category": "kernel",
+      "badge": "Daemon OS Host",
+      "description": "Feature-flagged background OS process (config/jsaios.config.json -> daemon.enabled) hosting HoneyKernel, active micro-services, and built-in HTTP/WebSocket IPC gateway on port 3001.",
+      "codeSnippet": "npm run start:daemon  # Launches background jsaiosd OS process",
+      "tags": ["daemon", "jsaiosd", "ipc", "feature-flag"]
+    },
+    {
+      "id": "ui-headless-controller",
+      "title": "Headless useSearchableList Controller Hook",
+      "category": "ui-components",
+      "badge": "Headless Hook",
+      "description": "View-agnostic React hook managing text search queries, category pills, column sorting, and pagination math. Shared cleanly across Card Grid and Data Table views.",
+      "codeSnippet": "const { paginatedItems, setSearchTerm, viewMode, setViewMode } = useSearchableList(items, { pageSize: 9 });",
+      "tags": ["headless-hook", "useSearchableList", "pagination", "sorting"]
+    },
+    {
+      "id": "ui-searchable-container",
+      "title": "SearchableDataContainer Composite UI",
+      "category": "ui-components",
+      "badge": "Generic Component",
+      "description": "Generic multi-view container connecting useSearchableList to SearchControlBar, CardGridView, TableView, and PaginationFooter. Supports dynamic view switching between Grid and Table modes.",
+      "codeSnippet": "<SearchableDataContainer items={docs} pageSize={9} onSelectItem={(item) => openModal(item)} />",
+      "tags": ["ui-component", "searchabledatacontainer", "grid-view", "table-view"]
+    },
+    {
       "id": "engine-chat",
       "title": "JSAIOS Chat Engine",
       "category": "engines",
