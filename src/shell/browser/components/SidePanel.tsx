@@ -1,5 +1,5 @@
 /**
- * JSAIOS - Generic SidePanel Container
+ * JSAIOS - Generic SidePanel Component Primitive
  * Collapsible drawer / sidebar container for navigation, settings, or secondary panes.
  */
 

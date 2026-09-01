@@ -7,13 +7,14 @@ import React from 'react';
 import type { UINodeConfig } from '../types';
 
 import { Container } from '../layouts/Container';
-import { Header } from '../layouts/Header';
-import { SidePanel } from '../layouts/SidePanel';
 
+import { Header } from '../components/Header';
+import { SidePanel } from '../components/SidePanel';
 import { Typography } from '../components/Typography';
 import { TextBlock } from '../components/TextBlock';
 import { CodeEditor } from '../components/CodeEditor';
 import { Input } from '../components/Input';
+import { Textarea } from '../components/Textarea';
 import { Checkbox } from '../components/Checkbox';
 import { DatePicker } from '../components/DatePicker';
 import { Button } from '../components/Button';
@@ -38,18 +39,18 @@ export const UIRenderer: React.FC<UIRendererProps> = ({ config, state = {}, onEv
 
   const compType = config.componentType.toLowerCase();
 
-  // Layout Containers
+  // Pure Layout Container
   if (compType === 'container') {
     return <Container {...config.layoutProps} {...config.props}>{renderChildren()}</Container>;
   }
+
+  // Component Primitives & Overlays
   if (compType === 'header') {
     return <Header {...config.props}>{renderChildren()}</Header>;
   }
   if (compType === 'sidepanel') {
     return <SidePanel {...config.props}>{renderChildren()}</SidePanel>;
   }
-
-  // Component Primitives
   if (compType === 'typography') {
     return <Typography {...config.props}>{config.props?.text || renderChildren()}</Typography>;
   }
@@ -70,6 +71,15 @@ export const UIRenderer: React.FC<UIRendererProps> = ({ config, state = {}, onEv
   if (compType === 'input') {
     return (
       <Input
+        {...config.props}
+        onSubmit={(val) => onEvent && onEvent(`${config.id}:submit`, val)}
+        onChange={(val) => onEvent && onEvent(`${config.id}:change`, val)}
+      />
+    );
+  }
+  if (compType === 'textarea') {
+    return (
+      <Textarea
         {...config.props}
         onSubmit={(val) => onEvent && onEvent(`${config.id}:submit`, val)}
         onChange={(val) => onEvent && onEvent(`${config.id}:change`, val)}
