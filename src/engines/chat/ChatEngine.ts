@@ -1,15 +1,14 @@
 /**
- * JSAIOS - Single-purpose class: ChatEngine
- * High-level business logic engine that manages active chat sessions and orchestrates multi-turn chat interactions with HoneyKernel AI providers.
- * Pure Ring 0 driver logic: 100% platform-agnostic, receiving storage persistence via IChatSessionStorage adapter.
+ * JSAIOS - ChatEngine Orchestration Engine
+ * Pure platform-agnostic Chat Engine orchestrator using IChatSessionStorage driver.
  */
 
-import { HoneyKernel } from '../../kernel/HoneyKernel';
 import { ChatSession } from './helpers/ChatSession';
-import type { ChatTurnParams, ChatSessionOptions, IChatSessionStorage } from './helpers/types';
-import type { AIService } from '../../services/ai/AIService';
-import { sanitizeSessionId } from './helpers/sanitizeId';
 import { mergeChatOptions, buildTextGenRequest } from './helpers/chatOptions';
+import { sanitizeSessionId } from './helpers/sanitizeId';
+import type { ChatTurnParams, ChatSessionOptions, IChatSessionStorage } from './helpers/types';
+import type { HoneyKernel } from '../../kernel/HoneyKernel';
+import type { AIService } from '../../services/ai/AIService';
 
 export class ChatEngine {
   private kernel: HoneyKernel;
@@ -62,39 +61,28 @@ export class ChatEngine {
   }
 
   public createSession(
-    name: string = 'default',
+    name: string,
     providerId: string = 'ollama',
     model: string = 'llama3',
     systemDirective?: string,
-    initialOptions?: Partial<ChatSessionOptions>
+    options?: ChatSessionOptions
   ): ChatSession {
     const id = sanitizeSessionId(name);
-    let session = this.sessions.get(id);
-
-    if (session) {
-      session.providerId = providerId;
-      session.model = model;
-      if (systemDirective) session.setSystemDirective(systemDirective);
-      if (initialOptions) session.updateOptions(initialOptions);
-      session.updatedAt = Date.now();
-    } else {
-      session = new ChatSession(id, name, providerId, model, systemDirective, initialOptions);
-      this.sessions.set(id, session);
-    }
-
-    this.activeSessionId = id;
-    this.persistSession(session);
+    const session = new ChatSession(id, name, providerId, model, systemDirective, options);
+    this.sessions.set(session.id, session);
+    this.activeSessionId = session.id;
 
     if (!this.designatedDefaultSessionId) {
-      this.designatedDefaultSessionId = id;
+      this.designatedDefaultSessionId = session.id;
       this.persistSettings();
     }
 
+    this.persistSession(session);
     return session;
   }
 
   public updateSessionConfig(
-    sessionId: string,
+    idOrName: string,
     updates: {
       providerId?: string;
       model?: string;
@@ -102,13 +90,14 @@ export class ChatEngine {
       options?: Partial<ChatSessionOptions>;
     }
   ): ChatSession {
-    const session = this.sessions.get(sessionId) || this.getActiveSession();
-    if (!session) throw new Error(`Session '${sessionId}' not found.`);
+    const id = sanitizeSessionId(idOrName);
+    const session = this.sessions.get(id);
+    if (!session) throw new Error(`Session '${idOrName}' not found.`);
 
     if (updates.providerId) session.providerId = updates.providerId;
     if (updates.model) session.model = updates.model;
-    if (updates.systemDirective) session.setSystemDirective(updates.systemDirective);
-    if (updates.options) session.updateOptions(updates.options);
+    if (updates.systemDirective !== undefined) session.setSystemDirective(updates.systemDirective);
+    if (updates.options) session.options = mergeChatOptions(session.options, updates.options);
 
     session.updatedAt = Date.now();
     this.persistSession(session);
@@ -117,8 +106,9 @@ export class ChatEngine {
 
   public getActiveSession(): ChatSession | null {
     if (!this.activeSessionId && this.sessions.size > 0) {
-      const defId = this.designatedDefaultSessionId;
-      this.activeSessionId = defId && this.sessions.has(defId) ? defId : Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt)[0].id;
+      this.activeSessionId = this.designatedDefaultSessionId && this.sessions.has(this.designatedDefaultSessionId)
+        ? this.designatedDefaultSessionId
+        : Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt)[0].id;
     }
     if (!this.activeSessionId) return null;
     return this.sessions.get(this.activeSessionId) || null;
@@ -175,12 +165,19 @@ export class ChatEngine {
     if (!aiService) throw new Error(`AI Service provider '${providerId}' is not registered or active in HoneyKernel.`);
 
     const systemMsg = session.messages.find((m) => m.role === 'system');
-    const conversationTurns = session.messages
-      .filter((m) => m.role !== 'system')
+    const nonSystemMsgs = session.messages.filter((m) => m.role !== 'system');
+    const mergedOptions = mergeChatOptions(session.options, params.turnOptions);
+
+    let turnHistory = nonSystemMsgs;
+    const historyLimit = mergedOptions.maxHistory;
+    if (historyLimit !== undefined && historyLimit !== null && historyLimit >= 0) {
+      turnHistory = nonSystemMsgs.slice(Math.max(0, nonSystemMsgs.length - historyLimit));
+    }
+
+    const conversationTurns = turnHistory
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
       .join('\n\n');
 
-    const mergedOptions = mergeChatOptions(session.options, params.turnOptions);
     const req = buildTextGenRequest(
       session.model,
       conversationTurns,

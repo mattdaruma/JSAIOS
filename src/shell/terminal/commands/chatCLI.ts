@@ -168,8 +168,9 @@ export async function handleChatCLI(
       return `=== Full Chat History Log: '${active.name}' (${messages.length} messages) ===\n\n${formattedMsgs}`;
     }
 
-    let page = 1, limit = 10;
-    const nums = args.slice(1).filter((a) => !a.startsWith('-')).map(Number).filter((n) => !isNaN(n) && n > 0);
+    let page = 1;
+    let limit = active.options.maxHistory && active.options.maxHistory > 0 ? active.options.maxHistory : 10;
+    const nums = args.slice(1).filter((a) => !a.startsWith('-')).map(Number).filter((n) => !isNaN(n) && n >= 0);
     if (nums.length >= 1) page = Math.floor(nums[0]);
     if (nums.length >= 2) limit = Math.floor(nums[1]);
 

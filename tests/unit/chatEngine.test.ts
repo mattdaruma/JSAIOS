@@ -59,24 +59,27 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
     const session = engine.createSession('OptionSession', 'ollama', 'llama3', 'System directive', {
       temperature: 0.3,
       maxTokens: 500,
-      ollamaThink: true
+      ollamaThink: true,
+      maxHistory: 2
     });
 
     expect(session.options.temperature).toBe(0.3);
     expect(session.options.maxTokens).toBe(500);
     expect(session.options.ollamaThink).toBe(true);
+    expect(session.options.maxHistory).toBe(2);
 
     // Reconfigure mid-session
     const reconfigured = engine.updateSessionConfig(session.id, {
       providerId: 'copilot',
       model: 'gpt-4o',
-      options: { temperature: 0.9, maxTokens: 1000 }
+      options: { temperature: 0.9, maxTokens: 1000, maxHistory: 0 }
     });
 
     expect(reconfigured.providerId).toBe('copilot');
     expect(reconfigured.model).toBe('gpt-4o');
     expect(reconfigured.options.temperature).toBe(0.9);
     expect(reconfigured.options.maxTokens).toBe(1000);
+    expect(reconfigured.options.maxHistory).toBe(0);
   });
 
   it('should automatically set default boot session on session switch and persist to _settings.json', async () => {
@@ -120,20 +123,21 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
       const statusNoSession = await handleChatCLI(kernel, ['status']);
       expect(statusNoSession).toContain('=== JSAIOS ChatEngine Status ===');
 
-      await handleChatCLI(kernel, ['new', 'TestSessionCLI', '-p', 'copilot', '-m', 'gpt-4o', '--temp', '0.4']);
+      await handleChatCLI(kernel, ['new', 'TestSessionCLI', '-p', 'copilot', '-m', 'gpt-4o', '--temp', '0.4', '--max-history', '2']);
       const statusWithSession = await handleChatCLI(kernel, ['status']);
       expect(statusWithSession).toContain('Active Session');
       expect(statusWithSession).toContain('Provider');
       expect(statusWithSession).toContain('Model');
 
       // Test mid-session config update via CLI
-      const configRes = await handleChatCLI(kernel, ['config', '-m', 'claude-3.5-sonnet', '--temp', '0.8']);
+      const configRes = await handleChatCLI(kernel, ['config', '-m', 'claude-3.5-sonnet', '--temp', '0.8', '--max-history', '5']);
       expect(configRes).toContain('claude-3.5-sonnet');
 
       // Test chat config without arguments (returns full options report)
       const reportRes = await handleChatCLI(kernel, ['config']);
       expect(reportRes).toContain('temperature');
-      expect(reportRes).toContain('0.8');
+      expect(reportRes).toContain('maxHistory');
+      expect(reportRes).toContain('5');
 
       // Test session switch auto-setting default
       const switchRes = await handleChatCLI(kernel, ['switch', 'TestSessionCLI']);

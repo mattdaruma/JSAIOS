@@ -23,6 +23,7 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
         { flag: '--temp <num>, -t', description: 'Set generation temperature float 0.0-2.0 (e.g. 0.7)' },
         { flag: '--top-p <num>', description: 'Set nucleus sampling top_p float 0.0-1.0 (e.g. 0.9)' },
         { flag: '--max-tokens <num>', description: 'Set max token response limit in tokens (e.g. 2048)' },
+        { flag: '--max-history <num>', description: 'Set outgoing message history turn limit (0 for no history, null/unlimited default)' },
         { flag: '--seed <num>', description: 'Set integer seed for deterministic output (e.g. 42)' },
         { flag: '--think [true|false]', description: 'Toggle Ollama model thinking reasoning mode (--ollama-think)' },
         { flag: '--ctx <num>', description: 'Set context window size in tokens (--ollama-ctx, e.g. 2048, 8192)' },
@@ -42,6 +43,7 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
         { flag: '--temp <num>, -t', description: 'Update generation temperature float 0.0-2.0 (e.g. 0.7)' },
         { flag: '--top-p <num>', description: 'Update top_p float probability 0.0-1.0 (e.g. 0.9)' },
         { flag: '--max-tokens <num>', description: 'Update max token limit in tokens (e.g. 2048)' },
+        { flag: '--max-history <num>', description: 'Update outgoing message history turn limit (0 for no history, null/unlimited default)' },
         { flag: '--think [true|false]', description: 'Toggle model thinking reasoning mode (--ollama-think)' },
         { flag: '--ctx <num>', description: 'Update context window size in tokens (--ollama-ctx, e.g. 2048, 8192)' },
         { flag: '--keep-alive <duration>', description: 'Update Ollama keep-alive duration (e.g. 5m, 1h, 0s, -1)' }
@@ -58,6 +60,7 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
         { flag: '--temp <num>, -t', description: 'Single-turn temperature override float 0.0-2.0' },
         { flag: '--top-p <num>', description: 'Single-turn top_p override float 0.0-1.0' },
         { flag: '--max-tokens <num>', description: 'Single-turn max tokens limit integer' },
+        { flag: '--max-history <num>', description: 'Single-turn message history limit (0 for no history)' },
         { flag: '--think [true|false]', description: 'Single-turn thinking override (--ollama-think)' },
         { flag: '--image <path>, -i', description: 'Attach local image path for multimodal model' }
       ]

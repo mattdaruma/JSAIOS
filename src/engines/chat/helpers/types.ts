@@ -16,6 +16,7 @@ export interface ChatMessage {
 export interface ChatSessionOptions {
   maxTurns?: number;
   maxChars?: number;
+  maxHistory?: number;
   // OpenAI Standard Options
   temperature?: number;
   topP?: number;

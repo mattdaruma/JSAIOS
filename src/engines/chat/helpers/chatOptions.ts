@@ -54,6 +54,9 @@ export function parseChatCLIArgs(tokens: string[], providerId: string = 'ollama'
       if (!isNaN(val)) result.options.seed = val;
     } else if (token === '--stop') {
       result.options.stop = [tokens[++i]];
+    } else if (token === '--max-history' || token === '--history-limit') {
+      const val = parseInt(tokens[++i], 10);
+      if (!isNaN(val)) result.options.maxHistory = val;
     }
     // Ollama-specific options
     else if (token === '--ollama-think' || (isOllama && token === '--think')) {

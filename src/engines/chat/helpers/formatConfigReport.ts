@@ -15,6 +15,7 @@ export const CHAT_OPTION_DEFAULTS = {
   stop: 'None',
   maxTurns: 20,
   maxChars: 12000,
+  maxHistory: 'unlimited',
   ollamaThink: false,
   ollamaNumCtx: 2048,
   ollamaKeepAlive: '5m',
@@ -52,7 +53,8 @@ export function formatConfigReport(session: ChatSession): string {
     `seed                : ${fmtOpt('seed', opts.seed)}`,
     `stop                : ${fmtOpt('stop', opts.stop)}`,
     `maxTurns            : ${fmtOpt('maxTurns', opts.maxTurns)}`,
-    `maxChars            : ${fmtOpt('maxChars', opts.maxChars)}`
+    `maxChars            : ${fmtOpt('maxChars', opts.maxChars)}`,
+    `maxHistory          : ${fmtOpt('maxHistory', opts.maxHistory)}`
   ];
 
   if (isOllama) {
