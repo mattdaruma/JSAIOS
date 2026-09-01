@@ -14,6 +14,26 @@ export interface ParsedChatCLIResult {
   options: Partial<ChatSessionOptions>;
 }
 
+function parseOptionalInt(valStr: string | undefined): { val: number | undefined; present: boolean } {
+  if (!valStr) return { val: undefined, present: false };
+  const lower = valStr.toLowerCase();
+  if (lower === 'null' || lower === 'none' || lower === 'unlimited' || lower === 'default' || lower === 'reset') {
+    return { val: undefined, present: true };
+  }
+  const val = parseInt(valStr, 10);
+  return { val: !isNaN(val) ? val : undefined, present: true };
+}
+
+function parseOptionalFloat(valStr: string | undefined): { val: number | undefined; present: boolean } {
+  if (!valStr) return { val: undefined, present: false };
+  const lower = valStr.toLowerCase();
+  if (lower === 'null' || lower === 'none' || lower === 'unlimited' || lower === 'default' || lower === 'reset') {
+    return { val: undefined, present: true };
+  }
+  const val = parseFloat(valStr);
+  return { val: !isNaN(val) ? val : undefined, present: true };
+}
+
 export function parseChatCLIArgs(tokens: string[], providerId: string = 'ollama'): ParsedChatCLIResult {
   const result: ParsedChatCLIResult = {
     cleanTextParts: [],
@@ -35,47 +55,47 @@ export function parseChatCLIArgs(tokens: string[], providerId: string = 'ollama'
     } else if (token === '--system' || token === '-s') {
       result.systemDirective = tokens[++i];
     } else if (token === '--temp' || token === '-t') {
-      const val = parseFloat(tokens[++i]);
-      if (!isNaN(val)) result.options.temperature = val;
+      const parsedVal = parseOptionalFloat(tokens[++i]);
+      if (parsedVal.present) result.options.temperature = parsedVal.val;
     } else if (token === '--top-p') {
-      const val = parseFloat(tokens[++i]);
-      if (!isNaN(val)) result.options.topP = val;
+      const parsedVal = parseOptionalFloat(tokens[++i]);
+      if (parsedVal.present) result.options.topP = parsedVal.val;
     } else if (token === '--max-tokens') {
-      const val = parseInt(tokens[++i], 10);
-      if (!isNaN(val)) result.options.maxTokens = val;
+      const parsedVal = parseOptionalInt(tokens[++i]);
+      if (parsedVal.present) result.options.maxTokens = parsedVal.val;
     } else if (token === '--presence-penalty') {
-      const val = parseFloat(tokens[++i]);
-      if (!isNaN(val)) result.options.presencePenalty = val;
+      const parsedVal = parseOptionalFloat(tokens[++i]);
+      if (parsedVal.present) result.options.presencePenalty = parsedVal.val;
     } else if (token === '--frequency-penalty') {
-      const val = parseFloat(tokens[++i]);
-      if (!isNaN(val)) result.options.frequencyPenalty = val;
+      const parsedVal = parseOptionalFloat(tokens[++i]);
+      if (parsedVal.present) result.options.frequencyPenalty = parsedVal.val;
     } else if (token === '--seed') {
-      const val = parseInt(tokens[++i], 10);
-      if (!isNaN(val)) result.options.seed = val;
+      const parsedVal = parseOptionalInt(tokens[++i]);
+      if (parsedVal.present) result.options.seed = parsedVal.val;
     } else if (token === '--stop') {
       result.options.stop = [tokens[++i]];
     } else if (token === '--max-history' || token === '--history-limit') {
-      const val = parseInt(tokens[++i], 10);
-      if (!isNaN(val)) result.options.maxHistory = val;
+      const parsedVal = parseOptionalInt(tokens[++i]);
+      if (parsedVal.present) result.options.maxHistory = parsedVal.val;
     }
     // Ollama-specific options
     else if (token === '--ollama-think' || (isOllama && token === '--think')) {
       const flagVal = next && !next.startsWith('-') ? tokens[++i] : 'true';
       result.options.ollamaThink = flagVal !== 'false';
     } else if (token === '--ollama-ctx' || (isOllama && token === '--ctx')) {
-      const val = parseInt(tokens[++i], 10);
-      if (!isNaN(val)) result.options.ollamaNumCtx = val;
+      const parsedVal = parseOptionalInt(tokens[++i]);
+      if (parsedVal.present) result.options.ollamaNumCtx = parsedVal.val;
     } else if (token === '--ollama-keep-alive' || (isOllama && token === '--keep-alive')) {
       result.options.ollamaKeepAlive = tokens[++i];
     } else if (token === '--ollama-repeat-penalty' || (isOllama && token === '--repeat-penalty')) {
-      const val = parseFloat(tokens[++i]);
-      if (!isNaN(val)) result.options.ollamaRepeatPenalty = val;
+      const parsedVal = parseOptionalFloat(tokens[++i]);
+      if (parsedVal.present) result.options.ollamaRepeatPenalty = parsedVal.val;
     } else if (token === '--ollama-top-k' || (isOllama && token === '--top-k')) {
-      const val = parseInt(tokens[++i], 10);
-      if (!isNaN(val)) result.options.ollamaTopK = val;
+      const parsedVal = parseOptionalInt(tokens[++i]);
+      if (parsedVal.present) result.options.ollamaTopK = parsedVal.val;
     } else if (token === '--ollama-min-p' || (isOllama && token === '--min-p')) {
-      const val = parseFloat(tokens[++i]);
-      if (!isNaN(val)) result.options.ollamaMinP = val;
+      const parsedVal = parseOptionalFloat(tokens[++i]);
+      if (parsedVal.present) result.options.ollamaMinP = parsedVal.val;
     } else {
       result.cleanTextParts.push(token);
     }

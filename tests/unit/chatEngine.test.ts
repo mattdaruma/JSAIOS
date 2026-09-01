@@ -137,6 +137,13 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
       expect(reportRes).toContain('maxHistory');
       expect(reportRes).toContain('5');
 
+      // Test resetting max-history via CLI null keyword
+      const resetHistRes = await handleChatCLI(kernel, ['config', '--max-history', 'null']);
+      expect(resetHistRes).toContain('Updated settings');
+
+      const reportAfterReset = await handleChatCLI(kernel, ['config']);
+      expect(reportAfterReset).toContain('unlimited (default)');
+
       // Test session switch auto-setting default
       const switchRes = await handleChatCLI(kernel, ['switch', 'TestSessionCLI']);
       expect(switchRes).toContain("Switched active chat session to 'TestSessionCLI'");
