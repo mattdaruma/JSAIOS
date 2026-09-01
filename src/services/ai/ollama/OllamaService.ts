@@ -9,7 +9,6 @@ import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequ
 import { checkOllamaHealth } from './helpers/checkHealth';
 import { fetchOllamaModels } from './helpers/fetchModels';
 import { generateOllamaText } from './helpers/generateText';
-import { handleOllamaCLI } from './adapters/OllamaCLIAdapter';
 
 export class OllamaService implements AIService {
   public readonly id = 'ollama';
@@ -66,9 +65,5 @@ export class OllamaService implements AIService {
     request: MediaGenerationRequest
   ): Promise<MediaGenerationResponse> {
     throw new Error('OllamaService does not support media generation natively.');
-  }
-
-  public async executeCommand(args: string[], onStreamChunk?: (chunkText: string) => void): Promise<string> {
-    return handleOllamaCLI(this, args, onStreamChunk);
   }
 }

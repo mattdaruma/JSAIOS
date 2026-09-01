@@ -13,7 +13,6 @@ import { getComfyUINodeInfo } from './helpers/getNodeInfo';
 import { fetchComfyWorkflows } from './helpers/listWorkflows';
 import { inspectComfyWorkflow, type WorkflowInspectionResult } from './helpers/inspectWorkflow';
 import { buildComfyUIWorkflow } from './helpers/buildWorkflow';
-import { handleComfyCLI } from './adapters/ComfyCLIAdapter';
 
 export class ComfyUIService extends AIService {
   public readonly id = 'comfyui';
@@ -104,9 +103,5 @@ export class ComfyUIService extends AIService {
   ): Promise<MediaGenerationResponse> {
     const promptGraph = buildComfyUIWorkflow(request.workflowId || 'default', request);
     return generateComfyUIMedia(this.baseUrl, promptGraph, onProgress);
-  }
-
-  public async executeCommand(args: string[], onStreamChunk?: (chunkText: string) => void): Promise<string> {
-    return handleComfyCLI(this, args);
   }
 }

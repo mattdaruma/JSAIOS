@@ -3,7 +3,9 @@
  * Client API bridge connecting Browser UI component events to HTTP REST endpoints over chunked HTTP streaming.
  */
 
-export class BrowserClientAdapter {
+import type { IClientAdapter } from './types';
+
+export class BrowserClientAdapter implements IClientAdapter {
   constructor(private baseUrl: string = 'http://localhost:3000') {}
 
   public async fetchStatus(): Promise<any> {
@@ -20,7 +22,7 @@ export class BrowserClientAdapter {
   public async executeCommandStream(
     input: string,
     onChunk: (chunk: string) => void
-  ): Promise<void> {
+  ): Promise<string> {
     const res = await fetch(`${this.baseUrl}/api/command`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -30,7 +32,7 @@ export class BrowserClientAdapter {
     if (!res.body) {
       const text = await res.text();
       onChunk(text);
-      return;
+      return '';
     }
 
     const reader = res.body.getReader();
@@ -44,6 +46,7 @@ export class BrowserClientAdapter {
         onChunk(chunkStr);
       }
     }
+    return '';
   }
 
   public async sendPromptStream(

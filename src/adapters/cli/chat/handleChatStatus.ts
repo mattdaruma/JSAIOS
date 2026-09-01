@@ -3,9 +3,9 @@
  * Renders active chat session status, generation options, and storage metadata.
  */
 
-import { formatConfigReport } from './formatConfigReport';
+import { formatConfigReport } from '../../../engines/chat/helpers/formatConfigReport';
 import { getTerminalFormatter } from '../../../shell/terminal/helpers/getTerminalFormatter';
-import type { ChatEngine } from '../ChatEngine';
+import type { ChatEngine } from '../../../engines/chat/ChatEngine';
 
 export function handleChatStatus(engine: ChatEngine): string {
   const formatter = getTerminalFormatter();

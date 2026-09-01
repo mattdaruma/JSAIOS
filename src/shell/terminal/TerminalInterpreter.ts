@@ -8,7 +8,13 @@ import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { ServiceDescriptor } from '../../kernel/types';
-import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../../engines/chat/ChatCLIAdapter';
+import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../../adapters/cli/chat/ChatCLIAdapter';
+import { handleOllamaCLI } from '../../adapters/cli/services/OllamaCLIAdapter';
+import { handleComfyCLI } from '../../adapters/cli/services/ComfyCLIAdapter';
+import { handleCopilotCLI } from '../../adapters/cli/services/CopilotCLIAdapter';
+import type { OllamaService } from '../../services/ai/ollama/OllamaService';
+import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
+import type { CopilotService } from '../../services/ai/copilot/CopilotService';
 
 export interface TerminalManifestConfig {
   version: string;
@@ -93,21 +99,20 @@ export class TerminalInterpreter {
       return handleChatCLI(this.kernel, args.slice(1), onStreamChunk);
     }
 
-    // 3. Dynamic Registered Micro-Service Transport Dispatcher
-    const activeServices = this.kernel.getStatus().activeServices;
-    const matchedDescriptor = activeServices.find(
-      s => s.id.toLowerCase() === mainCommand || (mainCommand === 'comfy' && s.id === 'comfyui')
-    );
+    // 3. Service Drivers CLI Command Dispatcher
+    if (mainCommand === 'ollama') {
+      const srv = this.kernel.getService<OllamaService>('ollama');
+      if (srv) return handleOllamaCLI(srv, args.slice(1), onStreamChunk);
+    }
 
-    if (matchedDescriptor) {
-      if (args[1] === 'help') {
-        return this.handleTargetHelp(matchedDescriptor.id);
-      }
+    if (mainCommand === 'comfy' || mainCommand === 'comfyui') {
+      const srv = this.kernel.getService<ComfyUIService>('comfyui');
+      if (srv) return handleComfyCLI(srv, args.slice(1));
+    }
 
-      const activeService = this.kernel.getService(matchedDescriptor.id);
-      if (activeService && activeService.executeCommand) {
-        return activeService.executeCommand(args.slice(1), onStreamChunk);
-      }
+    if (mainCommand === 'copilot') {
+      const srv = this.kernel.getService<CopilotService>('copilot');
+      if (srv) return handleCopilotCLI(srv, args.slice(1), onStreamChunk);
     }
 
     return `Command not recognized: '${mainCommand}'. Type 'help' for available CLI commands.`;

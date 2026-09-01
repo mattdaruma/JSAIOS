@@ -4,7 +4,7 @@
  */
 
 import { getTerminalFormatter } from '../../../shell/terminal/helpers/getTerminalFormatter';
-import type { ChatEngine } from '../ChatEngine';
+import type { ChatEngine } from '../../../engines/chat/ChatEngine';
 
 export function handleChatHistory(engine: ChatEngine, args: string[]): string {
   const formatter = getTerminalFormatter();

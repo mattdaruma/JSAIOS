@@ -3,9 +3,9 @@
  * Parses single-turn option overrides and dispatches user prompt execution to ChatEngine.
  */
 
-import { parseChatCLIArgs } from './chatOptions';
+import { parseChatCLIArgs } from '../../../engines/chat/helpers/chatOptions';
 import { getTerminalFormatter } from '../../../shell/terminal/helpers/getTerminalFormatter';
-import type { ChatEngine } from '../ChatEngine';
+import type { ChatEngine } from '../../../engines/chat/ChatEngine';
 
 export async function handleChatSend(
   engine: ChatEngine,

@@ -3,8 +3,8 @@
  * Handles subcommands and option flag parsing for ComfyUIService CLI invocations.
  */
 
-import type { ComfyUIService } from '../ComfyUIService';
-import { parseComfyOptions } from '../helpers/parseComfyOptions';
+import type { ComfyUIService } from '../../../services/ai/comfyui/ComfyUIService';
+import { parseComfyOptions } from './parseComfyOptions';
 
 export async function handleComfyCLI(service: ComfyUIService, args: string[]): Promise<string> {
   const sub = (args[0] || '').toLowerCase();

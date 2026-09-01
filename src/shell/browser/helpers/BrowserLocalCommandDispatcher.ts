@@ -6,6 +6,12 @@
 
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
 import type { ChatEngine } from '../../../engines/chat/ChatEngine';
+import { handleOllamaCLI } from '../../../adapters/cli/services/OllamaCLIAdapter';
+import { handleComfyCLI } from '../../../adapters/cli/services/ComfyCLIAdapter';
+import { handleCopilotCLI } from '../../../adapters/cli/services/CopilotCLIAdapter';
+import type { OllamaService } from '../../../services/ai/ollama/OllamaService';
+import type { ComfyUIService } from '../../../services/ai/comfyui/ComfyUIService';
+import type { CopilotService } from '../../../services/ai/copilot/CopilotService';
 
 export class BrowserLocalCommandDispatcher {
   constructor(private kernel: HoneyKernel, private chatEngine: ChatEngine) {}
@@ -111,14 +117,19 @@ export class BrowserLocalCommandDispatcher {
     }
 
     // 3. Registered AI Service Drivers Command Routing
-    const activeServices = this.kernel.getStatus().activeServices;
-    const matched = activeServices.find((s) => s.id.toLowerCase() === mainCommand || (mainCommand === 'comfy' && s.id === 'comfyui'));
+    if (mainCommand === 'ollama') {
+      const srv = this.kernel.getService<OllamaService>('ollama');
+      if (srv) return handleOllamaCLI(srv, args.slice(1), onChunk);
+    }
 
-    if (matched) {
-      const service = this.kernel.getService(matched.id);
-      if (service && service.executeCommand) {
-        return service.executeCommand(args.slice(1), onChunk);
-      }
+    if (mainCommand === 'comfy' || mainCommand === 'comfyui') {
+      const srv = this.kernel.getService<ComfyUIService>('comfyui');
+      if (srv) return handleComfyCLI(srv, args.slice(1));
+    }
+
+    if (mainCommand === 'copilot') {
+      const srv = this.kernel.getService<CopilotService>('copilot');
+      if (srv) return handleCopilotCLI(srv, args.slice(1), onChunk);
     }
 
     // Default chat turn fallback

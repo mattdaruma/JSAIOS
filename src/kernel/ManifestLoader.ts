@@ -1,5 +1,5 @@
 /**
- * JSAIOS - Single-purpose helper: loadManifest
+ * JSAIOS - Single-purpose helper: ManifestLoader
  * Reads and validates declarative JSON system manifests from config/ directory.
  */
 
@@ -24,4 +24,16 @@ export function loadManifest(customPath?: string): JSAIOSManifest {
   }
 
   return manifest;
+}
+
+export function loadJsonConfig<T = any>(filename: string): T | null {
+  try {
+    const targetPath = path.resolve(process.cwd(), 'config', filename);
+    if (fs.existsSync(targetPath)) {
+      return JSON.parse(fs.readFileSync(targetPath, 'utf-8')) as T;
+    }
+  } catch {
+    // Return null if unreadable
+  }
+  return null;
 }

@@ -9,7 +9,6 @@ import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequ
 import { checkCopilotHealth } from './helpers/checkHealth';
 import { fetchCopilotModels } from './helpers/fetchModels';
 import { generateCopilotText } from './helpers/generateText';
-import { handleCopilotCLI } from './adapters/CopilotCLIAdapter';
 
 export class CopilotService implements AIService {
   public readonly id = 'copilot';
@@ -71,9 +70,5 @@ export class CopilotService implements AIService {
     request: MediaGenerationRequest
   ): Promise<MediaGenerationResponse> {
     throw new Error('CopilotService does not support media generation.');
-  }
-
-  public async executeCommand(args: string[], onStreamChunk?: (chunkText: string) => void): Promise<string> {
-    return handleCopilotCLI(this, args, onStreamChunk);
   }
 }
