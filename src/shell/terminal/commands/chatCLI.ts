@@ -91,9 +91,15 @@ export async function handleChatCLI(
 
   if (sub === 'config' || sub === 'set') {
     const active = engine.getActiveSession();
-    if (!active) return 'No active chat session found. Create one with "chat new <name>".';
+    if (!active) return formatter.formatError('Error: No active chat session found. Create one with "chat new <name>".');
 
     const parsed = parseChatCLIArgs(args.slice(1), active.providerId);
+
+    if (parsed.cleanTextParts.length > 0) {
+      const unrecognized = parsed.cleanTextParts.map((t) => `'${t}'`).join(', ');
+      return formatter.formatError(`Error: Unrecognized parameter(s) for chat config: ${unrecognized}`);
+    }
+
     const hasUpdates = Boolean(
       parsed.providerId ||
       parsed.model ||
