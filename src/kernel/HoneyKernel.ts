@@ -110,10 +110,6 @@ export class HoneyKernel {
     };
   }
 
-  public getServicesSummary(): { services: any[] } {
-    return { services: this.registry.listDescriptors() };
-  }
-
   /**
    * Access kernel IPC EventBus
    */

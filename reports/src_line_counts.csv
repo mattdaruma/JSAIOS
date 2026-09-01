@@ -1,11 +1,11 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
-"src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",242,206,4,250,false
+"src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",202,169,4,250,false
 "src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",192,158,18,250,false
 "src/shell/terminal/commands/comfyCLI.ts","comfyCLI.ts",".ts","TypeScript Logic",163,138,4,250,false
 "src/shell/terminal/commands/ollamaCLI.ts","ollamaCLI.ts",".ts","TypeScript Logic",162,149,4,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",149,135,5,250,false
-"src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",133,112,26,250,false
 "src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",132,115,8,250,false
+"src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",129,109,26,250,false
 "src/shell/terminal/storage/FileSessionStorage.ts","FileSessionStorage.ts",".ts","TypeScript Logic",127,113,7,250,false
 "src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",126,115,7,250,false
 "src/services/ai/comfyui/ComfyUIService.ts","ComfyUIService.ts",".ts","TypeScript Logic",125,110,4,250,false

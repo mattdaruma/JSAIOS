@@ -17,7 +17,7 @@
       "id": "services",
       "path": "/api/services",
       "method": "GET",
-      "target": "kernel.listServices"
+      "target": "kernel.getStatus"
     },
     {
       "id": "list-sessions",
@@ -35,7 +35,7 @@
       "id": "chat-history",
       "path": "/api/chat/history",
       "method": "GET",
-      "target": "chatEngine.getHistory"
+      "target": "chatEngine.listSessions"
     },
     {
       "id": "chat-send-stream",
