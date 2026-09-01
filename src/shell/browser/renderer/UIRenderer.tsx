@@ -20,6 +20,8 @@ import { DatePicker } from '../components/DatePicker';
 import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';
 import { Modal } from '../components/Modal';
+import { SearchableCardGrid } from '../components/SearchableCardGrid';
+import { CodeHighlightBlock } from '../components/CodeHighlightBlock';
 
 interface UIRendererProps {
   config: UINodeConfig;
@@ -58,13 +60,26 @@ export const UIRenderer: React.FC<UIRendererProps> = ({ config, state = {}, onEv
     const dynamicContent = state[config.props?.stateKey] !== undefined ? state[config.props?.stateKey] : config.props?.content;
     return <TextBlock {...config.props} content={dynamicContent}>{renderChildren()}</TextBlock>;
   }
-  if (compType === 'codeeditor') {
+  if (compType === 'codeeditor' || compType === 'code-editor') {
     const dynamicVal = state[config.props?.stateKey] !== undefined ? state[config.props?.stateKey] : config.props?.value;
     return (
       <CodeEditor
         {...config.props}
         value={dynamicVal}
         onChange={(val) => onEvent && onEvent(`${config.id}:change`, val)}
+      />
+    );
+  }
+  if (compType === 'codeblock' || compType === 'code-block') {
+    return <CodeHighlightBlock {...config.props} />;
+  }
+  if (compType === 'searchablecardgrid' || compType === 'searchable-card-grid') {
+    const dynamicItems = state[config.props?.stateKey] !== undefined ? state[config.props?.stateKey] : config.props?.items;
+    return (
+      <SearchableCardGrid
+        {...config.props}
+        items={dynamicItems || []}
+        onSelectCard={(item) => onEvent && onEvent(`${config.id}:select`, item)}
       />
     );
   }

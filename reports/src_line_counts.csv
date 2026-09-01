@@ -2,13 +2,15 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",229,193,18,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",206,173,4,250,false
 "src/shell/browser/helpers/BrowserLocalCommandDispatcher.ts","BrowserLocalCommandDispatcher.ts",".ts","TypeScript Logic",175,153,9,250,false
+"src/shell/browser/components/SearchableCardGrid.tsx","SearchableCardGrid.tsx",".tsx","React Component",154,138,6,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",149,135,5,250,false
 "src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",144,125,8,250,false
+"src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",141,130,7,250,false
 "src/adapters/cli/services/parseOllamaOptions.ts","parseOllamaOptions.ts",".ts","TypeScript Logic",131,123,4,250,false
 "src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",129,109,26,250,false
-"src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",126,115,7,250,false
 "src/engines/chat/helpers/ChatSession.ts","ChatSession.ts",".ts","TypeScript Logic",113,100,6,250,false
 "src/services/ai/ollama/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",113,95,7,250,false
+"src/bootloaders/helpBootloader.tsx","helpBootloader.tsx",".tsx","React Component",111,99,4,250,false
 "src/kernel/types.ts","types.ts",".ts","TypeScript Logic",111,95,4,250,false
 "src/shell/browser/components/BrowserApp.tsx","BrowserApp.tsx",".tsx","React Component",109,98,5,250,false
 "src/services/ai/comfyui/ComfyUIService.ts","ComfyUIService.ts",".ts","TypeScript Logic",108,95,4,250,false
@@ -41,6 +43,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/adapters/BrowserLocalAdapter.ts","BrowserLocalAdapter.ts",".ts","TypeScript Logic",62,53,8,250,false
 "src/shell/browser/components/Checkbox.tsx","Checkbox.tsx",".tsx","React Component",62,55,4,250,false
 "src/shell/browser/storage/LocalStorageSessionStorage.ts","LocalStorageSessionStorage.ts",".ts","TypeScript Logic",60,52,5,250,false
+"src/shell/browser/components/CodeHighlightBlock.tsx","CodeHighlightBlock.tsx",".tsx","React Component",59,52,5,250,false
 "src/kernel/ServiceRegistry.ts","ServiceRegistry.ts",".ts","TypeScript Logic",58,48,22,250,false
 "src/services/ai/copilot/helpers/fetchCopilotToken.ts","fetchCopilotToken.ts",".ts","TypeScript Logic",58,47,4,250,false
 "src/shell/browser/components/Textarea.tsx","Textarea.tsx",".tsx","React Component",57,50,4,250,false
@@ -75,8 +78,8 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/services/ai/ServiceFactory.ts","ServiceFactory.ts",".ts","TypeScript Logic",29,22,4,250,false
 "src/shell/browser/components/Typography.tsx","Typography.tsx",".tsx","React Component",29,25,4,250,false
 "src/services/ai/copilot/helpers/checkHealth.ts","checkHealth.ts",".ts","TypeScript Logic",28,24,4,250,false
+"src/bootloaders/browserLocalBootloader.tsx","browserLocalBootloader.tsx",".tsx","React Component",27,23,4,250,false
 "src/services/ai/ollama/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",27,22,4,250,false
-"src/bootloaders/browserLocalBootloader.tsx","browserLocalBootloader.tsx",".tsx","React Component",26,22,4,250,false
 "src/services/ai/ollama/helpers/loadImage.ts","loadImage.ts",".ts","TypeScript Logic",26,20,4,250,false
 "src/bootloaders/browserBootloader.tsx","browserBootloader.tsx",".tsx","React Component",20,16,4,250,false
 "src/shell/browser/styles/globals.css","globals.css",".css","Stylesheet",19,17,0,500,false
