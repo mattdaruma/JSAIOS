@@ -25,13 +25,13 @@ export async function fetchCopilotModels(): Promise<ModelInfo[]> {
         if (Array.isArray(body.data)) {
           const chatModels = body.data.filter((m: any) => !m.id.includes('embedding'));
           const modelInfos: ModelInfo[] = chatModels.map((m: any) => ({
+            id: m.id,
             name: m.id,
-            family: m.capabilities?.family || 'copilot',
-            format: 'api'
+            family: m.capabilities?.family || 'copilot'
           }));
 
-          if (!modelInfos.some((m) => m.name === 'default')) {
-            modelInfos.unshift({ name: 'default', family: 'copilot', format: 'api' });
+          if (!modelInfos.some((m) => m.id === 'default')) {
+            modelInfos.unshift({ id: 'default', name: 'default', family: 'copilot' });
           }
 
           return modelInfos;
@@ -43,9 +43,9 @@ export async function fetchCopilotModels(): Promise<ModelInfo[]> {
   }
 
   return [
-    { name: 'default', family: 'copilot', format: 'api' },
-    { name: 'gpt-4o', family: 'copilot', format: 'api' },
-    { name: 'gpt-4o-mini', family: 'copilot', format: 'api' },
-    { name: 'gpt-4.1', family: 'copilot', format: 'api' }
+    { id: 'default', name: 'default', family: 'copilot' },
+    { id: 'gpt-4o', name: 'gpt-4o', family: 'copilot' },
+    { id: 'gpt-4o-mini', name: 'gpt-4o-mini', family: 'copilot' },
+    { id: 'gpt-4.1', name: 'gpt-4.1', family: 'copilot' }
   ];
 }

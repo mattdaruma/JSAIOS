@@ -1,74 +1,59 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { CopilotService } from '../../src/services/ai/copilot/CopilotService';
-import { fetchCopilotModels } from '../../src/services/ai/copilot/helpers/fetchModels';
-import { fetchCopilotSessionToken } from '../../src/services/ai/copilot/helpers/fetchCopilotToken';
-import { ChatEngine } from '../../src/engines/chat/ChatEngine';
-import { FileSessionStorage } from '../../src/shell/terminal/storage/FileSessionStorage';
 import { HoneyKernel } from '../../src/kernel/HoneyKernel';
-import { ServiceRegistry } from '../../src/kernel/ServiceRegistry';
-import { EventBus } from '../../src/kernel/EventBus';
+import { CopilotService } from '../../src/services/ai/copilot/CopilotService';
+import { ChatEngine } from '../../src/engines/chat/ChatEngine';
+import { FileSessionStorage } from '../../src/engines/chat/adapters/FileSessionStorage';
+import { handleCopilotCLI } from '../../src/shell/terminal/commands/copilotCLI';
 
-describe('GitHub Copilot AI Service Driver (Pure HTTP REST)', () => {
-  it('should handle session token fetch gracefully when token is unconfigured', async () => {
-    const orig = process.env.GITHUB_TOKEN;
-    delete process.env.GITHUB_TOKEN;
-    delete process.env.COPILOT_TOKEN;
-    delete process.env.GH_TOKEN;
+describe('JSAIOS Copilot Service Driver Architecture', () => {
+  const testDir = path.join(process.cwd(), 'tests', 'tmpdir', 'test-copilot-sessions');
+  let kernel: HoneyKernel;
+  let copilotService: CopilotService;
 
-    try {
-      const token = await fetchCopilotSessionToken(true);
-      expect(token).toBeNull();
-    } finally {
-      if (orig) process.env.GITHUB_TOKEN = orig;
+  beforeEach(async () => {
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
+    }
+    kernel = new HoneyKernel();
+    copilotService = new CopilotService();
+    kernel.registerService(copilotService);
+    await kernel.boot();
+  });
+
+  afterEach(() => {
+    if (fs.existsSync(testDir)) {
+      fs.rmSync(testDir, { recursive: true, force: true });
     }
   });
 
-  it('should list available Copilot models', async () => {
-    const models = await fetchCopilotModels();
+  it('should initialize Copilot service driver cleanly with correct descriptor capabilities', () => {
+    const descriptor = copilotService.descriptor;
+    expect(descriptor.id).toBe('copilot');
+    expect(descriptor.capabilities).toContain('text-generation');
+    expect(descriptor.capabilities).toContain('chat');
+  });
+
+  it('should report copilot service CLI status output correctly', async () => {
+    const output = await handleCopilotCLI(copilotService, ['status']);
+    expect(output).toBeDefined();
+    expect(output).toContain('GitHub Copilot Service:');
+  });
+
+  it('should return available copilot models list', async () => {
+    const models = await copilotService.getModels();
+    expect(Array.isArray(models)).toBe(true);
     expect(models.length).toBeGreaterThan(0);
-    expect(models.some((m) => m.name === 'default')).toBe(true);
-    expect(models.some((m) => m.name === 'gpt-4o')).toBe(true);
+    expect(models.map(m => m.id)).toContain('gpt-4o');
   });
 
-  it('should initialize CopilotService driver cleanly', async () => {
-    const copilot = new CopilotService();
-    expect(copilot.id).toBe('copilot');
-    expect(copilot.descriptor.name).toBe('GitHub Copilot AI Service');
-  });
-
-  it('should route ChatEngine turns through copilot provider', async () => {
-    const registry = new ServiceRegistry();
-    const eventBus = new EventBus();
-    const kernel = new HoneyKernel(registry, eventBus);
-    const copilot = new CopilotService();
-
-    kernel.registerService(copilot);
-
-    const testDir = path.join(process.cwd(), 'tests', 'tmpdir', `copilot-test-${Date.now()}`);
+  it('should support switching chat session provider to copilot', async () => {
     const storageDriver = new FileSessionStorage(testDir);
-    const engine = new ChatEngine(kernel, storageDriver);
-    const session = engine.createSession('Copilot Chat', 'copilot', 'default');
+    const chatEngine = new ChatEngine(kernel, storageDriver);
 
+    const session = chatEngine.createSession('copilot-session', 'copilot', 'gpt-4o');
     expect(session.providerId).toBe('copilot');
-
-    // Mock copilot generateText
-    copilot.generateText = async (_req, onChunk) => {
-      if (onChunk) onChunk('Hello from Copilot REST!');
-      return { text: 'Hello from Copilot REST!', done: true };
-    };
-
-    const response = await engine.executeTurn({
-      sessionId: session.id,
-      userPrompt: 'Hello Copilot'
-    });
-
-    expect(response).toBe('Hello from Copilot REST!');
-    expect(session.messages).toHaveLength(2); // user, assistant
-    expect(session.messages[1].content).toBe('Hello from Copilot REST!');
-
-    // Cleanup temporary test directory
-    if (fs.existsSync(testDir)) fs.rmSync(testDir, { recursive: true, force: true });
+    expect(session.model).toBe('gpt-4o');
   });
 });

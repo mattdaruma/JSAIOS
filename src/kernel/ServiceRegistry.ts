@@ -53,3 +53,5 @@ export class ServiceRegistry {
     return Array.from(this.services.values());
   }
 }
+
+export const globalServiceRegistry = new ServiceRegistry();

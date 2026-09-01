@@ -7,7 +7,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
-import { getOrCreateChatEngine } from '../terminal/commands/chatCLI';
+import { getOrCreateChatEngine } from '../../engines/chat/helpers/createChatEngine';
 import { dispatchServerAction, type RouteTargetConfig } from './helpers/serverActionDispatcher';
 
 export interface CorsConfig {

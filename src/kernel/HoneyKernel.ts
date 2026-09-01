@@ -3,8 +3,8 @@
  * Decoupled micro-kernel that manages micro-services, event bus, and subsystem life-cycles.
  */
 
-import { EventBus, globalEventBus } from './EventBus';
-import { ServiceRegistry, globalServiceRegistry } from './ServiceRegistry';
+import { EventBus } from './EventBus';
+import { ServiceRegistry } from './ServiceRegistry';
 import type { IKernelService, KernelStatus } from './types';
 
 export class HoneyKernel {
@@ -14,8 +14,8 @@ export class HoneyKernel {
   private eventBus: EventBus;
 
   constructor(registry?: ServiceRegistry, eventBus?: EventBus) {
-    this.registry = registry || globalServiceRegistry;
-    this.eventBus = eventBus || globalEventBus;
+    this.registry = registry || new ServiceRegistry();
+    this.eventBus = eventBus || new EventBus();
   }
 
   /**
