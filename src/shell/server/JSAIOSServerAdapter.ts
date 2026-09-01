@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Driving Adapter: JSAIOSServerAdapter
- * Data-Driven HTTP REST API Server Adapter. Reads route mappings and CORS rules from declarative JSON manifests.
+ * Data-Driven HTTP REST API Server Adapter. Reads route target mappings and CORS rules from declarative JSON manifests.
  */
 
 import http from 'http';
@@ -8,14 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import { getOrCreateChatEngine } from '../terminal/commands/chatCLI';
-import { dispatchServerAction } from './helpers/serverActionDispatcher';
-
-export interface RouteConfig {
-  id: string;
-  path: string;
-  method: string;
-  action: string;
-}
+import { dispatchServerAction, type RouteTargetConfig } from './helpers/serverActionDispatcher';
 
 export interface CorsConfig {
   enabled: boolean;
@@ -26,7 +19,7 @@ export interface CorsConfig {
 
 export class JSAIOSServerAdapter {
   private server: http.Server | null = null;
-  private routes: RouteConfig[] = [];
+  private routes: RouteTargetConfig[] = [];
   private cors: CorsConfig = {
     enabled: true,
     allowOrigin: '*',
@@ -84,7 +77,7 @@ export class JSAIOSServerAdapter {
         );
 
         if (matchedRoute) {
-          await dispatchServerAction(matchedRoute.action, req, res, urlParts, engine, this.kernel);
+          await dispatchServerAction(matchedRoute, req, res, urlParts, engine, this.kernel);
           return;
         }
 
@@ -113,7 +106,7 @@ export class JSAIOSServerAdapter {
       });
 
       this.server.listen(this.port, this.host, () => {
-        console.log(`[JSAIOSServerAdapter] Data-Driven Server listening on http://${this.host}:${this.port} (${this.routes.length} routes registered)`);
+        console.log(`[JSAIOSServerAdapter] Data-Driven Server listening on http://${this.host}:${this.port} (${this.routes.length} declarative routes registered)`);
         resolve();
       });
     });

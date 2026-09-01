@@ -11,37 +11,38 @@
       "id": "status",
       "path": "/api/status",
       "method": "GET",
-      "action": "systemStatus"
+      "target": "kernel.getStatus"
     },
     {
       "id": "services",
       "path": "/api/services",
       "method": "GET",
-      "action": "listServices"
+      "target": "kernel.listServices"
     },
     {
       "id": "list-sessions",
       "path": "/api/chat/sessions",
       "method": "GET",
-      "action": "listChatSessions"
+      "target": "chatEngine.listSessions"
     },
     {
       "id": "create-session",
       "path": "/api/chat/sessions",
       "method": "POST",
-      "action": "createChatSession"
+      "target": "chatEngine.createSession"
     },
     {
       "id": "chat-history",
       "path": "/api/chat/history",
       "method": "GET",
-      "action": "getChatHistory"
+      "target": "chatEngine.getHistory"
     },
     {
       "id": "chat-send-stream",
       "path": "/api/chat/send",
       "method": "POST",
-      "action": "executeChatTurnStream"
+      "target": "chatEngine.executeTurn",
+      "stream": true
     }
   ]
 }

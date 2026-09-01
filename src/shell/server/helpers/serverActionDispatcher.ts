@@ -1,9 +1,17 @@
 /**
- * JSAIOS - Single-purpose helper: dispatchServerAction
- * Handles action execution for data-driven HTTP REST server adapter.
+ * JSAIOS - Generic Target Invoker: dispatchServerAction
+ * Dynamically invokes kernel and engine methods declared in route JSON manifests.
  */
 
 import http from 'http';
+
+export interface RouteTargetConfig {
+  id: string;
+  path: string;
+  method: string;
+  target: string;
+  stream?: boolean;
+}
 
 export async function readRequestBody(req: http.IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -15,97 +23,35 @@ export async function readRequestBody(req: http.IncomingMessage): Promise<string
 }
 
 export async function dispatchServerAction(
-  action: string,
+  route: RouteTargetConfig,
   req: http.IncomingMessage,
   res: http.ServerResponse,
   urlParts: URL,
-  engine: any,
+  chatEngine: any,
   kernel: any
 ): Promise<void> {
-  if (action === 'systemStatus') {
-    const active = engine.getActiveSession();
-    const sessions = engine.listSessions();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      status: 'online',
-      kernel: kernel.getStatus(),
-      activeSession: active ? {
-        id: active.id,
-        name: active.name,
-        providerId: active.providerId,
-        model: active.model,
-        messagesCount: active.messages.length,
-        options: active.options
-      } : null,
-      totalSessions: sessions.length
-    }));
+  const targetMap: Record<string, any> = {
+    kernel,
+    chatEngine
+  };
+
+  const [objName, methodName] = route.target.split('.');
+  const targetObj = targetMap[objName];
+
+  if (!targetObj || typeof targetObj[methodName] !== 'function' && typeof targetObj.getStatus !== 'function' && typeof targetObj.Registry !== 'object') {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: `Target method '${route.target}' invalid on server adapter` }));
     return;
   }
 
-  if (action === 'listServices') {
-    const services = kernel.Registry.listDescriptors();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ services }));
-    return;
-  }
-
-  if (action === 'listChatSessions') {
-    const sessions = engine.listSessions();
-    const active = engine.getActiveSession();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      activeId: active?.id || null,
-      sessions: sessions.map((s: any) => ({
-        id: s.id,
-        name: s.name,
-        providerId: s.providerId,
-        model: s.model,
-        turnsCount: s.messages.length
-      }))
-    }));
-    return;
-  }
-
-  if (action === 'createChatSession') {
-    const body = await readRequestBody(req);
-    const { name, providerId, model, systemDirective, options } = JSON.parse(body || '{}');
-    const session = engine.createSession(
-      name || 'default',
-      providerId || 'ollama',
-      model || 'llama3',
-      systemDirective,
-      options
-    );
-    res.writeHead(201, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ session: { id: session.id, name: session.name, providerId: session.providerId, model: session.model } }));
-    return;
-  }
-
-  if (action === 'getChatHistory') {
-    const sessionId = urlParts.searchParams.get('sessionId');
-    const allSessions = engine.listSessions();
-    const session = sessionId ? allSessions.find((s: any) => s.id === sessionId) : engine.getActiveSession();
-    if (!session) {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Session not found' }));
-      return;
-    }
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      sessionId: session.id,
-      name: session.name,
-      messages: session.messages
-    }));
-    return;
-  }
-
-  if (action === 'executeChatTurnStream') {
+  // Handle Chunked Streaming Endpoint
+  if (route.stream) {
     const body = await readRequestBody(req);
     const { userPrompt, sessionId, options, images } = JSON.parse(body || '{}');
 
-    const allSessions = engine.listSessions();
-    let active = sessionId ? allSessions.find((s: any) => s.id === sessionId) : engine.getActiveSession();
-    if (!active) active = engine.createSession('default', 'ollama', 'llama3');
+    const allSessions = chatEngine.listSessions();
+    let active = sessionId ? allSessions.find((s: any) => s.id === sessionId) : chatEngine.getActiveSession();
+    if (!active) active = chatEngine.createSession('default', 'ollama', 'llama3');
 
     res.writeHead(200, {
       'Content-Type': 'text/plain; charset=utf-8',
@@ -113,7 +59,7 @@ export async function dispatchServerAction(
     });
 
     try {
-      await engine.executeTurn({
+      await chatEngine.executeTurn({
         sessionId: active.id,
         userPrompt,
         images,
@@ -130,6 +76,64 @@ export async function dispatchServerAction(
     return;
   }
 
-  res.writeHead(500, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ error: `Action '${action}' not implemented in server adapter` }));
+  // Generic Method Invocation & JSON Response
+  try {
+    let result: any = null;
+
+    if (route.target === 'kernel.getStatus') {
+      const active = chatEngine.getActiveSession();
+      const sessions = chatEngine.listSessions();
+      result = {
+        status: 'online',
+        kernel: kernel.getStatus(),
+        activeSession: active ? {
+          id: active.id,
+          name: active.name,
+          providerId: active.providerId,
+          model: active.model,
+          messagesCount: active.messages.length,
+          options: active.options
+        } : null,
+        totalSessions: sessions.length
+      };
+    } else if (route.target === 'kernel.listServices') {
+      result = { services: kernel.Registry.listDescriptors() };
+    } else if (route.target === 'chatEngine.listSessions') {
+      const sessions = chatEngine.listSessions();
+      const active = chatEngine.getActiveSession();
+      result = {
+        activeId: active?.id || null,
+        sessions: sessions.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          providerId: s.providerId,
+          model: s.model,
+          turnsCount: s.messages.length
+        }))
+      };
+    } else if (route.target === 'chatEngine.createSession') {
+      const body = await readRequestBody(req);
+      const { name, providerId, model, systemDirective, options } = JSON.parse(body || '{}');
+      const session = chatEngine.createSession(name || 'default', providerId || 'ollama', model || 'llama3', systemDirective, options);
+      result = { session: { id: session.id, name: session.name, providerId: session.providerId, model: session.model } };
+    } else if (route.target === 'chatEngine.getHistory') {
+      const sessionId = urlParts.searchParams.get('sessionId');
+      const allSessions = chatEngine.listSessions();
+      const session = sessionId ? allSessions.find((s: any) => s.id === sessionId) : chatEngine.getActiveSession();
+      if (!session) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Session not found' }));
+        return;
+      }
+      result = { sessionId: session.id, name: session.name, messages: session.messages };
+    } else {
+      result = await targetObj[methodName]();
+    }
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(result));
+  } catch (err: any) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: err.message || String(err) }));
+  }
 }
