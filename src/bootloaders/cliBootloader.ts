@@ -29,7 +29,11 @@ export async function bootCLISystem(manifestPath?: string): Promise<HoneyKernel>
   await kernel.boot();
 
   // Launch terminal shell using prompt declared in JSON manifest
-  startCLITerminal(kernel, manifest.shell.prompt);
+  const shellCfg = Array.isArray(manifest.shells)
+    ? (manifest.shells.find((s) => s.type === 'cli' && s.enabled !== false) || manifest.shells[0])
+    : (manifest as any).shell;
+
+  startCLITerminal(kernel, shellCfg?.prompt);
 
   return kernel;
 }

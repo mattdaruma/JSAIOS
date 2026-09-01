@@ -22,7 +22,12 @@ export function getOrCreateChatEngine(kernel: HoneyKernel): ChatEngine {
       const configPath = path.join(process.cwd(), 'config', 'jsaios.config.json');
       if (fs.existsSync(configPath)) {
         const parsed = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-        if (parsed.engines?.chat?.storageDir) storageDir = parsed.engines.chat.storageDir;
+        if (Array.isArray(parsed.engines)) {
+          const chatCfg = parsed.engines.find((e: any) => e.id === 'chat');
+          if (chatCfg?.storageDir) storageDir = chatCfg.storageDir;
+        } else if (parsed.engines?.chat?.storageDir) {
+          storageDir = parsed.engines.chat.storageDir;
+        }
       }
     } catch {
       // Fallback

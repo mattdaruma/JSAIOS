@@ -9,6 +9,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/helpers/ChatSession.ts","ChatSession.ts",".ts","TypeScript Logic",113,100,6,250,false
 "src/services/ai/comfyui/ComfyUIService.ts","ComfyUIService.ts",".ts","TypeScript Logic",113,99,4,250,false
 "src/services/ai/ollama/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",113,95,7,250,false
+"src/kernel/types.ts","types.ts",".ts","TypeScript Logic",103,88,4,250,false
 "src/engines/chat/adapters/FileSessionStorage.ts","FileSessionStorage.ts",".ts","TypeScript Logic",102,88,7,250,false
 "src/services/ai/AIService.ts","AIService.ts",".ts","TypeScript Logic",90,79,4,250,false
 "src/shell/server/helpers/serverActionDispatcher.ts","serverActionDispatcher.ts",".ts","TypeScript Logic",88,77,7,250,false
@@ -22,7 +23,6 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/bootloaders/browserBootloader.tsx","browserBootloader.tsx",".tsx","React Component",80,70,6,250,false
 "src/services/ai/copilot/CopilotService.ts","CopilotService.ts",".ts","TypeScript Logic",80,69,4,250,false
 "src/shell/browser/BrowserClientAdapter.ts","BrowserClientAdapter.ts",".ts","TypeScript Logic",79,67,4,250,false
-"src/kernel/types.ts","types.ts",".ts","TypeScript Logic",77,64,4,250,false
 "src/shell/browser/components/Input.tsx","Input.tsx",".tsx","React Component",77,70,4,250,false
 "src/shell/browser/components/TextBlock.tsx","TextBlock.tsx",".tsx","React Component",76,65,5,250,false
 "src/services/ai/ollama/OllamaService.ts","OllamaService.ts",".ts","TypeScript Logic",75,64,4,250,false
@@ -35,8 +35,8 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/helpers/types.ts","types.ts",".ts","TypeScript Logic",69,61,5,250,false
 "src/services/ai/copilot/adapters/CopilotCLIAdapter.ts","CopilotCLIAdapter.ts",".ts","TypeScript Logic",69,56,4,250,false
 "src/kernel/EventBus.ts","EventBus.ts",".ts","TypeScript Logic",67,57,14,250,false
+"src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",65,54,7,250,false
 "src/shell/browser/components/Checkbox.tsx","Checkbox.tsx",".tsx","React Component",62,55,4,250,false
-"src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",61,51,7,250,false
 "src/kernel/ServiceRegistry.ts","ServiceRegistry.ts",".ts","TypeScript Logic",58,48,22,250,false
 "src/services/ai/copilot/helpers/fetchCopilotToken.ts","fetchCopilotToken.ts",".ts","TypeScript Logic",58,47,4,250,false
 "src/shell/browser/components/Textarea.tsx","Textarea.tsx",".tsx","React Component",57,50,4,250,false
@@ -45,9 +45,9 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/services/ai/copilot/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",52,44,5,250,false
 "src/engines/chat/adapters/ChatCLIAdapter.ts","ChatCLIAdapter.ts",".ts","TypeScript Logic",51,41,5,250,false
 "src/services/ai/ollama/adapters/OllamaCLIAdapter.ts","OllamaCLIAdapter.ts",".ts","TypeScript Logic",49,40,4,250,false
+"src/bootloaders/cliBootloader.ts","cliBootloader.ts",".ts","TypeScript Logic",48,38,10,250,false
 "src/services/ai/comfyui/helpers/getNodeInfo.ts","getNodeInfo.ts",".ts","TypeScript Logic",46,39,4,250,false
 "src/shell/browser/components/CodeEditor.tsx","CodeEditor.tsx",".tsx","React Component",45,40,4,250,false
-"src/bootloaders/cliBootloader.ts","cliBootloader.ts",".ts","TypeScript Logic",44,35,10,250,false
 "src/shell/terminal/formatters/PlainTerminalFormatter.ts","PlainTerminalFormatter.ts",".ts","TypeScript Logic",44,34,4,250,false
 "src/shell/terminal/helpers/getTerminalFormatter.ts","getTerminalFormatter.ts",".ts","TypeScript Logic",44,35,5,250,false
 "src/engines/chat/helpers/handleChatHistory.ts","handleChatHistory.ts",".ts","TypeScript Logic",43,33,4,250,false
@@ -56,9 +56,9 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/helpers/handleChatConfig.ts","handleChatConfig.ts",".ts","TypeScript Logic",42,34,4,250,false
 "src/engines/chat/helpers/handleChatStatus.ts","handleChatStatus.ts",".ts","TypeScript Logic",41,33,4,250,false
 "src/shell/browser/types.ts","types.ts",".ts","TypeScript Logic",41,36,4,250,false
+"src/engines/chat/helpers/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",40,35,5,250,false
 "src/shell/terminal/tokenize.ts","tokenize.ts",".ts","TypeScript Logic",40,34,4,250,false
 "src/kernel/loadSecrets.ts","loadSecrets.ts",".ts","TypeScript Logic",38,32,4,250,false
-"src/engines/chat/helpers/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",35,30,5,250,false
 "src/shell/browser/components/DatePicker.tsx","DatePicker.tsx",".tsx","React Component",35,31,4,250,false
 "src/shell/browser/components/Header.tsx","Header.tsx",".tsx","React Component",35,31,4,250,false
 "src/shell/browser/components/SidePanel.tsx","SidePanel.tsx",".tsx","React Component",34,29,4,250,false

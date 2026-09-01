@@ -60,9 +60,33 @@ export interface ServiceConfig {
   enabled: boolean;
 }
 
+export interface EngineConfig {
+  id: string;
+  type: string;
+  storageDir?: string;
+  enabled: boolean;
+  [key: string]: any;
+}
+
+export interface ServerConfig {
+  id: string;
+  port: number;
+  host: string;
+  routesFile?: string;
+  enabled: boolean;
+  cors?: {
+    enabled: boolean;
+    allowOrigin: string;
+    allowMethods: string;
+    allowHeaders: string;
+  };
+}
+
 export interface ShellConfig {
+  id: string;
   type: 'cli' | 'web' | 'browser' | 'server' | 'headless';
   prompt?: string;
+  enabled: boolean;
 }
 
 export interface JSAIOSManifest {
@@ -71,6 +95,8 @@ export interface JSAIOSManifest {
     version: string;
     environment: string;
   };
+  servers?: ServerConfig[];
+  engines?: EngineConfig[];
   services: ServiceConfig[];
-  shell: ShellConfig;
+  shells?: ShellConfig[];
 }

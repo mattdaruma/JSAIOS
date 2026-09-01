@@ -25,9 +25,13 @@ export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter
     const configPath = path.join(process.cwd(), 'config', 'jsaios.config.json');
     if (fs.existsSync(configPath)) {
       const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      if (config.server?.port) port = config.server.port;
-      if (config.server?.host) host = config.server.host;
-      if (config.server?.routesFile) routesFile = path.join(process.cwd(), config.server.routesFile);
+      const srv = Array.isArray(config.servers)
+        ? (config.servers.find((s: any) => s.enabled !== false) || config.servers[0])
+        : config.server;
+
+      if (srv?.port) port = srv.port;
+      if (srv?.host) host = srv.host;
+      if (srv?.routesFile) routesFile = path.join(process.cwd(), srv.routesFile);
     }
   } catch {
     // Fallback defaults
