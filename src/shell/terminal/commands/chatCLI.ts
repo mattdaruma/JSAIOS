@@ -76,7 +76,7 @@ export async function handleChatCLI(
       `Provider        : ${active.providerId}`,
       `Model           : ${active.model}`,
       `Messages Count  : ${active.messages.length} message(s) (${active.messages.filter((m) => m.role === 'user').length} user, ${active.messages.filter((m) => m.role === 'assistant').length} assistant)`,
-      `System Context  : ${sys ? `"${sys.content}"` : 'None'}`,
+      `System Context  : ${sys ? `Present (${sys.content.length} chars) | View with "chat system"` : 'None'}`,
       `Session Options : ${optsStr || 'Default Engine Defaults'}`,
       `Total Sessions  : ${sessions.length} active session(s)`,
       `Storage Engine  : FileSessionStorage (${storageDir}/)`
@@ -150,7 +150,13 @@ export async function handleChatCLI(
     const active = engine.getActiveSession();
     if (!active) return 'No active chat session. Create one with "chat new <name>".';
     const systemText = args.slice(1).join(' ').trim();
-    if (!systemText) return 'Usage: chat system "<sticky system prompt text>"';
+    if (!systemText) {
+      const sys = active.messages.find((m) => m.role === 'system');
+      if (!sys || !sys.content) {
+        return `No sticky system prompt set for session '${active.name}'. Set one with: chat system "<prompt>"`;
+      }
+      return `=== Sticky System Prompt: '${active.name}' ===\n\n${formatter.formatChatMessage('system', sys.content, true)}`;
+    }
     active.setSystemDirective(systemText);
     return `Updated sticky system context for session '${active.name}'.`;
   }

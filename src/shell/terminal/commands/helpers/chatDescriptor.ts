@@ -52,7 +52,7 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
     { command: 'chat list', description: 'List all active chat sessions' },
     { command: 'chat switch <session_id>', description: 'Switch active chat session (auto-pins default boot session)' },
     { command: 'chat delete <session_id>', description: 'Delete a chat session from memory and disk' },
-    { command: 'chat system "<prompt>"', description: 'Set or update sticky system directive for active session' },
+    { command: 'chat system [prompt]', description: 'View current system prompt or update sticky system directive for active session' },
     {
       command: 'chat send [options] <text>',
       description: 'Send a message turn to active session (supports single-turn option overrides)',

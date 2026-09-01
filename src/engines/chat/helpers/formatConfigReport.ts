@@ -42,7 +42,7 @@ export function formatConfigReport(session: ChatSession): string {
     `=== Active Session Configuration: '${session.name}' (ID: ${session.id}) ===`,
     `Provider            : ${session.providerId}`,
     `Model               : ${session.model}`,
-    `System Context      : ${sys ? `"${sys.content}"` : 'None'}`,
+    `System Context      : ${sys ? `Present (${sys.content.length} chars) | View with "chat system"` : 'None'}`,
     '',
     '-- Standard Generation Options --',
     `temperature         : ${fmtOpt('temperature', opts.temperature)}`,
