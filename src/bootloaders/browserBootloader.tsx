@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { UIRenderer } from '../shell/browser/renderer/UIRenderer';
 import { BrowserClientAdapter } from '../shell/browser/BrowserClientAdapter';
+import { stripAnsi } from '../shell/browser/helpers/stripAnsi';
 import uiManifest from '../../config/jsaios.ui.json';
 import '../shell/browser/styles/globals.css';
 
@@ -48,7 +49,8 @@ export const BrowserApp: React.FC = () => {
         await adapter.executeCommandStream(
           inputCmd,
           (chunk: string) => {
-            setBufferContent((prev) => prev + chunk);
+            const cleanChunk = stripAnsi(chunk);
+            setBufferContent((prev) => prev + cleanChunk);
           }
         );
         setBufferContent((prev) => prev + '\n\n');

@@ -1,6 +1,6 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",206,173,4,250,false
-"src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",181,150,18,250,false
+"src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",178,147,16,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",149,135,5,250,false
 "src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",144,125,8,250,false
 "src/shell/terminal/commands/helpers/parseOllamaOptions.ts","parseOllamaOptions.ts",".ts","TypeScript Logic",131,123,4,250,false
@@ -18,9 +18,9 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/services/ai/copilot/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",84,73,5,250,false
 "src/services/ai/copilot/CopilotService.ts","CopilotService.ts",".ts","TypeScript Logic",83,72,4,250,false
 "src/shell/terminal/cliTerminal.ts","cliTerminal.ts",".ts","TypeScript Logic",81,66,5,250,false
+"src/bootloaders/browserBootloader.tsx","browserBootloader.tsx",".tsx","React Component",80,70,6,250,false
 "src/services/ai/ollama/OllamaService.ts","OllamaService.ts",".ts","TypeScript Logic",80,68,4,250,false
 "src/shell/browser/BrowserClientAdapter.ts","BrowserClientAdapter.ts",".ts","TypeScript Logic",79,67,4,250,false
-"src/bootloaders/browserBootloader.tsx","browserBootloader.tsx",".tsx","React Component",78,68,6,250,false
 "src/kernel/types.ts","types.ts",".ts","TypeScript Logic",77,64,4,250,false
 "src/shell/browser/components/Input.tsx","Input.tsx",".tsx","React Component",77,70,4,250,false
 "src/shell/browser/components/TextBlock.tsx","TextBlock.tsx",".tsx","React Component",76,65,5,250,false
@@ -75,3 +75,4 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/terminal/formatters/ITerminalFormatter.ts","ITerminalFormatter.ts",".ts","TypeScript Logic",16,14,4,250,false
 "src/services/ai/comfyui/helpers/checkHealth.ts","checkHealth.ts",".ts","TypeScript Logic",14,12,4,250,false
 "src/services/ai/ollama/helpers/checkHealth.ts","checkHealth.ts",".ts","TypeScript Logic",14,12,4,250,false
+"src/shell/browser/helpers/stripAnsi.ts","stripAnsi.ts",".ts","TypeScript Logic",12,10,4,250,false
