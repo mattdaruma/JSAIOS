@@ -1,6 +1,10 @@
 # Dependencies
 node_modules/
 
+# Secrets & Local Configuration
+config/secrets.json
+secrets.json
+
 # Build outputs
 dist/
 
