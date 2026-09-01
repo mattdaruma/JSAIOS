@@ -89,12 +89,20 @@ export interface ShellConfig {
   enabled: boolean;
 }
 
+export interface DaemonConfig {
+  enabled: boolean;
+  port: number;
+  host: string;
+  ipcGateway: boolean;
+}
+
 export interface JSAIOSManifest {
   system: {
     name: string;
     version: string;
     environment: string;
   };
+  daemon?: DaemonConfig;
   servers?: ServerConfig[];
   engines?: EngineConfig[];
   services: ServiceConfig[];

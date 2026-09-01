@@ -4,6 +4,12 @@
     "version": "1.0.0",
     "environment": "server"
   },
+  "daemon": {
+    "enabled": true,
+    "port": 3001,
+    "host": "127.0.0.1",
+    "ipcGateway": true
+  },
   "servers": [
     {
       "id": "http-rest",

@@ -9,12 +9,12 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",126,115,7,250,false
 "src/engines/chat/helpers/ChatSession.ts","ChatSession.ts",".ts","TypeScript Logic",113,100,6,250,false
 "src/services/ai/ollama/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",113,95,7,250,false
+"src/kernel/types.ts","types.ts",".ts","TypeScript Logic",111,95,4,250,false
+"src/shell/browser/components/BrowserApp.tsx","BrowserApp.tsx",".tsx","React Component",109,98,5,250,false
 "src/services/ai/comfyui/ComfyUIService.ts","ComfyUIService.ts",".ts","TypeScript Logic",108,95,4,250,false
-"src/kernel/types.ts","types.ts",".ts","TypeScript Logic",103,88,4,250,false
 "src/services/ai/AIService.ts","AIService.ts",".ts","TypeScript Logic",90,79,4,250,false
 "src/shell/server/helpers/serverActionDispatcher.ts","serverActionDispatcher.ts",".ts","TypeScript Logic",88,77,7,250,false
 "src/shell/terminal/helpers/cliColors.ts","cliColors.ts",".ts","TypeScript Logic",88,79,18,250,false
-"src/shell/browser/components/BrowserApp.tsx","BrowserApp.tsx",".tsx","React Component",87,76,4,250,false
 "src/shell/terminal/formatters/WinCLIFormatter.ts","WinCLIFormatter.ts",".ts","TypeScript Logic",87,72,6,250,false
 "src/shell/terminal/formatters/POSIXBashFormatter.ts","POSIXBashFormatter.ts",".ts","TypeScript Logic",85,70,4,250,false
 "src/shell/terminal/formatters/WinPowerShellFormatter.ts","WinPowerShellFormatter.ts",".ts","TypeScript Logic",85,70,4,250,false
@@ -31,6 +31,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/cli/services/ComfyCLIAdapter.ts","ComfyCLIAdapter.ts",".ts","TypeScript Logic",72,57,4,250,false
 "src/adapters/cli/services/parseComfyOptions.ts","parseComfyOptions.ts",".ts","TypeScript Logic",72,64,4,250,false
 "src/adapters/cli/chat/chatDescriptor.ts","chatDescriptor.ts",".ts","TypeScript Logic",71,68,4,250,false
+"src/kernel/daemon/JSAIOSDaemon.ts","JSAIOSDaemon.ts",".ts","TypeScript Logic",71,58,9,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",70,60,4,250,false
 "src/services/ai/ollama/OllamaService.ts","OllamaService.ts",".ts","TypeScript Logic",70,60,4,250,false
 "src/adapters/cli/services/CopilotCLIAdapter.ts","CopilotCLIAdapter.ts",".ts","TypeScript Logic",69,56,4,250,false
@@ -63,6 +64,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/terminal/tokenize.ts","tokenize.ts",".ts","TypeScript Logic",40,34,4,250,false
 "src/kernel/loadSecrets.ts","loadSecrets.ts",".ts","TypeScript Logic",38,32,4,250,false
 "src/adapters/storage/InMemorySessionStorage.ts","InMemorySessionStorage.ts",".ts","TypeScript Logic",37,29,4,250,false
+"src/bootloaders/daemonBootloader.ts","daemonBootloader.ts",".ts","TypeScript Logic",35,27,5,250,false
 "src/shell/browser/components/DatePicker.tsx","DatePicker.tsx",".tsx","React Component",35,31,4,250,false
 "src/shell/browser/components/Header.tsx","Header.tsx",".tsx","React Component",35,31,4,250,false
 "src/shell/browser/components/SidePanel.tsx","SidePanel.tsx",".tsx","React Component",34,29,4,250,false

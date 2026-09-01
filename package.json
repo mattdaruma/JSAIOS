@@ -8,6 +8,7 @@
     "start": "tsx src/bootloaders/cliBootloader.ts",
     "start:server": "tsx src/bootloaders/serverBootloader.ts",
     "start:cli": "tsx src/bootloaders/cliBootloader.ts",
+    "start:daemon": "tsx src/bootloaders/daemonBootloader.ts",
     "dev:browser": "vite",
     "dev:browser:local": "vite index.local.html",
     "build:browser": "vite build",
