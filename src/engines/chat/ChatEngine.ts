@@ -34,24 +34,28 @@ export class ChatEngine {
   private initSessionsFromStorage(): void {
     if (!this.storage) return;
 
-    const loaded = (this.storage.loadSessions() || []) as ChatSession[];
+    const loaded = (this.storage.loadSessions() || []) as any[];
     if (Array.isArray(loaded)) {
-      loaded.sort((a, b) => b.updatedAt - a.updatedAt);
-      for (const session of loaded) this.sessions.set(session.id, session);
+      loaded.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+      for (const item of loaded) {
+        const session = item instanceof ChatSession ? item : ChatSession.fromJSON(item);
+        this.sessions.set(session.id, session);
+      }
 
       const settings = (this.storage.loadSettings ? this.storage.loadSettings() : {}) as any;
       if (settings?.defaultSessionId && this.sessions.has(settings.defaultSessionId)) {
         this.designatedDefaultSessionId = settings.defaultSessionId;
         this.activeSessionId = settings.defaultSessionId;
-      } else if (loaded.length > 0) {
-        this.activeSessionId = loaded[0].id;
-        this.designatedDefaultSessionId = loaded[0].id;
+      } else if (this.sessions.size > 0) {
+        const firstId = Array.from(this.sessions.keys())[0];
+        this.activeSessionId = firstId;
+        this.designatedDefaultSessionId = firstId;
       }
     }
   }
 
   private persistSession(session: ChatSession): void {
-    if (this.storage) this.storage.saveSession(session);
+    if (this.storage) this.storage.saveSession(session.toJSON());
   }
 
   private persistSettings(): void {

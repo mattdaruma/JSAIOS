@@ -8,6 +8,13 @@
   },
   "routes": [
     {
+      "id": "terminal-command",
+      "path": "/api/command",
+      "method": "POST",
+      "target": "terminalInterpreter.execute",
+      "stream": true
+    },
+    {
       "id": "status",
       "path": "/api/status",
       "method": "GET",

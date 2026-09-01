@@ -37,6 +37,21 @@ export class ChatSession {
     }
   }
 
+  public static fromJSON(data: ChatSessionData): ChatSession {
+    const session = new ChatSession(
+      data.id,
+      data.name || data.id,
+      data.providerId || 'ollama',
+      data.model || 'llama3',
+      undefined,
+      data.options || {}
+    );
+    session.createdAt = data.createdAt || Date.now();
+    session.updatedAt = data.updatedAt || Date.now();
+    session.messages = Array.isArray(data.messages) ? data.messages : [];
+    return session;
+  }
+
   public setSystemDirective(content: string): void {
     const existingSystemIdx = this.messages.findIndex((m) => m.role === 'system' && m.sticky !== false);
     const systemMsg: ChatMessage = {

@@ -17,6 +17,35 @@ export class BrowserClientAdapter {
     return await res.json();
   }
 
+  public async executeCommandStream(
+    input: string,
+    onChunk: (chunk: string) => void
+  ): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/api/command`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ input })
+    });
+
+    if (!res.body) {
+      const text = await res.text();
+      onChunk(text);
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) {
+        const chunkStr = decoder.decode(value, { stream: true });
+        onChunk(chunkStr);
+      }
+    }
+  }
+
   public async sendPromptStream(
     userPrompt: string,
     onChunk: (chunk: string) => void,

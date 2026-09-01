@@ -63,10 +63,11 @@ export async function dispatchServerAction(
       });
 
       try {
-        await targetObj[methodName]({
-          ...params,
-          onChunk: (chunk: string) => res.write(chunk)
-        });
+        const inputArg = params.input !== undefined ? params.input : (params.command !== undefined ? params.command : params);
+        const result = await targetObj[methodName](inputArg, (chunk: string) => res.write(chunk));
+        if (result && typeof result === 'string') {
+          res.write(result);
+        }
         res.end();
       } catch (err: any) {
         res.write(`\n\nExecution error: ${err.message || err}`);

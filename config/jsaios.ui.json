@@ -56,7 +56,7 @@
           "monospace": true,
           "autoScroll": true,
           "stateKey": "bufferContent",
-          "content": "=== JSAIOS Interactive Terminal Shell ===\nType 'chat status', 'chat send <text>', or any command prompt turn.\nConnected to JSAIOS HoneyKernel REST API Engine.\n\n"
+          "content": "=== JSAIOS Interactive System Terminal Shell [Browser Edition] ===\nConnected to JSAIOS HoneyKernel REST Engine.\nType a terminal command below (e.g. 'help', 'status', 'services', 'chat status', 'ollama models').\n\n"
         }
       },
       {
@@ -65,7 +65,7 @@
         "componentType": "input",
         "props": {
           "promptPrefix": "jsaios@honeykernel:~$ ",
-          "placeholder": "Type prompt turn or command (e.g. Hello JSAIOS)..."
+          "placeholder": "Type terminal command (e.g. 'help', 'status', 'services', 'chat send Hello')..."
         }
       }
     ]

@@ -13,13 +13,13 @@ import '../shell/browser/styles/globals.css';
 export const BrowserApp: React.FC = () => {
   const [adapter] = useState(() => new BrowserClientAdapter());
   const [bufferContent, setBufferContent] = useState<string>(
-    "=== JSAIOS Interactive Terminal Shell [Browser Edition] ===\nConnected to JSAIOS HoneyKernel REST Engine.\nType a message turn or command below.\n\n"
+    "=== JSAIOS Interactive System Terminal Shell [Browser Edition] ===\nConnected to JSAIOS HoneyKernel REST Engine.\nType a terminal command below (e.g. 'help', 'status', 'services', 'chat status', 'ollama models').\n\n"
   );
-  const [activeSessionInfo, setActiveSessionInfo] = useState<string>('Session: ollachat (ollama)');
+  const [activeSessionInfo, setActiveSessionInfo] = useState<string>('Session: default (ollama)');
   const [connectionStatus, setConnectionStatus] = useState<string>('ONLINE (Connected)');
 
   useEffect(() => {
-    // Fetch initial status and history on boot
+    // Fetch initial status on boot
     adapter.fetchStatus()
       .then((status) => {
         if (status.activeSession) {
@@ -29,31 +29,24 @@ export const BrowserApp: React.FC = () => {
       .catch(() => {
         setConnectionStatus('OFFLINE (Server Error)');
       });
-
-    adapter.fetchHistory()
-      .then((history) => {
-        if (history.messages && history.messages.length > 0) {
-          const formatted = history.messages.map((m: any) => {
-            const badge = m.role === 'user' ? '[USER]' : m.role === 'assistant' ? '[ASSISTANT]' : '[SYSTEM]';
-            return `${badge}: ${m.content}`;
-          }).join('\n\n');
-          setBufferContent((prev) => prev + formatted + '\n\n');
-        }
-      })
-      .catch(() => {});
   }, [adapter]);
 
   const handleUIEvent = async (eventName: string, payload?: any) => {
     if (eventName.endsWith(':submit') && payload) {
-      const userPrompt = String(payload).trim();
-      if (!userPrompt) return;
+      const inputCmd = String(payload).trim();
+      if (!inputCmd) return;
 
-      // Append user prompt turn immediately to buffer
-      setBufferContent((prev) => prev + `[USER]: ${userPrompt}\n\n[ASSISTANT]: `);
+      if (inputCmd.toLowerCase() === 'clear') {
+        setBufferContent('');
+        return;
+      }
+
+      // Append user command input line to terminal buffer
+      setBufferContent((prev) => prev + `jsaios@honeykernel:~$ ${inputCmd}\n`);
 
       try {
-        await adapter.sendPromptStream(
-          userPrompt,
+        await adapter.executeCommandStream(
+          inputCmd,
           (chunk: string) => {
             setBufferContent((prev) => prev + chunk);
           }
