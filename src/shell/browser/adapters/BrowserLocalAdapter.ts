@@ -10,7 +10,7 @@ import { OllamaService } from '../../../services/ai/ollama/OllamaService';
 import { ComfyUIService } from '../../../services/ai/comfyui/ComfyUIService';
 import { CopilotService } from '../../../services/ai/copilot/CopilotService';
 import { ChatEngine } from '../../../engines/chat/ChatEngine';
-import { LocalStorageSessionStorage } from '../../../engines/chat/adapters/LocalStorageSessionStorage';
+import { LocalStorageSessionStorage } from '../storage/LocalStorageSessionStorage';
 import { BrowserLocalCommandDispatcher } from '../helpers/BrowserLocalCommandDispatcher';
 
 export class BrowserLocalAdapter {
@@ -27,7 +27,7 @@ export class BrowserLocalAdapter {
     this.kernel.registerService(new ComfyUIService());
     this.kernel.registerService(new CopilotService());
 
-    // Initialize ChatEngine with LocalStorageSessionStorage
+    // Initialize ChatEngine with browser-owned LocalStorageSessionStorage
     const storageDriver = new LocalStorageSessionStorage();
     this.chatEngine = new ChatEngine(this.kernel, storageDriver);
     this.dispatcher = new BrowserLocalCommandDispatcher(this.kernel, this.chatEngine);

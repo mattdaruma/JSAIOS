@@ -8,7 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { ServiceDescriptor } from '../../kernel/types';
-import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../../engines/chat/adapters/ChatCLIAdapter';
+import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../../engines/chat/ChatCLIAdapter';
 
 export interface TerminalManifestConfig {
   version: string;

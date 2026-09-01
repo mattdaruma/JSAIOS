@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { HoneyKernel } from '../../src/kernel/HoneyKernel';
 import { ChatEngine } from '../../src/engines/chat/ChatEngine';
-import { FileSessionStorage } from '../../src/engines/chat/adapters/FileSessionStorage';
+import { FileSessionStorage } from '../../src/adapters/storage/FileSessionStorage';
 import { resetChatEngineForTesting } from '../../src/engines/chat/helpers/createChatEngine';
 
 describe('JSAIOS Chat Engine & Storage Decoupling', () => {

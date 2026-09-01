@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
 import { ChatEngine } from '../ChatEngine';
-import { FileSessionStorage } from '../adapters/FileSessionStorage';
+import { FileSessionStorage } from '../../../adapters/storage/FileSessionStorage';
 
 let globalChatEngine: ChatEngine | null = null;
 

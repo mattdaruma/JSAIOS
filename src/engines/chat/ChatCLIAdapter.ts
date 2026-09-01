@@ -3,14 +3,14 @@
  * CLI command entry point and subcommand dispatcher for ChatEngine.
  */
 
-import type { HoneyKernel } from '../../../kernel/HoneyKernel';
-import { getOrCreateChatEngine, resetChatEngineForTesting } from '../helpers/createChatEngine';
-import { handleChatStatus } from '../helpers/handleChatStatus';
-import { handleChatConfig } from '../helpers/handleChatConfig';
-import { handleChatSessions } from '../helpers/handleChatSessions';
-import { handleChatSend } from '../helpers/handleChatSend';
-import { handleChatHistory } from '../helpers/handleChatHistory';
-import { CHAT_ENGINE_DESCRIPTOR } from '../helpers/chatDescriptor';
+import type { HoneyKernel } from '../../kernel/HoneyKernel';
+import { getOrCreateChatEngine, resetChatEngineForTesting } from './helpers/createChatEngine';
+import { handleChatStatus } from './helpers/handleChatStatus';
+import { handleChatConfig } from './helpers/handleChatConfig';
+import { handleChatSessions } from './helpers/handleChatSessions';
+import { handleChatSend } from './helpers/handleChatSend';
+import { handleChatHistory } from './helpers/handleChatHistory';
+import { CHAT_ENGINE_DESCRIPTOR } from './helpers/chatDescriptor';
 
 export { CHAT_ENGINE_DESCRIPTOR, getOrCreateChatEngine, resetChatEngineForTesting };
 
