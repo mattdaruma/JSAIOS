@@ -14,7 +14,7 @@ import '../shell/browser/styles/globals.css';
 export const BrowserApp: React.FC = () => {
   const [adapter] = useState(() => new BrowserClientAdapter());
   const [bufferContent, setBufferContent] = useState<string>(
-    "=== JSAIOS Interactive System Terminal Shell [Browser Edition] ===\nConnected to JSAIOS HoneyKernel REST Engine.\nType a terminal command below (e.g. 'help', 'status', 'services', 'chat status', 'ollama models').\n\n"
+    "=== JSAIOS Interactive System Terminal Shell [Browser Edition] ===\nConnected to JSAIOS HoneyKernel REST Engine.\nCore Commands: 'help' (command reference), 'status' (kernel info), 'services' (drivers), 'clear'.\nType 'help' to view full command reference.\n\n"
   );
   const [activeSessionInfo, setActiveSessionInfo] = useState<string>('Session: default (ollama)');
   const [connectionStatus, setConnectionStatus] = useState<string>('ONLINE (Connected)');

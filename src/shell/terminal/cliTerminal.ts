@@ -16,10 +16,11 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): vo
   const rawPromptStr = customPrompt || manifest.promptPrefix || 'jsaios@honeykernel:~$ ';
   const formattedPrompt = formatter.formatPrompt(rawPromptStr);
 
-  console.log(`\n${formatter.formatHeader('================================================================       ')}`);
+  console.log(`\n${formatter.formatHeader('=======================================================================')}`);
   console.log(` ${formatter.formatCLICommand('JSAIOS')} - JavaScript AI Operating System v1.0.0 (HoneyKernel Core)`);
   console.log(` Pure System Terminal Active. Orchestrated by Declarative JSON Manifest.`);
-  console.log(` Press CTRL+C or type "exit" to gracefully shut down and free resources.`);
+  console.log(` Core Commands: 'help' (command reference), 'status' (kernel info), 'services' (drivers), 'clear', 'exit'.`);
+  console.log(` Type "help" to view full command reference or "exit" to shut down.`);
   console.log(`${formatter.formatHeader('=======================================================================\n')}`);
 
   const rl = readline.createInterface({

@@ -56,7 +56,7 @@
           "monospace": true,
           "autoScroll": true,
           "stateKey": "bufferContent",
-          "content": "=== JSAIOS Interactive System Terminal Shell [Browser Edition] ===\nConnected to JSAIOS HoneyKernel REST Engine.\nType a terminal command below (e.g. 'help', 'status', 'services', 'chat status', 'ollama models').\n\n"
+          "content": "=== JSAIOS Interactive System Terminal Shell [Browser Edition] ===\nConnected to JSAIOS HoneyKernel REST Engine.\nCore Commands: 'help' (command reference), 'status' (kernel info), 'services' (drivers), 'clear'.\nType 'help' to view full command reference.\n\n"
         }
       },
       {

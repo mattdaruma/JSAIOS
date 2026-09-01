@@ -18,7 +18,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/terminal/formatters/WinPowerShellFormatter.ts","WinPowerShellFormatter.ts",".ts","TypeScript Logic",85,70,4,250,false
 "src/services/ai/comfyui/helpers/buildWorkflow.ts","buildWorkflow.ts",".ts","TypeScript Logic",84,79,4,250,false
 "src/services/ai/copilot/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",84,73,5,250,false
-"src/shell/terminal/cliTerminal.ts","cliTerminal.ts",".ts","TypeScript Logic",82,67,5,250,false
+"src/shell/terminal/cliTerminal.ts","cliTerminal.ts",".ts","TypeScript Logic",83,68,5,250,false
 "src/bootloaders/browserBootloader.tsx","browserBootloader.tsx",".tsx","React Component",80,70,6,250,false
 "src/services/ai/copilot/CopilotService.ts","CopilotService.ts",".ts","TypeScript Logic",80,69,4,250,false
 "src/shell/browser/BrowserClientAdapter.ts","BrowserClientAdapter.ts",".ts","TypeScript Logic",79,67,4,250,false
