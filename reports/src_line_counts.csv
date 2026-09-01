@@ -1,10 +1,9 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",202,169,4,250,false
 "src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",181,150,18,250,false
-"src/shell/terminal/commands/comfyCLI.ts","comfyCLI.ts",".ts","TypeScript Logic",163,138,4,250,false
-"src/shell/terminal/commands/ollamaCLI.ts","ollamaCLI.ts",".ts","TypeScript Logic",162,149,4,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",149,135,5,250,false
 "src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",132,115,8,250,false
+"src/shell/terminal/commands/helpers/parseOllamaOptions.ts","parseOllamaOptions.ts",".ts","TypeScript Logic",131,123,4,250,false
 "src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",129,109,26,250,false
 "src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",126,115,7,250,false
 "src/services/ai/comfyui/ComfyUIService.ts","ComfyUIService.ts",".ts","TypeScript Logic",121,104,4,250,false
@@ -25,6 +24,8 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/components/Input.tsx","Input.tsx",".tsx","React Component",77,70,4,250,false
 "src/shell/browser/components/TextBlock.tsx","TextBlock.tsx",".tsx","React Component",76,65,5,250,false
 "src/engines/chat/helpers/formatConfigReport.ts","formatConfigReport.ts",".ts","TypeScript Logic",73,65,4,250,false
+"src/shell/terminal/commands/comfyCLI.ts","comfyCLI.ts",".ts","TypeScript Logic",72,57,4,250,false
+"src/shell/terminal/commands/helpers/parseComfyOptions.ts","parseComfyOptions.ts",".ts","TypeScript Logic",72,64,4,250,false
 "src/shell/terminal/commands/helpers/chatDescriptor.ts","chatDescriptor.ts",".ts","TypeScript Logic",71,68,4,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",70,60,4,250,false
 "src/engines/chat/helpers/types.ts","types.ts",".ts","TypeScript Logic",69,61,5,250,false
@@ -42,6 +43,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/terminal/commands/chatCLI.ts","chatCLI.ts",".ts","TypeScript Logic",52,42,5,250,false
 "src/shell/browser/BrowserClientAdapter.ts","BrowserClientAdapter.ts",".ts","TypeScript Logic",50,42,4,250,false
 "src/shell/terminal/commands/chat/handleChatStatus.ts","handleChatStatus.ts",".ts","TypeScript Logic",49,43,4,250,false
+"src/shell/terminal/commands/ollamaCLI.ts","ollamaCLI.ts",".ts","TypeScript Logic",49,40,4,250,false
 "src/shell/browser/components/CodeEditor.tsx","CodeEditor.tsx",".tsx","React Component",45,40,4,250,false
 "src/bootloaders/cliBootloader.ts","cliBootloader.ts",".ts","TypeScript Logic",44,35,10,250,false
 "src/services/ai/comfyui/helpers/getNodeInfo.ts","getNodeInfo.ts",".ts","TypeScript Logic",44,38,4,250,false
