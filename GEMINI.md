@@ -1,6 +1,7 @@
 # JSAIOS Project Rules & Guidelines
 
 ## Related Projects & Architecture References
+- **Architecture Specification**: Refer to [ARCHITECTURE.md](file:///c:/Users/jerry/JSAIOS/ARCHITECTURE.md) for full Hexagonal Architecture (Ports and Adapters) guidelines.
 - **Legacy Codebase (`ollama-chat`)**: Located at `c:\Users\jerry\ollama-chat` (or `~/ollama-chat`). Refer to this repository when checking prior architectural implementations, workflow designs, UI concepts, or feature details being rebuilt into JSAIOS.
 
 ## Environment & Terminal Execution Rules
@@ -32,4 +33,3 @@
 ### 7. Pure REST API Architecture for Service Drivers
 - **Strict Rule**: All service drivers in `src/services/` MUST operate exclusively via pure HTTP REST API calls (`fetch()`).
 - **Zero Local CLI Binary / `child_process` Dependencies**: Service drivers must NEVER invoke local OS CLI binaries or spawn shell child processes (e.g. `copilot.exe`, `child_process.exec`). Drivers must remain 100% platform-agnostic and executable across Node, Bun, Web Shells, and Browser environments.
-

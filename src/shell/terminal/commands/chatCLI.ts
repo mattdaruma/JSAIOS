@@ -1,17 +1,24 @@
 /**
- * JSAIOS - Single-purpose CLI handler: handleChatCLI
- * Handles subcommands and option flags for ChatEngine interactive terminal chat.
+ * JSAIOS - Single-purpose CLI dispatcher: handleChatCLI
+ * Routes subcommands to single-purpose chat adapter handlers.
  */
 
 import fs from 'fs';
 import path from 'path';
 import { ChatEngine } from '../../../engines/chat/ChatEngine';
 import { FileSessionStorage } from '../storage/FileSessionStorage';
-import { loadLocalImageBase64 } from '../../../services/ai/ollama/helpers/loadImage';
-import { parseChatCLIArgs } from '../../../engines/chat/helpers/chatOptions';
-import { formatConfigReport } from '../../../engines/chat/helpers/formatConfigReport';
 import { CHAT_ENGINE_DESCRIPTOR } from './helpers/chatDescriptor';
-import { getTerminalFormatter } from '../helpers/getTerminalFormatter';
+import { handleChatStatus } from './chat/handleChatStatus';
+import { handleChatConfig } from './chat/handleChatConfig';
+import { handleChatHistory } from './chat/handleChatHistory';
+import { handleChatSend } from './chat/handleChatSend';
+import {
+  handleChatNewSession,
+  handleChatListSessions,
+  handleChatSwitchSession,
+  handleChatDeleteSession,
+  handleChatSystemPrompt
+} from './chat/handleChatSessions';
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
 
 export { CHAT_ENGINE_DESCRIPTOR };
@@ -46,193 +53,17 @@ export async function handleChatCLI(
   onStreamChunk?: (chunk: string) => void
 ): Promise<string> {
   const engine = getOrCreateChatEngine(kernel);
-  const formatter = getTerminalFormatter();
   const sub = (args[0] || '').toLowerCase();
 
-  if (sub === 'status') {
-    const active = engine.getActiveSession();
-    const sessions = engine.listSessions();
-    const storageDriver = engine.getStorage() as FileSessionStorage | undefined;
-    const storageDir = storageDriver?.getStorageDir() || 'In-Memory';
-    const defaultId = engine.getDesignatedDefaultSessionId();
-
-    if (!active) {
-      return [
-        '=== JSAIOS ChatEngine Status ===',
-        'Active Session  : NONE (No active session created)',
-        `Default Session : ${defaultId || 'None'}`,
-        `Total Sessions  : ${sessions.length} session(s)`,
-        `Storage Engine  : FileSessionStorage (${storageDir}/)`
-      ].join('\n');
-    }
-
-    const sys = active.messages.find((m) => m.role === 'system');
-    const optsStr = Object.entries(active.options).map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(',') : v}`).join(', ');
-
-    return [
-      '=== JSAIOS ChatEngine Status ===',
-      `Active Session  : ${active.name} (ID: ${active.id})`,
-      `Default Session : ${defaultId ? `${defaultId}${defaultId === active.id ? ' (Active)' : ''}` : 'None'}`,
-      `Provider        : ${active.providerId}`,
-      `Model           : ${active.model}`,
-      `Messages Count  : ${active.messages.length} message(s) (${active.messages.filter((m) => m.role === 'user').length} user, ${active.messages.filter((m) => m.role === 'assistant').length} assistant)`,
-      `System Context  : ${sys ? `Present (${sys.content.length} chars) | View with "chat system"` : 'None'}`,
-      `Session Options : ${optsStr || 'Default Engine Defaults'}`,
-      `Total Sessions  : ${sessions.length} active session(s)`,
-      `Storage Engine  : FileSessionStorage (${storageDir}/)`
-    ].join('\n');
-  }
-
-  if (sub === 'new' || sub === 'create') {
-    const parsed = parseChatCLIArgs(args.slice(1));
-    const name = parsed.cleanTextParts.join(' ').trim() || 'default';
-    const session = engine.createSession(name, parsed.providerId || 'ollama', parsed.model || 'llama3', parsed.systemDirective, parsed.options);
-    return `Created new chat session '${session.name}' (ID: ${session.id}) using provider '${session.providerId}' (Model: ${session.model}).`;
-  }
-
-  if (sub === 'config' || sub === 'set') {
-    const active = engine.getActiveSession();
-    if (!active) return formatter.formatError('Error: No active chat session found. Create one with "chat new <name>".');
-
-    const parsed = parseChatCLIArgs(args.slice(1), active.providerId);
-
-    if (parsed.cleanTextParts.length > 0) {
-      const unrecognized = parsed.cleanTextParts.map((t) => `'${t}'`).join(', ');
-      return formatter.formatError(`Error: Unrecognized parameter(s) for chat config: ${unrecognized}`);
-    }
-
-    const hasUpdates = Boolean(
-      parsed.providerId ||
-      parsed.model ||
-      parsed.systemDirective ||
-      Object.keys(parsed.options).length > 0
-    );
-
-    if (!hasUpdates) {
-      return formatConfigReport(active);
-    }
-
-    const updated = engine.updateSessionConfig(active.id, {
-      providerId: parsed.providerId,
-      model: parsed.model,
-      systemDirective: parsed.systemDirective,
-      options: parsed.options
-    });
-    return `Updated settings for active chat session '${updated.name}' (Provider: ${updated.providerId}, Model: ${updated.model}).`;
-  }
-
-  if (sub === 'list' || sub === 'ls') {
-    const sessions = engine.listSessions();
-    if (sessions.length === 0) return 'No active chat sessions found. Type "chat new <name>" to create one.';
-    const active = engine.getActiveSession();
-    const defaultId = engine.getDesignatedDefaultSessionId();
-    return [
-      'Active JSAIOS Chat Sessions:',
-      ...sessions.map((s) => ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (Provider: ${s.providerId}, Model: ${s.model}, Turns: ${s.messages.length})${s.id === defaultId ? ' [DEFAULT]' : ''}`)
-    ].join('\n');
-  }
-
-  if (sub === 'switch' || sub === 'use') {
-    if (!args[1]) return 'Usage: chat switch <session_id>';
-    const success = engine.setActiveSession(args[1]);
-    if (!success) return `Session '${args[1]}' not found. Type "chat list" to view sessions.`;
-    return `Switched active chat session to '${engine.getActiveSession()?.name}' (ID: ${engine.getActiveSession()?.id}).`;
-  }
-
-  if (sub === 'delete' || sub === 'rm') {
-    if (!args[1]) return 'Usage: chat delete <session_id>';
-    const success = engine.deleteSession(args[1]);
-    if (!success) return `Session '${args[1]}' not found. Type "chat list" to view sessions.`;
-    return `Deleted chat session '${args[1]}' from memory and disk.`;
-  }
-
-  if (sub === 'system') {
-    const active = engine.getActiveSession();
-    if (!active) return 'No active chat session. Create one with "chat new <name>".';
-    const systemText = args.slice(1).join(' ').trim();
-    if (!systemText) {
-      const sys = active.messages.find((m) => m.role === 'system');
-      if (!sys || !sys.content) {
-        return `No sticky system prompt set for session '${active.name}'. Set one with: chat system "<prompt>"`;
-      }
-      return `=== Sticky System Prompt: '${active.name}' ===\n\n${formatter.formatChatMessage('system', sys.content, true)}`;
-    }
-    active.setSystemDirective(systemText);
-    return `Updated sticky system context for session '${active.name}'.`;
-  }
-
-  if (sub === 'history' || sub === 'log') {
-    const active = engine.getActiveSession();
-    if (!active) return 'No active chat session. Create one with "chat new <name>".';
-    const messages = active.messages;
-    if (messages.length === 0) return `Chat session '${active.name}' has no messages log yet.`;
-
-    const formatMsg = (m: any) => formatter.formatChatMessage(m.role, m.content, m.sticky, m.images?.length);
-
-    const nums = args.slice(1).filter((a) => !a.startsWith('-')).map(Number).filter((n) => !isNaN(n) && n >= 0);
-    const isUnlimited = active.options.maxHistory === undefined || active.options.maxHistory === null;
-
-    if (args.includes('--all') || args.includes('-a') || (nums.length === 0 && isUnlimited)) {
-      const formattedMsgs = messages.map(formatMsg).join('\n\n');
-      return `=== Full Chat History Log: '${active.name}' (${messages.length} messages) ===\n\n${formattedMsgs}`;
-    }
-
-    let page = 1;
-    let limit = active.options.maxHistory && active.options.maxHistory > 0 ? active.options.maxHistory : 10;
-    if (nums.length >= 1) page = Math.floor(nums[0]);
-    if (nums.length >= 2) limit = Math.floor(nums[1]);
-
-    const total = messages.length, totalPages = Math.max(1, Math.ceil(total / limit)), effPage = Math.min(page, totalPages);
-    const paged = messages.slice(Math.max(0, total - effPage * limit), total - (effPage - 1) * limit);
-    const formattedMsgs = paged.map(formatMsg).join('\n\n');
-    const footer = totalPages > 1 ? `\n\n[Page ${effPage} of ${totalPages} | Use "chat history ${effPage + 1 <= totalPages ? effPage + 1 : totalPages}" for previous page | "chat history --all" for full log]` : '';
-
-    return `=== Chat History Log: '${active.name}' (Page ${effPage} of ${totalPages}, ${total} messages total) ===\n\n${formattedMsgs}${footer}`;
-  }
-
-  if (sub === 'send' || sub === 'ask') {
-    let active = engine.getActiveSession();
-    if (!active) active = engine.createSession('default', 'ollama', 'llama3');
-
-    const parsed = parseChatCLIArgs(args.slice(1), active.providerId);
-    const images: string[] = [], promptParts: string[] = [];
-
-    for (let i = 0; i < parsed.cleanTextParts.length; i++) {
-      const token = parsed.cleanTextParts[i];
-      if (token === '--image' || token === '-i') {
-        const imgPath = parsed.cleanTextParts[++i];
-        if (imgPath) {
-          try { images.push(loadLocalImageBase64(imgPath)); }
-          catch (err: any) { return `Error loading image: ${err.message || err}`; }
-        }
-      } else promptParts.push(token);
-    }
-
-    const userPrompt = promptParts.join(' ').trim();
-    if (!userPrompt) return 'Error: Chat prompt text cannot be empty.';
-
-    let isThinking = false;
-    const wrappedChunkHandler = onStreamChunk
-      ? (chunk: string) => {
-          if (chunk.includes('<think>')) isThinking = true;
-          const formattedChunk = formatter.formatThinkingChunk(chunk, isThinking);
-          if (chunk.includes('</think>')) isThinking = false;
-          onStreamChunk(formattedChunk);
-        }
-      : undefined;
-
-    try {
-      return await engine.executeTurn({
-        sessionId: active.id,
-        userPrompt,
-        images: images.length > 0 ? images : undefined,
-        turnOptions: parsed.options,
-        onChunk: wrappedChunkHandler
-      });
-    } catch (err: any) {
-      return `Chat engine error: ${err.message || err}`;
-    }
-  }
+  if (sub === 'status') return handleChatStatus(engine);
+  if (sub === 'new' || sub === 'create') return handleChatNewSession(engine, args);
+  if (sub === 'config' || sub === 'set') return handleChatConfig(engine, args);
+  if (sub === 'list' || sub === 'ls') return handleChatListSessions(engine);
+  if (sub === 'switch' || sub === 'use') return handleChatSwitchSession(engine, args);
+  if (sub === 'delete' || sub === 'rm') return handleChatDeleteSession(engine, args);
+  if (sub === 'system') return handleChatSystemPrompt(engine, args);
+  if (sub === 'history' || sub === 'log') return handleChatHistory(engine, args);
+  if (sub === 'send' || sub === 'ask') return handleChatSend(engine, args, onStreamChunk);
 
   return `Unknown chat command '${sub}'. Type "chat help" for available commands.`;
 }
