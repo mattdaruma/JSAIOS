@@ -1,0 +1,73 @@
+{
+  "version": "1.0.0",
+  "title": "JSAIOS Web Terminal",
+  "theme": "dark",
+  "root": {
+    "id": "root-terminal-container",
+    "type": "container",
+    "componentType": "container",
+    "layoutProps": {
+      "direction": "column",
+      "fullHeight": true,
+      "fullWidth": true,
+      "className": "bg-zinc-950 font-mono text-zinc-100"
+    },
+    "children": [
+      {
+        "id": "terminal-header",
+        "type": "container",
+        "componentType": "header",
+        "props": {
+          "title": "JSAIOS Terminal Shell [Browser Edition]",
+          "subtitle": "v1.0.0 (HoneyKernel REST Active)"
+        },
+        "children": [
+          {
+            "id": "status-badge",
+            "type": "component",
+            "componentType": "badge",
+            "props": {
+              "variant": "success",
+              "stateKey": "connectionStatus",
+              "label": "ONLINE (Connected)"
+            }
+          },
+          {
+            "id": "active-session-badge",
+            "type": "component",
+            "componentType": "badge",
+            "props": {
+              "variant": "info",
+              "stateKey": "activeSessionInfo",
+              "label": "Session: default (ollama/llama3)"
+            }
+          }
+        ]
+      },
+      {
+        "id": "terminal-output-buffer",
+        "type": "component",
+        "componentType": "textblock",
+        "layoutProps": {
+          "flex": 1,
+          "scrollable": true
+        },
+        "props": {
+          "monospace": true,
+          "autoScroll": true,
+          "stateKey": "bufferContent",
+          "content": "=== JSAIOS Interactive Terminal Shell ===\nType 'chat status', 'chat send <text>', or any command prompt turn.\nConnected to JSAIOS HoneyKernel REST API Engine.\n\n"
+        }
+      },
+      {
+        "id": "terminal-input-prompt",
+        "type": "component",
+        "componentType": "input",
+        "props": {
+          "promptPrefix": "jsaios@honeykernel:~$ ",
+          "placeholder": "Type prompt turn or command (e.g. Hello JSAIOS)..."
+        }
+      }
+    ]
+  }
+}
