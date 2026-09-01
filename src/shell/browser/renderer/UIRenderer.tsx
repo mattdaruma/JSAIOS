@@ -21,6 +21,7 @@ import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';
 import { Modal } from '../components/Modal';
 import { SearchableCardGrid } from '../components/SearchableCardGrid';
+import { SearchableDataContainer } from '../components/SearchableDataContainer';
 import { CodeHighlightBlock } from '../components/CodeHighlightBlock';
 
 interface UIRendererProps {
@@ -80,6 +81,16 @@ export const UIRenderer: React.FC<UIRendererProps> = ({ config, state = {}, onEv
         {...config.props}
         items={dynamicItems || []}
         onSelectCard={(item) => onEvent && onEvent(`${config.id}:select`, item)}
+      />
+    );
+  }
+  if (compType === 'searchabledatacontainer' || compType === 'searchable-data-container') {
+    const dynamicItems = state[config.props?.stateKey] !== undefined ? state[config.props?.stateKey] : config.props?.items;
+    return (
+      <SearchableDataContainer
+        {...config.props}
+        items={dynamicItems || []}
+        onSelectItem={(item) => onEvent && onEvent(`${config.id}:select`, item)}
       />
     );
   }
