@@ -15,6 +15,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist/browser',
-    emptyOutDir: true
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: 'index.html',
+        local: 'index.local.html'
+      }
+    }
   }
 });

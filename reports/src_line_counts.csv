@@ -1,6 +1,7 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
 "src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",224,188,18,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",206,173,4,250,false
+"src/shell/browser/helpers/BrowserLocalCommandDispatcher.ts","BrowserLocalCommandDispatcher.ts",".ts","TypeScript Logic",164,143,9,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",149,135,5,250,false
 "src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",144,125,8,250,false
 "src/services/ai/ollama/helpers/parseOllamaOptions.ts","parseOllamaOptions.ts",".ts","TypeScript Logic",131,123,4,250,false
@@ -17,6 +18,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/terminal/formatters/WinCLIFormatter.ts","WinCLIFormatter.ts",".ts","TypeScript Logic",87,72,6,250,false
 "src/shell/terminal/formatters/POSIXBashFormatter.ts","POSIXBashFormatter.ts",".ts","TypeScript Logic",85,70,4,250,false
 "src/shell/terminal/formatters/WinPowerShellFormatter.ts","WinPowerShellFormatter.ts",".ts","TypeScript Logic",85,70,4,250,false
+"src/bootloaders/browserLocalBootloader.tsx","browserLocalBootloader.tsx",".tsx","React Component",84,73,4,250,false
 "src/services/ai/comfyui/helpers/buildWorkflow.ts","buildWorkflow.ts",".ts","TypeScript Logic",84,79,4,250,false
 "src/services/ai/copilot/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",84,73,5,250,false
 "src/shell/terminal/cliTerminal.ts","cliTerminal.ts",".ts","TypeScript Logic",83,68,5,250,false
@@ -30,12 +32,14 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/helpers/formatConfigReport.ts","formatConfigReport.ts",".ts","TypeScript Logic",73,65,4,250,false
 "src/services/ai/comfyui/adapters/ComfyCLIAdapter.ts","ComfyCLIAdapter.ts",".ts","TypeScript Logic",72,57,4,250,false
 "src/services/ai/comfyui/helpers/parseComfyOptions.ts","parseComfyOptions.ts",".ts","TypeScript Logic",72,64,4,250,false
+"src/engines/chat/adapters/LocalStorageSessionStorage.ts","LocalStorageSessionStorage.ts",".ts","TypeScript Logic",71,62,5,250,false
 "src/engines/chat/helpers/chatDescriptor.ts","chatDescriptor.ts",".ts","TypeScript Logic",71,68,4,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",70,60,4,250,false
 "src/engines/chat/helpers/types.ts","types.ts",".ts","TypeScript Logic",69,61,5,250,false
 "src/services/ai/copilot/adapters/CopilotCLIAdapter.ts","CopilotCLIAdapter.ts",".ts","TypeScript Logic",69,56,4,250,false
 "src/kernel/EventBus.ts","EventBus.ts",".ts","TypeScript Logic",67,57,14,250,false
 "src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",65,54,7,250,false
+"src/shell/browser/adapters/BrowserLocalAdapter.ts","BrowserLocalAdapter.ts",".ts","TypeScript Logic",62,53,8,250,false
 "src/shell/browser/components/Checkbox.tsx","Checkbox.tsx",".tsx","React Component",62,55,4,250,false
 "src/kernel/ServiceRegistry.ts","ServiceRegistry.ts",".ts","TypeScript Logic",58,48,22,250,false
 "src/services/ai/copilot/helpers/fetchCopilotToken.ts","fetchCopilotToken.ts",".ts","TypeScript Logic",58,47,4,250,false
@@ -71,8 +75,8 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/kernel/ManifestLoader.ts","ManifestLoader.ts",".ts","TypeScript Logic",28,21,4,250,false
 "src/services/ai/copilot/helpers/checkHealth.ts","checkHealth.ts",".ts","TypeScript Logic",28,24,4,250,false
 "src/services/ai/ollama/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",27,22,4,250,false
+"src/services/ai/ollama/helpers/loadImage.ts","loadImage.ts",".ts","TypeScript Logic",26,20,4,250,false
 "src/shell/browser/styles/globals.css","globals.css",".css","Stylesheet",19,17,0,500,false
-"src/services/ai/ollama/helpers/loadImage.ts","loadImage.ts",".ts","TypeScript Logic",18,14,4,250,false
 "src/engines/chat/helpers/sanitizeId.ts","sanitizeId.ts",".ts","TypeScript Logic",16,13,4,250,false
 "src/shell/terminal/formatters/ITerminalFormatter.ts","ITerminalFormatter.ts",".ts","TypeScript Logic",16,14,4,250,false
 "src/services/ai/comfyui/helpers/checkHealth.ts","checkHealth.ts",".ts","TypeScript Logic",14,12,4,250,false
