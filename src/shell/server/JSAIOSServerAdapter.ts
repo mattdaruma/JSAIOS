@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Driving Adapter: JSAIOSServerAdapter
- * Data-Driven HTTP REST API Server Adapter. Reads route target mappings and CORS rules from declarative JSON manifests.
+ * Pure Data-Driven HTTP REST API Server Adapter. Reads route target mappings and CORS rules from declarative JSON manifests.
  */
 
 import http from 'http';
@@ -52,6 +52,10 @@ export class JSAIOSServerAdapter {
   public start(): Promise<void> {
     return new Promise((resolve) => {
       const engine = getOrCreateChatEngine(this.kernel);
+      const targetMap: Record<string, any> = {
+        kernel: this.kernel,
+        chatEngine: engine
+      };
 
       this.server = http.createServer(async (req, res) => {
         // Apply Declarative CORS Rules
@@ -77,7 +81,7 @@ export class JSAIOSServerAdapter {
         );
 
         if (matchedRoute) {
-          await dispatchServerAction(matchedRoute, req, res, urlParts, engine, this.kernel);
+          await dispatchServerAction(matchedRoute, req, res, urlParts, targetMap);
           return;
         }
 

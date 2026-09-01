@@ -1,12 +1,10 @@
 /**
- * JSAIOS - HoneyKernel Manager
- * Ring 0 Headless Microkernel Core.
- * Manages system boot lifecycle, service registration, graceful shutdown, and IPC routing.
- * Zero UI code, zero DOM dependencies.
+ * JSAIOS - Core Kernel Dispatcher & Orchestrator: HoneyKernel
+ * Decoupled micro-kernel that manages micro-services, event bus, and subsystem life-cycles.
  */
 
 import { EventBus, globalEventBus } from './EventBus';
-import { ServiceRegistry } from './ServiceRegistry';
+import { ServiceRegistry, globalServiceRegistry } from './ServiceRegistry';
 import type { IKernelService, KernelStatus } from './types';
 
 export class HoneyKernel {
@@ -16,7 +14,7 @@ export class HoneyKernel {
   private eventBus: EventBus;
 
   constructor(registry?: ServiceRegistry, eventBus?: EventBus) {
-    this.registry = registry || new ServiceRegistry();
+    this.registry = registry || globalServiceRegistry;
     this.eventBus = eventBus || globalEventBus;
   }
 
@@ -58,7 +56,7 @@ export class HoneyKernel {
   public async shutdown(): Promise<void> {
     if (!this.booted) return;
 
-    console.log('\n[HoneyKernel] Initiating graceful system shutdown...');
+    console.log('[HoneyKernel] Shutting down JSAIOS HoneyKernel Core...');
     const services = this.registry.listServices();
 
     for (const service of services) {
@@ -110,6 +108,10 @@ export class HoneyKernel {
       uptimeSeconds,
       activeServices: this.registry.listDescriptors()
     };
+  }
+
+  public getServicesSummary(): { services: any[] } {
+    return { services: this.registry.listDescriptors() };
   }
 
   /**

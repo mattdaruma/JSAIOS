@@ -1,6 +1,6 @@
 /**
- * JSAIOS - Generic Target Invoker: dispatchServerAction
- * Dynamically invokes kernel and engine methods declared in route JSON manifests.
+ * JSAIOS - Pure Generic Target Invoker: dispatchServerAction
+ * 100% domain-agnostic server action dispatcher. Dynamically invokes target methods declared in JSON route manifests.
  */
 
 import http from 'http';
@@ -27,111 +27,58 @@ export async function dispatchServerAction(
   req: http.IncomingMessage,
   res: http.ServerResponse,
   urlParts: URL,
-  chatEngine: any,
-  kernel: any
+  targetMap: Record<string, any>
 ): Promise<void> {
-  const targetMap: Record<string, any> = {
-    kernel,
-    chatEngine
-  };
-
   const [objName, methodName] = route.target.split('.');
   const targetObj = targetMap[objName];
 
-  if (!targetObj || typeof targetObj[methodName] !== 'function' && typeof targetObj.getStatus !== 'function' && typeof targetObj.Registry !== 'object') {
+  if (!targetObj || typeof targetObj[methodName] !== 'function') {
     res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: `Target method '${route.target}' invalid on server adapter` }));
+    res.end(JSON.stringify({ error: `Target method '${route.target}' not found on server adapter target map` }));
     return;
   }
 
-  // Handle Chunked Streaming Endpoint
-  if (route.stream) {
-    const body = await readRequestBody(req);
-    const { userPrompt, sessionId, options, images } = JSON.parse(body || '{}');
-
-    const allSessions = chatEngine.listSessions();
-    let active = sessionId ? allSessions.find((s: any) => s.id === sessionId) : chatEngine.getActiveSession();
-    if (!active) active = chatEngine.createSession('default', 'ollama', 'llama3');
-
-    res.writeHead(200, {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked'
-    });
-
-    try {
-      await chatEngine.executeTurn({
-        sessionId: active.id,
-        userPrompt,
-        images,
-        turnOptions: options,
-        onChunk: (chunk: string) => {
-          res.write(chunk);
-        }
-      });
-      res.end();
-    } catch (err: any) {
-      res.write(`\n\nChat error: ${err.message || err}`);
-      res.end();
-    }
-    return;
-  }
-
-  // Generic Method Invocation & JSON Response
   try {
-    let result: any = null;
+    // Parse Request Parameters (Query params for GET, Body JSON for POST/PUT)
+    let params: Record<string, any> = {};
+    urlParts.searchParams.forEach((v, k) => { params[k] = v; });
 
-    if (route.target === 'kernel.getStatus') {
-      const active = chatEngine.getActiveSession();
-      const sessions = chatEngine.listSessions();
-      result = {
-        status: 'online',
-        kernel: kernel.getStatus(),
-        activeSession: active ? {
-          id: active.id,
-          name: active.name,
-          providerId: active.providerId,
-          model: active.model,
-          messagesCount: active.messages.length,
-          options: active.options
-        } : null,
-        totalSessions: sessions.length
-      };
-    } else if (route.target === 'kernel.listServices') {
-      result = { services: kernel.Registry.listDescriptors() };
-    } else if (route.target === 'chatEngine.listSessions') {
-      const sessions = chatEngine.listSessions();
-      const active = chatEngine.getActiveSession();
-      result = {
-        activeId: active?.id || null,
-        sessions: sessions.map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          providerId: s.providerId,
-          model: s.model,
-          turnsCount: s.messages.length
-        }))
-      };
-    } else if (route.target === 'chatEngine.createSession') {
-      const body = await readRequestBody(req);
-      const { name, providerId, model, systemDirective, options } = JSON.parse(body || '{}');
-      const session = chatEngine.createSession(name || 'default', providerId || 'ollama', model || 'llama3', systemDirective, options);
-      result = { session: { id: session.id, name: session.name, providerId: session.providerId, model: session.model } };
-    } else if (route.target === 'chatEngine.getHistory') {
-      const sessionId = urlParts.searchParams.get('sessionId');
-      const allSessions = chatEngine.listSessions();
-      const session = sessionId ? allSessions.find((s: any) => s.id === sessionId) : chatEngine.getActiveSession();
-      if (!session) {
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Session not found' }));
-        return;
+    if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+      const bodyText = await readRequestBody(req);
+      if (bodyText) {
+        try {
+          const bodyJson = JSON.parse(bodyText);
+          params = { ...params, ...bodyJson };
+        } catch {
+          params.rawBody = bodyText;
+        }
       }
-      result = { sessionId: session.id, name: session.name, messages: session.messages };
-    } else {
-      result = await targetObj[methodName]();
     }
 
+    // Handle Streaming Method Target
+    if (route.stream) {
+      res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked'
+      });
+
+      try {
+        await targetObj[methodName]({
+          ...params,
+          onChunk: (chunk: string) => res.write(chunk)
+        });
+        res.end();
+      } catch (err: any) {
+        res.write(`\n\nExecution error: ${err.message || err}`);
+        res.end();
+      }
+      return;
+    }
+
+    // Pure Generic Dynamic Method Invocation
+    const result = await targetObj[methodName](params);
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(result));
+    res.end(JSON.stringify(result !== undefined ? result : { success: true }));
   } catch (err: any) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: err.message || String(err) }));

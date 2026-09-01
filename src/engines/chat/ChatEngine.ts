@@ -1,6 +1,6 @@
 /**
- * JSAIOS - ChatEngine Orchestration Engine
- * Pure platform-agnostic Chat Engine orchestrator using IChatSessionStorage driver.
+ * JSAIOS - Core Domain Engine: ChatEngine
+ * Platform-agnostic multi-turn AI chat orchestration engine.
  */
 
 import { ChatSession } from './helpers/ChatSession';
@@ -151,6 +151,46 @@ export class ChatEngine {
 
   public listSessions(): ChatSession[] {
     return Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
+  }
+
+  public getHistory(params?: { sessionId?: string }): { sessionId: string; name: string; messages: any[] } {
+    const sessionId = params?.sessionId;
+    const session = sessionId ? this.sessions.get(sessionId) : this.getActiveSession();
+    if (!session) throw new Error('Session not found');
+    return {
+      sessionId: session.id,
+      name: session.name,
+      messages: session.messages
+    };
+  }
+
+  public getSessionsSummary(): { activeId: string | null; sessions: any[] } {
+    const active = this.getActiveSession();
+    return {
+      activeId: active?.id || null,
+      sessions: this.listSessions().map((s) => ({
+        id: s.id,
+        name: s.name,
+        providerId: s.providerId,
+        model: s.model,
+        turnsCount: s.messages.length
+      }))
+    };
+  }
+
+  public getStatusSummary(): { activeSession: any; totalSessions: number } {
+    const active = this.getActiveSession();
+    return {
+      activeSession: active ? {
+        id: active.id,
+        name: active.name,
+        providerId: active.providerId,
+        model: active.model,
+        messagesCount: active.messages.length,
+        options: active.options
+      } : null,
+      totalSessions: this.sessions.size
+    };
   }
 
   public async executeTurn(params: ChatTurnParams): Promise<string> {
