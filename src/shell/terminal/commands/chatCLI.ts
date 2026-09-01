@@ -94,6 +94,25 @@ export async function handleChatCLI(
     if (!active) return 'No active chat session found. Create one with "chat new <name>".';
 
     const parsed = parseChatCLIArgs(args.slice(1), active.providerId);
+    const hasUpdates = Boolean(
+      parsed.providerId ||
+      parsed.model ||
+      parsed.systemDirective ||
+      Object.keys(parsed.options).length > 0
+    );
+
+    if (!hasUpdates) {
+      const sys = active.messages.find((m) => m.role === 'system');
+      const optsStr = Object.entries(active.options).map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(',') : v}`).join(', ');
+      return [
+        `=== Active Session Configuration: '${active.name}' (ID: ${active.id}) ===`,
+        `Provider        : ${active.providerId}`,
+        `Model           : ${active.model}`,
+        `System Context  : ${sys ? `"${sys.content}"` : 'None'}`,
+        `Session Options : ${optsStr || 'Default Defaults'}`
+      ].join('\n');
+    }
+
     const updated = engine.updateSessionConfig(active.id, {
       providerId: parsed.providerId,
       model: parsed.model,
