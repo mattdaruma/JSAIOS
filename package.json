@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "JavaScript AI Operating System (HoneyKernel Core)",
   "type": "module",
-  "main": "src/bootloaders/cliBootloader.ts",
+  "main": "src/bootloaders/serverBootloader.ts",
   "scripts": {
-    "start": "tsx src/bootloaders/cliBootloader.ts",
+    "start": "tsx src/bootloaders/serverBootloader.ts",
     "start:server": "tsx src/bootloaders/serverBootloader.ts",
+    "start:cli": "tsx src/bootloaders/cliBootloader.ts",
     "dev:browser": "vite",
     "build:browser": "vite build",
     "test": "vitest run",
