@@ -1,22 +1,19 @@
 /**
- * JSAIOS - CopilotService Driver Script
- * Clean orchestrator inheriting AIService and calling imported single-purpose functions.
+ * JSAIOS - Service Driver: CopilotService
+ * Pure HTTP REST API transport driver for GitHub Copilot model endpoints.
  */
 
-import { AIService } from '../AIService';
-import type { ModelInfo, TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse } from '../AIService';
-import type { ServiceDescriptor } from '../../../kernel/types';
+import type { AIService } from '../AIService';
+import type { ServiceDescriptor, ServiceStatus } from '../../../kernel/types';
+import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse, ModelInfo } from '../types';
 import { checkCopilotHealth } from './helpers/checkHealth';
 import { fetchCopilotModels } from './helpers/fetchModels';
 import { generateCopilotText } from './helpers/generateText';
 import { handleCopilotCLI } from '../../../shell/terminal/commands/copilotCLI';
 
-export class CopilotService extends AIService {
+export class CopilotService implements AIService {
   public readonly id = 'copilot';
-
-  constructor(endpoint: string = 'local') {
-    super(endpoint);
-  }
+  private status: ServiceStatus = 'uninitialized';
 
   public get descriptor(): ServiceDescriptor {
     return {
@@ -25,7 +22,7 @@ export class CopilotService extends AIService {
       version: '1.0.0',
       status: this.status,
       capabilities: ['text-generation', 'chat', 'code-synthesis'],
-      cliCommands: [
+      commands: [
         {
           command: 'copilot status',
           description: 'Check Copilot REST API authorization and connectivity'
@@ -79,7 +76,7 @@ export class CopilotService extends AIService {
     throw new Error('[CopilotService] Direct media generation not supported by Copilot driver.');
   }
 
-  public async executeCLICommand(args: string[], onChunk?: (chunkText: string) => void): Promise<string> {
+  public async executeCommand(args: string[], onChunk?: (chunkText: string) => void): Promise<string> {
     return handleCopilotCLI(this, args, onChunk);
   }
 }

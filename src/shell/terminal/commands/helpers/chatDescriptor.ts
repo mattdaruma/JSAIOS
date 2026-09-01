@@ -11,7 +11,7 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   version: '1.0.0',
   status: 'running',
   capabilities: ['chat', 'multi-turn', 'multimodal', 'sticky-context'],
-  cliCommands: [
+  commands: [
     { command: 'chat status', description: 'View active chat session status, options, and persistence metadata' },
     {
       command: 'chat new <name> [options]',

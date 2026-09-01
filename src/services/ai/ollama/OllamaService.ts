@@ -1,25 +1,20 @@
 /**
- * JSAIOS - OllamaService Master Driver Script
- * Clean orchestrator inheriting AIService and calling imported single-purpose functions.
+ * JSAIOS - Service Driver: OllamaService
+ * Pure HTTP REST API transport driver for local Ollama LLM provider.
  */
 
-import { AIService } from '../AIService';
-import type { ModelInfo, TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse } from '../AIService';
+import type { AIService } from '../AIService';
 import type { ServiceDescriptor } from '../../../kernel/types';
+import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse, ModelInfo } from '../types';
 import { checkOllamaHealth } from './helpers/checkHealth';
 import { fetchOllamaModels } from './helpers/fetchModels';
 import { generateOllamaText } from './helpers/generateText';
 import { handleOllamaCLI } from '../../../shell/terminal/commands/ollamaCLI';
 
-export class OllamaService extends AIService {
+export class OllamaService implements AIService {
   public readonly id = 'ollama';
-  private baseUrl: string;
-  private activeControllers: Set<AbortController> = new Set();
 
-  constructor(baseUrl: string = 'http://localhost:11434') {
-    super();
-    this.baseUrl = baseUrl;
-  }
+  constructor(private baseUrl: string = 'http://localhost:11434') {}
 
   public get descriptor(): ServiceDescriptor {
     return {
@@ -28,7 +23,7 @@ export class OllamaService extends AIService {
       version: '1.0.0',
       status: 'running',
       capabilities: ['text-generation', 'streaming', 'chat', 'model-enumeration'],
-      cliCommands: [
+      commands: [
         {
           command: 'ollama status',
           description: 'Ping local Ollama LLM provider health'
@@ -38,24 +33,10 @@ export class OllamaService extends AIService {
           description: 'List available Ollama models'
         },
         {
-          command: 'ollama prompt <model> [options] <text>',
-          description: 'Stream raw text prompt to specified Ollama model',
+          command: 'ollama run <model> <prompt>',
+          description: 'Send prompt turn to Ollama model directly',
           options: [
-            { flag: '--think [true|false]', description: 'Enable or disable reasoning mode (default: true if flag present)' },
-            { flag: '--temp <num>, -t', description: 'Set generation temperature (e.g. 0.7)' },
-            { flag: '--system "<text>", -s', description: 'Set custom system directive prompt' },
-            { flag: '--max-tokens <num>', description: 'Set max response token limit (num_predict)' },
-            { flag: '--top-p <num>', description: 'Set top_p sampling threshold' },
-            { flag: '--top-k <num>', description: 'Set top_k sampling limit' },
-            { flag: '--min-p <num>', description: 'Set min_p sampling threshold' },
-            { flag: '--seed <num>', description: 'Set RNG seed' },
-            { flag: '--ctx <num>', description: 'Set context window size (num_ctx e.g. 8192)' },
-            { flag: '--repeat-penalty <num>', description: 'Set repetition penalty factor' },
-            { flag: '--stop "<token>"', description: 'Set stop token sequence' },
-            { flag: '--format <json>', description: 'Set output format structure (e.g. json)' },
-            { flag: '--raw', description: 'Bypass template formatting' },
-            { flag: '--image <path>, -i', description: 'Attach local image file for multimodal LLMs' },
-            { flag: '--keep-alive <time>', description: 'Set model unload timeout (e.g. 5m, 0)' }
+            { flag: '--think [true|false]', description: 'Toggle model thinking reasoning mode' }
           ]
         }
       ]
@@ -71,12 +52,7 @@ export class OllamaService extends AIService {
   }
 
   public async shutdown(): Promise<void> {
-    console.log(`[OllamaService] Aborting ${this.activeControllers.size} active request(s)...`);
-    for (const controller of this.activeControllers) {
-      controller.abort();
-    }
-    this.activeControllers.clear();
-    console.log('[OllamaService] Driver shutdown complete.');
+    console.log('[OllamaService] Shutting down Ollama driver connection.');
   }
 
   public async getModels(): Promise<ModelInfo[]> {
@@ -87,15 +63,7 @@ export class OllamaService extends AIService {
     request: TextGenerationRequest,
     onChunk?: (chunkText: string) => void
   ): Promise<TextGenerationResponse> {
-    const controller = new AbortController();
-    this.activeControllers.add(controller);
-
-    try {
-      const response = await generateOllamaText(this.baseUrl, request, onChunk, controller.signal);
-      return response;
-    } finally {
-      this.activeControllers.delete(controller);
-    }
+    return generateOllamaText(this.baseUrl, request, onChunk);
   }
 
   public async generateMedia(
@@ -105,7 +73,7 @@ export class OllamaService extends AIService {
     throw new Error('[OllamaService] Media generation not supported by Ollama driver.');
   }
 
-  public async executeCLICommand(args: string[], onChunk?: (chunkText: string) => void): Promise<string> {
+  public async executeCommand(args: string[], onChunk?: (chunkText: string) => void): Promise<string> {
     return handleOllamaCLI(this, args, onChunk);
   }
 }

@@ -1,45 +1,34 @@
 /**
- * JSAIOS - TerminalInterpreter
- * Provider-agnostic shell command parser and execution dispatcher for HoneyKernel.
+ * JSAIOS - Terminal Command Interpreter
+ * Parses interactive shell inputs and dispatches commands to HoneyKernel or sub-engines.
  */
 
-import { HoneyKernel } from '../../kernel/HoneyKernel';
-import { tokenizeCommandLine } from './tokenize';
-import { handleChatCLI, CHAT_ENGINE_DESCRIPTOR } from './commands/chatCLI';
+import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { ServiceDescriptor } from '../../kernel/types';
+import { handleChatCLI, CHAT_ENGINE_DESCRIPTOR } from './commands/chatCLI';
 import { ANSI } from './helpers/cliColors';
 
-export interface TerminalOutputLine {
-  id: string;
-  type: 'input' | 'output' | 'error' | 'system';
-  text: string;
-  timestamp: number;
-}
-
 export class TerminalInterpreter {
-  private kernel: HoneyKernel;
-
-  constructor(kernel: HoneyKernel) {
-    this.kernel = kernel;
-  }
+  constructor(private kernel: HoneyKernel) {}
 
   /**
-   * Execute a raw shell command line string
+   * Interpret and execute an input command line string
    */
-  public async execute(commandLine: string, onStreamChunk?: (chunk: string) => void): Promise<string> {
-    const trimmed = commandLine.trim();
+  public async execute(
+    input: string,
+    onStreamChunk?: (chunkText: string) => void
+  ): Promise<string> {
+    const trimmed = input.trim();
     if (!trimmed) return '';
 
-    const parts = tokenizeCommandLine(trimmed);
-    if (parts.length === 0) return '';
+    const args = trimmed.split(/\s+/);
+    const mainCommand = args[0].toLowerCase();
 
-    const mainCommand = parts[0].toLowerCase();
-    const args = parts.slice(1);
-
-    // 1. Core Kernel Shell Commands
+    // 1. Built-in Core Kernel Shell Commands
     switch (mainCommand) {
       case 'help':
-        return this.handleHelp(args[0]);
+        if (args[1]) return this.handleServiceHelp(args[1]);
+        return this.handleHelp();
 
       case 'status':
         return this.handleStatus();
@@ -48,8 +37,8 @@ export class TerminalInterpreter {
         return this.handleServices();
 
       case 'chat':
-        if (args[0] === 'help') return this.handleServiceHelp('chat');
-        return handleChatCLI(this.kernel, args, onStreamChunk);
+        if (args[1] === 'help') return this.handleServiceHelp('chat');
+        return handleChatCLI(this.kernel, args.slice(1), onStreamChunk);
 
       case 'clear':
         return '__CLEAR__';
@@ -62,13 +51,13 @@ export class TerminalInterpreter {
     );
 
     if (matchedDescriptor) {
-      if (args[0] === 'help') {
+      if (args[1] === 'help') {
         return this.handleServiceHelp(matchedDescriptor.id);
       }
 
       const activeService = this.kernel.getService(matchedDescriptor.id);
-      if (activeService && activeService.executeCLICommand) {
-        return activeService.executeCLICommand(args, onStreamChunk);
+      if (activeService && activeService.executeCommand) {
+        return activeService.executeCommand(args.slice(1), onStreamChunk);
       }
     }
 
@@ -78,7 +67,7 @@ export class TerminalInterpreter {
   /**
    * Render core kernel reference or delegate to service/engine help
    */
-  private handleHelp(targetId?: string): string {
+  public handleHelp(targetId?: string): string {
     if (targetId) {
       return this.handleServiceHelp(targetId);
     }
@@ -144,8 +133,8 @@ export class TerminalInterpreter {
       `${ANSI.brightCyan}=======================================================================${ANSI.reset}`
     ];
 
-    if (descriptor.cliCommands && descriptor.cliCommands.length > 0) {
-      for (const cmd of descriptor.cliCommands) {
+    if (descriptor.commands && descriptor.commands.length > 0) {
+      for (const cmd of descriptor.commands) {
         lines.push('');
         const cmdPadding = ' '.repeat(Math.max(2, 37 - cmd.command.length));
         lines.push(`  ${ANSI.brightYellow}${cmd.command}${ANSI.reset}${cmdPadding}- ${cmd.description}`);
@@ -159,7 +148,7 @@ export class TerminalInterpreter {
         }
       }
     } else {
-      lines.push('  No CLI commands documented.');
+      lines.push('  No commands documented.');
     }
 
     lines.push(`\n${ANSI.brightCyan}=======================================================================${ANSI.reset}`);

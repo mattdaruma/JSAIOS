@@ -4,15 +4,15 @@
 
 export type ServiceStatus = 'uninitialized' | 'initializing' | 'running' | 'degraded' | 'failed' | 'stopped';
 
-export interface CLICommandOption {
+export interface CommandOption {
   flag: string;
   description: string;
 }
 
-export interface CLICommandDoc {
+export interface CommandDoc {
   command: string;
   description: string;
-  options?: CLICommandOption[];
+  options?: CommandOption[];
 }
 
 export interface ServiceDescriptor {
@@ -21,7 +21,7 @@ export interface ServiceDescriptor {
   version: string;
   status: ServiceStatus;
   capabilities: string[];
-  cliCommands?: CLICommandDoc[];
+  commands?: CommandDoc[];
 }
 
 export interface IKernelService {
@@ -30,7 +30,7 @@ export interface IKernelService {
   initialize(): Promise<void>;
   checkHealth(): Promise<boolean>;
   shutdown(): Promise<void>;
-  executeCLICommand?(args: string[], onChunk?: (chunkText: string) => void): Promise<string>;
+  executeCommand?(args: string[], onChunk?: (chunkText: string) => void): Promise<string>;
 }
 
 export interface KernelStatus {
@@ -61,7 +61,7 @@ export interface ServiceConfig {
 }
 
 export interface ShellConfig {
-  type: 'cli' | 'web' | 'headless';
+  type: 'cli' | 'web' | 'browser' | 'server' | 'headless';
   prompt?: string;
 }
 
