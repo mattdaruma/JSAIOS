@@ -15,7 +15,7 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): vo
   const rawPromptStr = customPrompt || 'jsaios@honeykernel:~$ ';
   const formattedPrompt = formatter.formatPrompt(rawPromptStr);
 
-  console.log(`\n${formatter.formatHeader('=======================================================================')}`);
+  console.log(`\n${formatter.formatHeader('================================================================       ')}`);
   console.log(` ${formatter.formatCLICommand('JSAIOS')} - JavaScript AI Operating System v1.0.0 (HoneyKernel Core)`);
   console.log(` Pure System Terminal Active. Orchestrated by Declarative JSON Manifest.`);
   console.log(` Press CTRL+C or type "exit" to gracefully shut down and free resources.`);
@@ -56,7 +56,10 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): vo
       try {
         let hasStreamed = false;
         const output = await interpreter.execute(input, (chunk) => {
-          hasStreamed = true;
+          if (!hasStreamed) {
+            hasStreamed = true;
+            process.stdout.write('\n');
+          }
           process.stdout.write(chunk);
         });
 
