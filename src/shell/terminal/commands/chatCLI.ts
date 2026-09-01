@@ -17,6 +17,10 @@ export { CHAT_ENGINE_DESCRIPTOR };
 
 let globalChatEngine: ChatEngine | null = null;
 
+export function resetChatEngineForTesting(engine?: ChatEngine | null): void {
+  globalChatEngine = engine || null;
+}
+
 export function getOrCreateChatEngine(kernel: HoneyKernel): ChatEngine {
   if (!globalChatEngine) {
     let storageDir = 'chat-sessions';

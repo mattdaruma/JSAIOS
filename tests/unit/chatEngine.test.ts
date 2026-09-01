@@ -106,27 +106,35 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
     expect(engineReboot.getActiveSession()?.id).toBe('sessionb');
   });
 
-  it('should render chat status metadata and handle chat config CLI', async () => {
-    const { handleChatCLI } = await import('../../src/shell/terminal/commands/chatCLI');
+  it('should render chat status metadata and handle chat config CLI without modifying real storage', async () => {
+    const { handleChatCLI, resetChatEngineForTesting } = await import('../../src/shell/terminal/commands/chatCLI');
     const registry = new ServiceRegistry();
     const eventBus = new EventBus();
     const kernel = new HoneyKernel(registry, eventBus);
 
-    const statusNoSession = await handleChatCLI(kernel, ['status']);
-    expect(statusNoSession).toContain('=== JSAIOS ChatEngine Status ===');
+    const testDriver = new FileSessionStorage(testStorageDir);
+    const testEngine = new ChatEngine(kernel, testDriver);
+    resetChatEngineForTesting(testEngine);
 
-    await handleChatCLI(kernel, ['new', 'TestSessionCLI', '-p', 'copilot', '-m', 'gpt-4o', '--temp', '0.4']);
-    const statusWithSession = await handleChatCLI(kernel, ['status']);
-    expect(statusWithSession).toContain('Active Session');
-    expect(statusWithSession).toContain('Provider');
-    expect(statusWithSession).toContain('Model');
+    try {
+      const statusNoSession = await handleChatCLI(kernel, ['status']);
+      expect(statusNoSession).toContain('=== JSAIOS ChatEngine Status ===');
 
-    // Test mid-session config via CLI
-    const configRes = await handleChatCLI(kernel, ['config', '-m', 'claude-3.5-sonnet', '--temp', '0.8']);
-    expect(configRes).toContain("Model: claude-3.5-sonnet");
+      await handleChatCLI(kernel, ['new', 'TestSessionCLI', '-p', 'copilot', '-m', 'gpt-4o', '--temp', '0.4']);
+      const statusWithSession = await handleChatCLI(kernel, ['status']);
+      expect(statusWithSession).toContain('Active Session');
+      expect(statusWithSession).toContain('Provider');
+      expect(statusWithSession).toContain('Model');
 
-    // Test session switch auto-setting default
-    const switchRes = await handleChatCLI(kernel, ['switch', 'TestSessionCLI']);
-    expect(switchRes).toContain("Switched active chat session to 'TestSessionCLI'");
+      // Test mid-session config via CLI
+      const configRes = await handleChatCLI(kernel, ['config', '-m', 'claude-3.5-sonnet', '--temp', '0.8']);
+      expect(configRes).toContain("Model: claude-3.5-sonnet");
+
+      // Test session switch auto-setting default
+      const switchRes = await handleChatCLI(kernel, ['switch', 'TestSessionCLI']);
+      expect(switchRes).toContain("Switched active chat session to 'TestSessionCLI'");
+    } finally {
+      resetChatEngineForTesting(null);
+    }
   });
 });
