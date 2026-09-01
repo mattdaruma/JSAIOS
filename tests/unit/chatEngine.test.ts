@@ -33,11 +33,8 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
     expect(session.messages[0].content).toBe('You are a helpful coding assistant.');
   });
 
-  it('should preserve sticky system directive when trimming message log history', () => {
-    const session = new ChatSession('sess_1', 'Test Session', 'ollama', 'llama3', 'Sticky System Directive', {
-      maxTurns: 2,
-      maxChars: 500
-    });
+  it('should preserve 100% of full message history log over many turns without deleting history', () => {
+    const session = new ChatSession('sess_1', 'Test Session', 'ollama', 'llama3', 'Sticky System Directive');
 
     for (let i = 1; i <= 10; i++) {
       session.addMessage('user', `User Turn ${i}`);
@@ -46,7 +43,8 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
 
     expect(session.messages[0].role).toBe('system');
     expect(session.messages[0].content).toBe('Sticky System Directive');
-    expect(session.messages).toHaveLength(5);
+    // 1 system message + 20 turns = 21 total messages preserved 100%
+    expect(session.messages).toHaveLength(21);
   });
 
   it('should support creation options and mid-session reconfiguration with FileSessionStorage driver', async () => {

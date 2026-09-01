@@ -1,6 +1,7 @@
 /**
  * JSAIOS - Single-purpose class: ChatSession
- * Manages conversation message history log with sticky system context preservation and turn/character window trimming.
+ * Manages conversation message history log with sticky system context preservation.
+ * Persistent session history is NEVER deleted or truncated on disk.
  */
 
 import type { ChatMessage, ChatRole, ChatSessionData, ChatSessionOptions } from './types';
@@ -21,7 +22,7 @@ export class ChatSession {
     providerId: string = 'ollama',
     model: string = 'llama3',
     systemDirective?: string,
-    options: ChatSessionOptions = { maxTurns: 20, maxChars: 12000 }
+    options: ChatSessionOptions = {}
   ) {
     this.id = id;
     this.name = name;
@@ -74,28 +75,11 @@ export class ChatSession {
 
     this.messages.push(msg);
     this.updatedAt = Date.now();
-    this.trimHistoryLog();
     return msg;
   }
 
   public trimHistoryLog(): void {
-    const maxTurns = this.options.maxTurns || 20;
-    const maxChars = this.options.maxChars || 12000;
-
-    const stickyMessages = this.messages.filter((m) => m.sticky || m.role === 'system');
-    let dynamicMessages = this.messages.filter((m) => !m.sticky && m.role !== 'system');
-
-    if (dynamicMessages.length > maxTurns * 2) {
-      dynamicMessages = dynamicMessages.slice(dynamicMessages.length - maxTurns * 2);
-    }
-
-    let totalChars = dynamicMessages.reduce((sum, m) => sum + m.content.length, 0);
-    while (dynamicMessages.length > 2 && totalChars > maxChars) {
-      const removed = dynamicMessages.shift();
-      if (removed) totalChars -= removed.content.length;
-    }
-
-    this.messages = [...stickyMessages, ...dynamicMessages];
+    // Persistent history is retained 100% on disk and never deleted from memory.
   }
 
   public toJSON(): ChatSessionData {
