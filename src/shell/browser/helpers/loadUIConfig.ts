@@ -11,7 +11,7 @@ export function loadBrowserUIConfig(configKey?: string): any {
   const targetMode = configKey || import.meta.env.VITE_UI_CONFIG || import.meta.env.MODE;
 
   if (targetMode === 'help' || targetMode?.includes('help')) {
-    return helpManifest;
+    return helpManifest.root || helpManifest;
   }
 
   return uiManifest.root;

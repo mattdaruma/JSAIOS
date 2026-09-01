@@ -1,124 +1,149 @@
 {
-  "version": "1.0.0",
-  "title": "JSAIOS System Developer Documentation GUI",
-  "theme": "dark",
-  "documentation": [
-    {
-      "id": "arch-hexagonal",
-      "title": "Hexagonal Architecture (Ports & Adapters)",
-      "category": "architecture",
-      "badge": "Core Principle",
-      "description": "Core kernel (src/kernel/) and engines (src/engines/) remain 100% platform-agnostic with zero dependencies on Node fs, process, Express, or DOM APIs. Driving shells (src/shell/) and driven adapters (src/adapters/) implement ports.",
-      "codeSnippet": "Core Kernel (src/kernel/) <---> Output Ports (IChatSessionStorage) <---> Storage Adapters (LocalStorage / File)",
-      "tags": ["architecture", "ports-and-adapters", "hexagonal", "isolation"]
+  "root": {
+    "id": "help-root-layout",
+    "componentType": "layout",
+    "layoutProps": {
+      "type": "flex",
+      "direction": "col",
+      "gap": 4,
+      "className": "h-screen w-screen bg-zinc-950 p-6 overflow-auto text-zinc-100 font-sans"
     },
-    {
-      "id": "arch-honeykernel",
-      "title": "HoneyKernel Core OS Engine",
-      "category": "kernel",
-      "badge": "OS Kernel",
-      "description": "Central operating system micro-kernel managing service registration, event bus messaging (EventBus), IPC events, and system lifecycle status.",
-      "codeSnippet": "const kernel = new HoneyKernel();\nkernel.registerService(new OllamaService());\nawait kernel.boot();",
-      "tags": ["honeykernel", "eventbus", "serviceregistry", "kernel"]
-    },
-    {
-      "id": "kernel-daemon",
-      "title": "JSAIOS Kernel Daemon (jsaiosd)",
-      "category": "kernel",
-      "badge": "Daemon OS Host",
-      "description": "Feature-flagged background OS process (config/jsaios.config.json -> daemon.enabled) hosting HoneyKernel, active micro-services, and built-in HTTP/WebSocket IPC gateway on port 3001.",
-      "codeSnippet": "npm run start:daemon  # Launches background jsaiosd OS process",
-      "tags": ["daemon", "jsaiosd", "ipc", "feature-flag"]
-    },
-    {
-      "id": "ui-headless-controller",
-      "title": "Headless useSearchableList Controller Hook",
-      "category": "ui-components",
-      "badge": "Headless Hook",
-      "description": "View-agnostic React hook managing text search queries, category pills, column sorting, and pagination math. Shared cleanly across Card Grid and Data Table views.",
-      "codeSnippet": "const { paginatedItems, setSearchTerm, viewMode, setViewMode } = useSearchableList(items, { pageSize: 9 });",
-      "tags": ["headless-hook", "useSearchableList", "pagination", "sorting"]
-    },
-    {
-      "id": "ui-searchable-container",
-      "title": "SearchableDataContainer Composite UI",
-      "category": "ui-components",
-      "badge": "Generic Component",
-      "description": "Generic multi-view container connecting useSearchableList to SearchControlBar, CardGridView, TableView, and PaginationFooter. Supports dynamic view switching between Grid and Table modes.",
-      "codeSnippet": "<SearchableDataContainer items={docs} pageSize={9} onSelectItem={(item) => openModal(item)} />",
-      "tags": ["ui-component", "searchabledatacontainer", "grid-view", "table-view"]
-    },
-    {
-      "id": "engine-chat",
-      "title": "JSAIOS Chat Engine",
-      "category": "engines",
-      "badge": "Engine",
-      "description": "Interactive multi-turn chat engine featuring sticky system context directives, option flag overrides, turn execution, and pluggable session storage.",
-      "codeSnippet": "const engine = new ChatEngine(kernel, storageDriver);\nconst session = engine.createSession('my-session', 'ollama', 'llama3');\nawait engine.executeTurn({ sessionId: session.id, userPrompt: 'Hello' });",
-      "tags": ["chat", "chat-engine", "sessions", "sticky-context"]
-    },
-    {
-      "id": "driver-ollama",
-      "title": "Ollama Service Transport Driver",
-      "category": "services",
-      "badge": "REST Driver",
-      "description": "Pure HTTP REST API transport driver for local Ollama LLM provider (http://localhost:11434). Supports streaming, thinking mode (--think), context tokens (--ctx), and multimodal image prompts.",
-      "codeSnippet": "const ollama = new OllamaService('http://localhost:11434');\nconst models = await ollama.getModels();",
-      "tags": ["ollama", "service-driver", "rest-api", "llm"]
-    },
-    {
-      "id": "driver-comfyui",
-      "title": "ComfyUI Workflow Transport Driver",
-      "category": "services",
-      "badge": "REST Driver",
-      "description": "Pure HTTP REST API transport driver for ComfyUI node graph workflows (http://localhost:8188). Supports image/media generation, workflow inspection, and parameter overrides.",
-      "codeSnippet": "const comfy = new ComfyUIService('http://localhost:8188');\nconst result = await comfy.generateMedia({ prompt: 'cyberpunk city' });",
-      "tags": ["comfyui", "workflows", "image-generation", "nodes"]
-    },
-    {
-      "id": "driver-copilot",
-      "title": "GitHub Copilot Service Driver",
-      "category": "services",
-      "badge": "REST Driver",
-      "description": "Pure HTTP REST API transport driver connecting to GitHub Copilot model endpoints (gpt-4o, claude-3.5-sonnet). Token authorization resolved via config/secrets.json or gh auth CLI.",
-      "codeSnippet": "const copilot = new CopilotService();\nconst response = await copilot.generateText({ model: 'gpt-4o', prompt: 'Refactor code' });",
-      "tags": ["copilot", "github", "gpt-4o", "code-synthesis"]
-    },
-    {
-      "id": "mode-a-server",
-      "title": "Deployment Mode A: Server / Daemon REST Gateway",
-      "category": "deployment",
-      "badge": "Mode A",
-      "description": "Node.js process runs HoneyKernel and JSAIOSServerAdapter on port 3000/3001. Browser shell communicates over REST fetch() and HTTP token streaming. Keeps API secrets safe on backend.",
-      "codeSnippet": "npm run start:server  # REST Server (Port 3000)\nnpm run start:daemon  # OS Daemon jsaiosd (Port 3001)",
-      "tags": ["mode-a", "server", "daemon", "rest-gateway"]
-    },
-    {
-      "id": "mode-b-browser",
-      "title": "Deployment Mode B: Standalone In-Browser Kernel",
-      "category": "deployment",
-      "badge": "Mode B",
-      "description": "HoneyKernel, ChatEngine, and keyless REST service drivers run directly inside the browser tab JS memory. Uses LocalStorageSessionStorage for in-tab persistence.",
-      "codeSnippet": "npm run dev:browser:local   # Standalone In-Browser Kernel dev server\nnpm run build:browser:local # Build standalone client web app",
-      "tags": ["mode-b", "browser-kernel", "localstorage", "keyless"]
-    },
-    {
-      "id": "cli-commands",
-      "title": "Interactive System Terminal Commands",
-      "category": "cli",
-      "badge": "CLI Reference",
-      "description": "Core shell builtins and subcommands available in System Terminal Shell (npm run start:cli). Fully data-driven via config/jsaios.terminal.json manifest.",
-      "codeSnippet": "help                          # Display system reference\nstatus                        # Display kernel uptime & active services\nservices                      # List registered AI transport drivers\nchat new <name> -p <provider> # Create a new chat session\nchat send --temp 0.7 <prompt> # Send prompt to active session",
-      "tags": ["cli", "terminal", "commands", "subcommands"]
-    },
-    {
-      "id": "dev-quickstart",
-      "title": "Developer Quickstart & Command Suite",
-      "category": "quickstart",
-      "badge": "Commands",
-      "description": "Essential npm CLI command scripts for running bootloaders, starting dev servers, executing Vitest unit test suites, and generating modular line health reports.",
-      "codeSnippet": "npm run start:cli       # Launch Terminal Shell\nnpm run start:server    # Launch REST Server (Port 3000)\nnpm run start:daemon    # Launch Kernel Daemon jsaiosd\nnpm test                # Run 19/19 Vitest unit tests\nnpm run report:lines    # Generate 100% modular health report\nnpm run build:browser   # Build Vite web production bundle",
-      "tags": ["quickstart", "npm-scripts", "testing", "vitest", "build"]
-    }
-  ]
+    "children": [
+      {
+        "id": "help-header-text",
+        "componentType": "textblock",
+        "props": {
+          "content": "=== JSAIOS System Developer Documentation Guide ===\nDeclarative, Data-Driven System Architecture & Component Documentation\nExplore architecture, micro-services, CLI commands, and deployment modes below.\n"
+        }
+      },
+      {
+        "id": "help-searchable-container",
+        "componentType": "searchable-data-container",
+        "props": {
+          "title": "Developer Documentation Reference",
+          "placeholder": "Search architecture, services, CLI commands, or npm scripts...",
+          "pageSize": 9,
+          "items": [
+            {
+              "id": "arch-hexagonal",
+              "title": "Hexagonal Architecture (Ports & Adapters)",
+              "category": "architecture",
+              "badge": "Core Principle",
+              "description": "Core kernel (src/kernel/) and engines (src/engines/) remain 100% platform-agnostic with zero dependencies on Node fs, process, Express, or DOM APIs. Driving shells (src/shell/) and driven adapters (src/adapters/) implement ports.",
+              "codeSnippet": "Core Kernel (src/kernel/) <---> Output Ports (IChatSessionStorage) <---> Storage Adapters (LocalStorage / File)",
+              "tags": ["architecture", "ports-and-adapters", "hexagonal", "isolation"]
+            },
+            {
+              "id": "arch-honeykernel",
+              "title": "HoneyKernel Core OS Engine",
+              "category": "kernel",
+              "badge": "OS Kernel",
+              "description": "Central operating system micro-kernel managing service registration, event bus messaging (EventBus), IPC events, and system lifecycle status.",
+              "codeSnippet": "const kernel = new HoneyKernel();\nkernel.registerService(new OllamaService());\nawait kernel.boot();",
+              "tags": ["honeykernel", "eventbus", "serviceregistry", "kernel"]
+            },
+            {
+              "id": "kernel-daemon",
+              "title": "JSAIOS Kernel Daemon (jsaiosd)",
+              "category": "kernel",
+              "badge": "Daemon OS Host",
+              "description": "Feature-flagged background OS process (config/jsaios.config.json -> daemon.enabled) hosting HoneyKernel, active micro-services, and built-in HTTP/WebSocket IPC gateway on port 3001.",
+              "codeSnippet": "npm run start:daemon  # Launches background jsaiosd OS process",
+              "tags": ["daemon", "jsaiosd", "ipc", "feature-flag"]
+            },
+            {
+              "id": "ui-headless-controller",
+              "title": "Headless useSearchableList Controller Hook",
+              "category": "ui-components",
+              "badge": "Headless Hook",
+              "description": "View-agnostic React hook managing text search queries, category pills, column sorting, and pagination math. Shared cleanly across Card Grid and Data Table views.",
+              "codeSnippet": "const { paginatedItems, setSearchTerm, viewMode, setViewMode } = useSearchableList(items, { pageSize: 9 });",
+              "tags": ["headless-hook", "useSearchableList", "pagination", "sorting"]
+            },
+            {
+              "id": "ui-searchable-container",
+              "title": "SearchableDataContainer Composite UI",
+              "category": "ui-components",
+              "badge": "Generic Component",
+              "description": "Generic multi-view container connecting useSearchableList to SearchControlBar, CardGridView, TableView, and PaginationFooter. Supports dynamic view switching between Grid and Table modes.",
+              "codeSnippet": "<SearchableDataContainer items={docs} pageSize={9} onSelectItem={(item) => openModal(item)} />",
+              "tags": ["ui-component", "searchabledatacontainer", "grid-view", "table-view"]
+            },
+            {
+              "id": "engine-chat",
+              "title": "JSAIOS Chat Engine",
+              "category": "engines",
+              "badge": "Engine",
+              "description": "Interactive multi-turn chat engine featuring sticky system context directives, option flag overrides, turn execution, and pluggable session storage.",
+              "codeSnippet": "const engine = new ChatEngine(kernel, storageDriver);\nconst session = engine.createSession('my-session', 'ollama', 'llama3');\nawait engine.executeTurn({ sessionId: session.id, userPrompt: 'Hello' });",
+              "tags": ["chat", "chat-engine", "sessions", "sticky-context"]
+            },
+            {
+              "id": "driver-ollama",
+              "title": "Ollama Service Transport Driver",
+              "category": "services",
+              "badge": "REST Driver",
+              "description": "Pure HTTP REST API transport driver for local Ollama LLM provider (http://localhost:11434). Supports streaming, thinking mode (--think), context tokens (--ctx), and multimodal image prompts.",
+              "codeSnippet": "const ollama = new OllamaService('http://localhost:11434');\nconst models = await ollama.getModels();",
+              "tags": ["ollama", "service-driver", "rest-api", "llm"]
+            },
+            {
+              "id": "driver-comfyui",
+              "title": "ComfyUI Workflow Transport Driver",
+              "category": "services",
+              "badge": "REST Driver",
+              "description": "Pure HTTP REST API transport driver for ComfyUI node graph workflows (http://localhost:8188). Supports image/media generation, workflow inspection, and parameter overrides.",
+              "codeSnippet": "const comfy = new ComfyUIService('http://localhost:8188');\nconst result = await comfy.generateMedia({ prompt: 'cyberpunk city' });",
+              "tags": ["comfyui", "workflows", "image-generation", "nodes"]
+            },
+            {
+              "id": "driver-copilot",
+              "title": "GitHub Copilot Service Driver",
+              "category": "services",
+              "badge": "REST Driver",
+              "description": "Pure HTTP REST API transport driver connecting to GitHub Copilot model endpoints (gpt-4o, claude-3.5-sonnet). Token authorization resolved via config/secrets.json or gh auth CLI.",
+              "codeSnippet": "const copilot = new CopilotService();\nconst response = await copilot.generateText({ model: 'gpt-4o', prompt: 'Refactor code' });",
+              "tags": ["copilot", "github", "gpt-4o", "code-synthesis"]
+            },
+            {
+              "id": "mode-a-server",
+              "title": "Deployment Mode A: Server / Daemon REST Gateway",
+              "category": "deployment",
+              "badge": "Mode A",
+              "description": "Node.js process runs HoneyKernel and JSAIOSServerAdapter on port 3000/3001. Browser shell communicates over REST fetch() and HTTP token streaming. Keeps API secrets safe on backend.",
+              "codeSnippet": "npm run start:server  # REST Server (Port 3000)\nnpm run start:daemon  # OS Daemon jsaiosd (Port 3001)",
+              "tags": ["mode-a", "server", "daemon", "rest-gateway"]
+            },
+            {
+              "id": "mode-b-browser",
+              "title": "Deployment Mode B: Standalone In-Browser Kernel",
+              "category": "deployment",
+              "badge": "Mode B",
+              "description": "HoneyKernel, ChatEngine, and keyless REST service drivers run directly inside the browser tab JS memory. Uses LocalStorageSessionStorage for in-tab persistence.",
+              "codeSnippet": "npm run dev:browser:local   # Standalone In-Browser Kernel dev server\nnpm run build:browser:local # Build standalone client web app",
+              "tags": ["mode-b", "browser-kernel", "localstorage", "keyless"]
+            },
+            {
+              "id": "cli-commands",
+              "title": "Interactive System Terminal Commands",
+              "category": "cli",
+              "badge": "CLI Reference",
+              "description": "Core shell builtins and subcommands available in System Terminal Shell (npm run start:cli). Fully data-driven via config/jsaios.terminal.json manifest.",
+              "codeSnippet": "help                          # Display system reference\nstatus                        # Display kernel uptime & active services\nservices                      # List registered AI transport drivers\nchat new <name> -p <provider> # Create a new chat session\nchat send --temp 0.7 <prompt> # Send prompt to active session",
+              "tags": ["cli", "terminal", "commands", "subcommands"]
+            },
+            {
+              "id": "dev-quickstart",
+              "title": "Developer Quickstart & Command Suite",
+              "category": "quickstart",
+              "badge": "Commands",
+              "description": "Essential npm CLI command scripts for running bootloaders, starting dev servers, executing Vitest unit test suites, and generating modular line health reports.",
+              "codeSnippet": "npm run start:cli       # Launch Terminal Shell\nnpm run start:server    # Launch REST Server (Port 3000)\nnpm run start:daemon    # Launch Kernel Daemon jsaiosd\nnpm test                # Run 19/19 Vitest unit tests\nnpm run report:lines    # Generate 100% modular health report\nnpm run build:browser   # Build Vite web production bundle",
+              "tags": ["quickstart", "npm-scripts", "testing", "vitest", "build"]
+            }
+          ]
+        }
+      }
+    ]
+  }
 }

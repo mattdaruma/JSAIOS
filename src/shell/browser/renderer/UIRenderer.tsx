@@ -31,7 +31,7 @@ interface UIRendererProps {
 }
 
 export const UIRenderer: React.FC<UIRendererProps> = ({ config, state = {}, onEvent }) => {
-  if (!config) return null;
+  if (!config || !config.componentType) return null;
 
   const renderChildren = () => {
     if (!config.children || config.children.length === 0) return null;
