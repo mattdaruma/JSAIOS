@@ -2,7 +2,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",202,169,4,250,false
 "src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",181,150,18,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",149,135,5,250,false
-"src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",132,115,8,250,false
+"src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",140,122,8,250,false
 "src/shell/terminal/commands/helpers/parseOllamaOptions.ts","parseOllamaOptions.ts",".ts","TypeScript Logic",131,123,4,250,false
 "src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",129,109,26,250,false
 "src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",126,115,7,250,false
@@ -33,11 +33,11 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/terminal/commands/copilotCLI.ts","copilotCLI.ts",".ts","TypeScript Logic",69,56,4,250,false
 "src/kernel/EventBus.ts","EventBus.ts",".ts","TypeScript Logic",67,57,14,250,false
 "src/shell/browser/components/Checkbox.tsx","Checkbox.tsx",".tsx","React Component",62,55,4,250,false
+"src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",61,51,7,250,false
 "src/shell/terminal/commands/chat/handleChatSend.ts","handleChatSend.ts",".ts","TypeScript Logic",59,51,4,250,false
 "src/kernel/ServiceRegistry.ts","ServiceRegistry.ts",".ts","TypeScript Logic",58,48,22,250,false
 "src/services/ai/copilot/helpers/fetchCopilotToken.ts","fetchCopilotToken.ts",".ts","TypeScript Logic",58,47,4,250,false
 "src/shell/browser/components/Textarea.tsx","Textarea.tsx",".tsx","React Component",57,50,4,250,false
-"src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",56,46,7,250,false
 "src/shell/browser/layouts/Layout.tsx","Layout.tsx",".tsx","React Component",55,49,4,250,false
 "src/services/ai/copilot/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",52,44,5,250,false
 "src/shell/terminal/commands/chatCLI.ts","chatCLI.ts",".ts","TypeScript Logic",52,42,5,250,false

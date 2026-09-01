@@ -18,7 +18,7 @@ export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter
 
   const kernel = new HoneyKernel();
   let port = 3000;
-  let host = 'localhost';
+  let host = '127.0.0.1';
   let routesFile = path.join(process.cwd(), 'config', 'jsaios.routes.json');
 
   try {
@@ -41,7 +41,12 @@ export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter
   await kernel.boot();
 
   const serverAdapter = new JSAIOSServerAdapter(kernel, port, host, routesFile);
-  await serverAdapter.start();
+  try {
+    await serverAdapter.start();
+  } catch (err: any) {
+    console.error('\n[Server Boot Failure]:', err.message || err);
+    process.exit(1);
+  }
 
   return { kernel, serverAdapter };
 }

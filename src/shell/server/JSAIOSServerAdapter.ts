@@ -30,7 +30,7 @@ export class JSAIOSServerAdapter {
   constructor(
     private kernel: HoneyKernel,
     private port: number = 3000,
-    private host: string = 'localhost',
+    private host: string = '127.0.0.1',
     routesManifestPath?: string
   ) {
     this.loadConfiguration(routesManifestPath);
@@ -50,7 +50,7 @@ export class JSAIOSServerAdapter {
   }
 
   public start(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const engine = getOrCreateChatEngine(this.kernel);
       const targetMap: Record<string, any> = {
         kernel: this.kernel,
@@ -71,7 +71,7 @@ export class JSAIOSServerAdapter {
           return;
         }
 
-        const urlParts = new URL(req.url || '/', `http://${req.headers.host}`);
+        const urlParts = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
         const pathname = urlParts.pathname;
         const method = (req.method || 'GET').toUpperCase();
 
@@ -107,6 +107,14 @@ export class JSAIOSServerAdapter {
 
         res.writeHead(404, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: `Route '${method} ${pathname}' not found in server manifest` }));
+      });
+
+      this.server.on('error', (err: any) => {
+        if (err.code === 'EADDRINUSE') {
+          reject(new Error(`Port ${this.port} is already in use by another process. Please terminate the process on port ${this.port} or update 'server.port' in config/jsaios.config.json.`));
+        } else {
+          reject(err);
+        }
       });
 
       this.server.listen(this.port, this.host, () => {

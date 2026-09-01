@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/bootloaders/serverBootloader.ts",
   "scripts": {
-    "start": "tsx src/bootloaders/serverBootloader.ts",
+    "start": "tsx src/bootloaders/cliBootloader.ts",
     "start:server": "tsx src/bootloaders/serverBootloader.ts",
     "start:cli": "tsx src/bootloaders/cliBootloader.ts",
     "dev:browser": "vite",
