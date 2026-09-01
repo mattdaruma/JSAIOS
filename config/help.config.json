@@ -6,7 +6,7 @@
       "type": "flex",
       "direction": "col",
       "gap": 4,
-      "className": "h-screen w-screen bg-zinc-950 p-6 overflow-auto text-zinc-100 font-sans"
+      "className": "min-h-full w-full bg-zinc-950 p-6 text-zinc-100 font-sans"
     },
     "children": [
       {

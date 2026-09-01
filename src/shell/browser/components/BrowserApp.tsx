@@ -96,7 +96,7 @@ export const BrowserApp: React.FC<BrowserAppProps> = ({
           </button>
         </div>
       )}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <UIRenderer
           config={targetConfig as any}
           state={{
