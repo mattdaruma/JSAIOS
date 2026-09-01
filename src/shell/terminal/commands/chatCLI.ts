@@ -163,14 +163,16 @@ export async function handleChatCLI(
 
     const formatMsg = (m: any) => formatter.formatChatMessage(m.role, m.content, m.sticky, m.images?.length);
 
-    if (args.includes('--all') || args.includes('-a')) {
+    const nums = args.slice(1).filter((a) => !a.startsWith('-')).map(Number).filter((n) => !isNaN(n) && n >= 0);
+    const isUnlimited = active.options.maxHistory === undefined || active.options.maxHistory === null;
+
+    if (args.includes('--all') || args.includes('-a') || (nums.length === 0 && isUnlimited)) {
       const formattedMsgs = messages.map(formatMsg).join('\n\n');
       return `=== Full Chat History Log: '${active.name}' (${messages.length} messages) ===\n\n${formattedMsgs}`;
     }
 
     let page = 1;
     let limit = active.options.maxHistory && active.options.maxHistory > 0 ? active.options.maxHistory : 10;
-    const nums = args.slice(1).filter((a) => !a.startsWith('-')).map(Number).filter((n) => !isNaN(n) && n >= 0);
     if (nums.length >= 1) page = Math.floor(nums[0]);
     if (nums.length >= 2) limit = Math.floor(nums[1]);
 
