@@ -9,6 +9,7 @@ import { ChatEngine } from '../../../engines/chat/ChatEngine';
 import { FileSessionStorage } from '../storage/FileSessionStorage';
 import { loadLocalImageBase64 } from '../../../services/ai/ollama/helpers/loadImage';
 import { parseChatCLIArgs } from '../../../engines/chat/helpers/chatOptions';
+import { formatConfigReport } from '../../../engines/chat/helpers/formatConfigReport';
 import { CHAT_ENGINE_DESCRIPTOR } from './helpers/chatDescriptor';
 import { getTerminalFormatter } from '../helpers/getTerminalFormatter';
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
@@ -76,7 +77,7 @@ export async function handleChatCLI(
       `Model           : ${active.model}`,
       `Messages Count  : ${active.messages.length} message(s) (${active.messages.filter((m) => m.role === 'user').length} user, ${active.messages.filter((m) => m.role === 'assistant').length} assistant)`,
       `System Context  : ${sys ? `"${sys.content}"` : 'None'}`,
-      `Session Options : ${optsStr || 'Default Defaults'}`,
+      `Session Options : ${optsStr || 'Default Engine Defaults'}`,
       `Total Sessions  : ${sessions.length} active session(s)`,
       `Storage Engine  : FileSessionStorage (${storageDir}/)`
     ].join('\n');
@@ -108,15 +109,7 @@ export async function handleChatCLI(
     );
 
     if (!hasUpdates) {
-      const sys = active.messages.find((m) => m.role === 'system');
-      const optsStr = Object.entries(active.options).map(([k, v]) => `${k}=${Array.isArray(v) ? v.join(',') : v}`).join(', ');
-      return [
-        `=== Active Session Configuration: '${active.name}' (ID: ${active.id}) ===`,
-        `Provider        : ${active.providerId}`,
-        `Model           : ${active.model}`,
-        `System Context  : ${sys ? `"${sys.content}"` : 'None'}`,
-        `Session Options : ${optsStr || 'Default Defaults'}`
-      ].join('\n');
+      return formatConfigReport(active);
     }
 
     const updated = engine.updateSessionConfig(active.id, {
@@ -125,7 +118,7 @@ export async function handleChatCLI(
       systemDirective: parsed.systemDirective,
       options: parsed.options
     });
-    return `Updated settings for active chat session '${updated.name}' (Provider: ${updated.providerId}, Model: ${updated.model}).`;
+    return formatConfigReport(updated);
   }
 
   if (sub === 'list' || sub === 'ls') {
