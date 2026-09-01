@@ -16,13 +16,15 @@ export interface BrowserAppProps {
   initialBanner?: string;
   defaultStatusLabel?: string;
   hasBundledSecrets?: boolean;
+  uiConfig?: any;
 }
 
 export const BrowserApp: React.FC<BrowserAppProps> = ({
   adapter,
   initialBanner = "=== JSAIOS Interactive System Terminal Shell ===\nCore Commands: 'help' (command reference), 'status' (kernel info), 'services' (drivers), 'clear'.\nType 'help' to view full command reference.\n\n",
   defaultStatusLabel = "ONLINE (Connected)",
-  hasBundledSecrets = true
+  hasBundledSecrets = true,
+  uiConfig
 }) => {
   const [bufferContent, setBufferContent] = useState<string>(initialBanner);
   const [activeSessionInfo, setActiveSessionInfo] = useState<string>('Session: default (ollama/llama3)');
@@ -76,6 +78,8 @@ export const BrowserApp: React.FC<BrowserAppProps> = ({
     }
   };
 
+  const targetConfig = uiConfig || uiManifest.root;
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-zinc-950">
       {showAlert && (
@@ -94,7 +98,7 @@ export const BrowserApp: React.FC<BrowserAppProps> = ({
       )}
       <div className="flex-1 overflow-hidden">
         <UIRenderer
-          config={uiManifest.root as any}
+          config={targetConfig as any}
           state={{
             bufferContent,
             activeSessionInfo,

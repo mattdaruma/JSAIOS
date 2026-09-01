@@ -19,8 +19,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: 'index.html',
-        local: 'index.local.html',
-        help: 'index.help.html'
+        local: 'index.local.html'
       }
     }
   }
