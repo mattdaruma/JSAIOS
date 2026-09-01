@@ -64,8 +64,18 @@
       "enabled": true
     },
     {
-      "id": "browser",
+      "id": "browser-daemon",
       "type": "browser",
+      "mode": "daemon-client",
+      "endpoint": "http://127.0.0.1:3001",
+      "prompt": "jsaios@honeykernel:~$ ",
+      "enabled": true
+    },
+    {
+      "id": "browser-local",
+      "type": "browser",
+      "mode": "in-browser-kernel",
+      "requiresSecrets": false,
       "prompt": "jsaios@honeykernel:~$ ",
       "enabled": true
     }

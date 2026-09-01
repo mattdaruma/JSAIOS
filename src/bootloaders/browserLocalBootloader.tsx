@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Standalone In-Browser Local Kernel Bootloader (Mode B - In-Browser Kernel)
- * Mounts unified BrowserApp with BrowserLocalAdapter.
+ * Mounts unified BrowserApp with BrowserLocalAdapter for keyless 3rd party AI services or client-side execution.
  */
 
 import React, { useState } from 'react';
@@ -15,6 +15,7 @@ export const LocalBrowserApp: React.FC = () => {
       adapter={adapter}
       initialBanner="=== JSAIOS Standalone System Terminal Shell [Mode B - In-Browser Kernel] ===\nHoneyKernel & ChatEngine booted directly in browser memory (LocalStorage persistence active).\nCore Commands: 'help' (command reference), 'status' (kernel info), 'services' (drivers), 'clear'.\nType 'help' to view full command reference.\n\n"
       defaultStatusLabel="ONLINE (Browser Memory)"
+      hasBundledSecrets={false}
     />
   );
 };
