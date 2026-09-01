@@ -10,10 +10,10 @@
     "start:cli": "tsx src/bootloaders/cliBootloader.ts",
     "start:daemon": "tsx src/bootloaders/daemonBootloader.ts",
     "dev:browser": "vite",
-    "dev:browser:local": "vite index.local.html",
-    "dev:help": "vite index.local.html --mode help",
+    "dev:browser:local": "vite --mode standalone",
+    "dev:help": "vite --mode help",
     "build:browser": "vite build",
-    "build:browser:local": "vite build index.local.html",
+    "build:browser:local": "vite build --mode standalone",
     "build:help": "vite build --mode help",
     "test": "vitest run",
     "report:lines": "tsx scripts/countLines.ts"
