@@ -74,3 +74,10 @@ export function buildText2ImgWorkflow(request: MediaGenerationRequest): Record<s
     }
   };
 }
+
+export function buildComfyUIWorkflow(workflowId: string, params: Record<string, any>): Record<string, any> {
+  return buildText2ImgWorkflow({
+    prompt: params.prompt || 'A scenic landscape',
+    ...params
+  });
+}

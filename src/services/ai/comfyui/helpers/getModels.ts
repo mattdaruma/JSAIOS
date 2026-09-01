@@ -16,9 +16,9 @@ export async function fetchComfyUIModels(endpoint: string): Promise<ModelInfo[]>
 
     if (Array.isArray(ckptList)) {
       return ckptList.map((modelName: string) => ({
+        id: modelName,
         name: modelName,
-        family: 'sd',
-        format: 'safetensors'
+        family: 'sd'
       }));
     }
 
@@ -27,3 +27,5 @@ export async function fetchComfyUIModels(endpoint: string): Promise<ModelInfo[]>
     return [];
   }
 }
+
+export const getComfyUIModels = fetchComfyUIModels;

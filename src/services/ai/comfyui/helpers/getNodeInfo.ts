@@ -41,3 +41,5 @@ export async function fetchComfyNodeInfo(endpoint: string, targetNodeName?: stri
     return [];
   }
 }
+
+export const getComfyUINodeInfo = fetchComfyNodeInfo;
