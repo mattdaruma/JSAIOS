@@ -3,8 +3,8 @@
  * Handles subcommands and option flag parsing for OllamaService CLI invocations.
  */
 
-import type { OllamaService } from '../../../services/ai/ollama/OllamaService';
-import { parseOllamaOptions } from './helpers/parseOllamaOptions';
+import type { OllamaService } from '../OllamaService';
+import { parseOllamaOptions } from '../helpers/parseOllamaOptions';
 
 export async function handleOllamaCLI(
   service: OllamaService,

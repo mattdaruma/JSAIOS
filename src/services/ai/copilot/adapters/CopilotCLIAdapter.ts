@@ -3,8 +3,8 @@
  * Handles subcommands and option flag parsing for CopilotService CLI invocations.
  */
 
-import type { CopilotService } from '../../../services/ai/copilot/CopilotService';
-import type { TextGenerationRequest } from '../../../services/ai/AIService';
+import type { CopilotService } from '../CopilotService';
+import type { TextGenerationRequest } from '../../AIService';
 
 export async function handleCopilotCLI(
   service: CopilotService,

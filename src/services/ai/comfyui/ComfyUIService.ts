@@ -5,7 +5,7 @@
 
 import { AIService } from '../AIService';
 import type { ServiceDescriptor } from '../../../kernel/types';
-import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse, ModelInfo } from '../types';
+import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse, ModelInfo } from '../AIService';
 import { checkComfyUIHealth } from './helpers/checkHealth';
 import { getComfyUIModels } from './helpers/getModels';
 import { generateComfyUIMedia } from './helpers/generateMedia';
@@ -13,7 +13,7 @@ import { getComfyUINodeInfo } from './helpers/getNodeInfo';
 import { fetchComfyWorkflows } from './helpers/listWorkflows';
 import { inspectComfyWorkflow, type WorkflowInspectionResult } from './helpers/inspectWorkflow';
 import { buildComfyUIWorkflow } from './helpers/buildWorkflow';
-import { handleComfyCLI } from '../../../shell/terminal/commands/comfyCLI';
+import { handleComfyCLI } from './adapters/ComfyCLIAdapter';
 
 export class ComfyUIService extends AIService {
   public readonly id = 'comfyui';
@@ -40,23 +40,29 @@ export class ComfyUIService extends AIService {
       commands: [
         {
           command: 'comfy status',
-          description: 'Check ComfyUI local server connectivity and health'
-        },
-        {
-          command: 'comfy models',
-          description: 'List installed ComfyUI models and checkpoints'
+          description: 'Check status of local ComfyUI server'
         },
         {
           command: 'comfy workflows',
-          description: 'List available preset ComfyUI workflow JSON files'
+          description: 'List saved workflow templates on server'
         },
         {
-          command: 'comfy inspect <workflow_id>',
-          description: 'Inspect inputs and parameters of a ComfyUI workflow'
+          command: 'comfy options <workflow>',
+          description: 'Inspect exposed input parameters for workflow template'
         },
         {
-          command: 'comfy run <workflow_id> [key=value...]',
-          description: 'Execute a ComfyUI workflow and generate media assets'
+          command: 'comfy prompt [options] <text>',
+          description: 'Submit media generation task to ComfyUI',
+          options: [
+            { flag: '--neg "<prompt>"', description: 'Negative prompt string' },
+            { flag: '--steps <num>', description: 'Denoising sampler steps integer' },
+            { flag: '--cfg <num>', description: 'Classifier-free guidance float' },
+            { flag: '--width <num>', description: 'Output image width pixels' },
+            { flag: '--height <num>', description: 'Output image height pixels' },
+            { flag: '--seed <num>', description: 'Random seed integer' },
+            { flag: '--sampler <name>', description: 'Sampler name (euler, dpmpp_2m, etc.)' },
+            { flag: '--ckpt <name>', description: 'Model checkpoint safetensors filename' }
+          ]
         }
       ]
     };
@@ -70,51 +76,37 @@ export class ComfyUIService extends AIService {
     return checkComfyUIHealth(this.baseUrl);
   }
 
-  public async shutdown(): Promise<void> {
-    console.log('[ComfyUIService] Shutting down ComfyUI driver connection.');
-  }
-
   public async getModels(): Promise<ModelInfo[]> {
     return getComfyUIModels(this.baseUrl);
   }
 
-  public async getNodeInfo(nodeClass: string): Promise<Record<string, any>> {
-    return getComfyUINodeInfo(this.baseUrl, nodeClass);
-  }
-
-  public async listWorkflows(): Promise<string[]> {
-    const list = await fetchComfyWorkflows(this.baseUrl);
-    return list.map(w => w.id);
+  public async getNodeInfo(nodeName?: string): Promise<any[]> {
+    return getComfyUINodeInfo(this.baseUrl, nodeName);
   }
 
   public async getWorkflows(): Promise<string[]> {
-    const list = await fetchComfyWorkflows(this.baseUrl);
-    return list.map(w => w.id);
+    return fetchComfyWorkflows(this.baseUrl);
   }
 
   public async inspectWorkflow(workflowId: string): Promise<WorkflowInspectionResult | null> {
     return inspectComfyWorkflow(this.baseUrl, workflowId);
   }
 
-  public async buildWorkflow(workflowId: string, params: Record<string, any>): Promise<Record<string, any>> {
-    return buildComfyUIWorkflow(workflowId, params);
-  }
-
   public async generateText(
-    _request: TextGenerationRequest,
-    _onChunk?: (chunkText: string) => void
+    request: TextGenerationRequest
   ): Promise<TextGenerationResponse> {
-    throw new Error('[ComfyUIService] Direct text generation not supported. Use generateMedia or executeCommand with a workflow for ComfyUI driver.');
+    throw new Error('ComfyUIService does not support pure text generation. Use generateMedia instead.');
   }
 
   public async generateMedia(
     request: MediaGenerationRequest,
     onProgress?: (percent: number, statusText: string) => void
   ): Promise<MediaGenerationResponse> {
-    return generateComfyUIMedia(this.baseUrl, request, onProgress);
+    const promptGraph = buildComfyUIWorkflow(request.workflowId || 'default', request);
+    return generateComfyUIMedia(this.baseUrl, promptGraph, onProgress);
   }
 
-  public async executeCommand(args: string[]): Promise<string> {
+  public async executeCommand(args: string[], onStreamChunk?: (chunkText: string) => void): Promise<string> {
     return handleComfyCLI(this, args);
   }
 }

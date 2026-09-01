@@ -11,8 +11,9 @@ import { getTerminalFormatter } from './helpers/getTerminalFormatter';
 
 export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): void {
   const interpreter = new TerminalInterpreter(kernel);
-  const formatter = getTerminalFormatter();
-  const rawPromptStr = customPrompt || 'jsaios@honeykernel:~$ ';
+  const manifest = interpreter.getManifest();
+  const formatter = getTerminalFormatter(manifest.defaultEnvironment);
+  const rawPromptStr = customPrompt || manifest.promptPrefix || 'jsaios@honeykernel:~$ ';
   const formattedPrompt = formatter.formatPrompt(rawPromptStr);
 
   console.log(`\n${formatter.formatHeader('================================================================       ')}`);

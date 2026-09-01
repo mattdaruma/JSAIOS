@@ -9,8 +9,11 @@ secrets.json
 dist/
 
 # Temporary / Scratch data
+./scratch
 scratch/
 tests/tmpdir/
+chat-sessions/
+./chat-sessions
 
 # Log files
 *.log

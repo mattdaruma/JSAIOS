@@ -5,11 +5,11 @@
 
 import type { AIService } from '../AIService';
 import type { ServiceDescriptor } from '../../../kernel/types';
-import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse, ModelInfo } from '../types';
+import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse, ModelInfo } from '../AIService';
 import { checkOllamaHealth } from './helpers/checkHealth';
 import { fetchOllamaModels } from './helpers/fetchModels';
 import { generateOllamaText } from './helpers/generateText';
-import { handleOllamaCLI } from '../../../shell/terminal/commands/ollamaCLI';
+import { handleOllamaCLI } from './adapters/OllamaCLIAdapter';
 
 export class OllamaService implements AIService {
   public readonly id = 'ollama';
@@ -51,10 +51,6 @@ export class OllamaService implements AIService {
     return checkOllamaHealth(this.baseUrl);
   }
 
-  public async shutdown(): Promise<void> {
-    console.log('[OllamaService] Shutting down Ollama driver connection.');
-  }
-
   public async getModels(): Promise<ModelInfo[]> {
     return fetchOllamaModels(this.baseUrl);
   }
@@ -67,13 +63,12 @@ export class OllamaService implements AIService {
   }
 
   public async generateMedia(
-    _request: MediaGenerationRequest,
-    _onProgress?: (percent: number, statusText: string) => void
+    request: MediaGenerationRequest
   ): Promise<MediaGenerationResponse> {
-    throw new Error('[OllamaService] Media generation not supported by Ollama driver.');
+    throw new Error('OllamaService does not support media generation natively.');
   }
 
-  public async executeCommand(args: string[], onChunk?: (chunkText: string) => void): Promise<string> {
-    return handleOllamaCLI(this, args, onChunk);
+  public async executeCommand(args: string[], onStreamChunk?: (chunkText: string) => void): Promise<string> {
+    return handleOllamaCLI(this, args, onStreamChunk);
   }
 }

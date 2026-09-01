@@ -5,7 +5,7 @@ import { HoneyKernel } from '../../src/kernel/HoneyKernel';
 import { CopilotService } from '../../src/services/ai/copilot/CopilotService';
 import { ChatEngine } from '../../src/engines/chat/ChatEngine';
 import { FileSessionStorage } from '../../src/engines/chat/adapters/FileSessionStorage';
-import { handleCopilotCLI } from '../../src/shell/terminal/commands/copilotCLI';
+import { handleCopilotCLI } from '../../src/services/ai/copilot/adapters/CopilotCLIAdapter';
 
 describe('JSAIOS Copilot Service Driver Architecture', () => {
   const testDir = path.join(process.cwd(), 'tests', 'tmpdir', 'test-copilot-sessions');

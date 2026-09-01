@@ -3,7 +3,7 @@
  * Parses CLI option flags for ComfyUI media generation prompt commands.
  */
 
-import type { MediaGenerationRequest } from '../../../../services/ai/AIService';
+import type { MediaGenerationRequest } from '../../AIService';
 
 export interface ParsedComfyPrompt {
   request: MediaGenerationRequest;

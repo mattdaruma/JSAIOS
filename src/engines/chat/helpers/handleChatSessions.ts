@@ -3,9 +3,9 @@
  * Handles session lifecycle management subcommands (new, list, switch, delete, system).
  */
 
-import { parseChatCLIArgs } from '../../../../engines/chat/helpers/chatOptions';
-import { getTerminalFormatter } from '../../helpers/getTerminalFormatter';
-import type { ChatEngine } from '../../../../engines/chat/ChatEngine';
+import { parseChatCLIArgs } from './chatOptions';
+import { getTerminalFormatter } from '../../../shell/terminal/helpers/getTerminalFormatter';
+import type { ChatEngine } from '../ChatEngine';
 
 export function handleChatNewSession(engine: ChatEngine, args: string[]): string {
   const parsed = parseChatCLIArgs(args);

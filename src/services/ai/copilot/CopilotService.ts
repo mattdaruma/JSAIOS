@@ -5,11 +5,11 @@
 
 import type { AIService } from '../AIService';
 import type { ServiceDescriptor, ServiceStatus } from '../../../kernel/types';
-import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse, ModelInfo } from '../types';
+import type { TextGenerationRequest, TextGenerationResponse, MediaGenerationRequest, MediaGenerationResponse, ModelInfo } from '../AIService';
 import { checkCopilotHealth } from './helpers/checkHealth';
 import { fetchCopilotModels } from './helpers/fetchModels';
 import { generateCopilotText } from './helpers/generateText';
-import { handleCopilotCLI } from '../../../shell/terminal/commands/copilotCLI';
+import { handleCopilotCLI } from './adapters/CopilotCLIAdapter';
 
 export class CopilotService implements AIService {
   public readonly id = 'copilot';
@@ -43,19 +43,17 @@ export class CopilotService implements AIService {
   }
 
   public async initialize(): Promise<void> {
-    this.status = 'initializing';
     const healthy = await this.checkHealth();
     this.status = healthy ? 'running' : 'degraded';
     console.log(`[CopilotService] Driver initialized (status: ${this.status})`);
   }
 
-  public async checkHealth(): Promise<boolean> {
-    return checkCopilotHealth();
-  }
-
   public async shutdown(): Promise<void> {
     this.status = 'stopped';
-    console.log('[CopilotService] Driver shutdown complete.');
+  }
+
+  public async checkHealth(): Promise<boolean> {
+    return checkCopilotHealth();
   }
 
   public async getModels(): Promise<ModelInfo[]> {
@@ -70,13 +68,12 @@ export class CopilotService implements AIService {
   }
 
   public async generateMedia(
-    _request: MediaGenerationRequest,
-    _onProgress?: (percent: number, statusText: string) => void
+    request: MediaGenerationRequest
   ): Promise<MediaGenerationResponse> {
-    throw new Error('[CopilotService] Direct media generation not supported by Copilot driver.');
+    throw new Error('CopilotService does not support media generation.');
   }
 
-  public async executeCommand(args: string[], onChunk?: (chunkText: string) => void): Promise<string> {
-    return handleCopilotCLI(this, args, onChunk);
+  public async executeCommand(args: string[], onStreamChunk?: (chunkText: string) => void): Promise<string> {
+    return handleCopilotCLI(this, args, onStreamChunk);
   }
 }

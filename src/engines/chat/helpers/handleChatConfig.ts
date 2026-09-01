@@ -3,10 +3,10 @@
  * Alters active session settings mid-session or prints exhaustive configuration report.
  */
 
-import { parseChatCLIArgs } from '../../../../engines/chat/helpers/chatOptions';
-import { formatConfigReport } from '../../../../engines/chat/helpers/formatConfigReport';
-import { getTerminalFormatter } from '../../helpers/getTerminalFormatter';
-import type { ChatEngine } from '../../../../engines/chat/ChatEngine';
+import { parseChatCLIArgs } from './chatOptions';
+import { formatConfigReport } from './formatConfigReport';
+import { getTerminalFormatter } from '../../../shell/terminal/helpers/getTerminalFormatter';
+import type { ChatEngine } from '../ChatEngine';
 
 export function handleChatConfig(engine: ChatEngine, args: string[]): string {
   const formatter = getTerminalFormatter();

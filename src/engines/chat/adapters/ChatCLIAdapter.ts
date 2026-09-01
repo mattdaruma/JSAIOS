@@ -1,17 +1,16 @@
 /**
- * JSAIOS - Subcommand Dispatcher: handleChatCLI
- * Decomposes chat CLI subcommands into single-purpose tiny subcommand handler modules.
+ * JSAIOS - Single-purpose adapter: ChatCLIAdapter
+ * CLI command entry point and subcommand dispatcher for ChatEngine.
  */
 
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
-import type { ChatEngine } from '../../../engines/chat/ChatEngine';
-import { getOrCreateChatEngine, resetChatEngineForTesting } from '../../../engines/chat/helpers/createChatEngine';
-import { handleChatStatus } from './chat/handleChatStatus';
-import { handleChatConfig } from './chat/handleChatConfig';
-import { handleChatSessions } from './chat/handleChatSessions';
-import { handleChatSend } from './chat/handleChatSend';
-import { handleChatHistory } from './chat/handleChatHistory';
-import { CHAT_ENGINE_DESCRIPTOR } from './helpers/chatDescriptor';
+import { getOrCreateChatEngine, resetChatEngineForTesting } from '../helpers/createChatEngine';
+import { handleChatStatus } from '../helpers/handleChatStatus';
+import { handleChatConfig } from '../helpers/handleChatConfig';
+import { handleChatSessions } from '../helpers/handleChatSessions';
+import { handleChatSend } from '../helpers/handleChatSend';
+import { handleChatHistory } from '../helpers/handleChatHistory';
+import { CHAT_ENGINE_DESCRIPTOR } from '../helpers/chatDescriptor';
 
 export { CHAT_ENGINE_DESCRIPTOR, getOrCreateChatEngine, resetChatEngineForTesting };
 

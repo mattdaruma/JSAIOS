@@ -3,7 +3,7 @@
  * Complete ServiceDescriptor definition for JSAIOS Chat Engine including full options documentation with explicit units.
  */
 
-import type { ServiceDescriptor } from '../../../../kernel/types';
+import type { ServiceDescriptor } from '../../../kernel/types';
 
 export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   id: 'chat',

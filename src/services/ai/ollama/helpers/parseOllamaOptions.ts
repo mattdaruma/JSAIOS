@@ -3,8 +3,8 @@
  * Parses CLI option flags for Ollama prompt commands.
  */
 
-import type { TextGenerationRequest } from '../../../../services/ai/AIService';
-import { loadLocalImageBase64 } from '../../../../services/ai/ollama/helpers/loadImage';
+import type { TextGenerationRequest } from '../../AIService';
+import { loadLocalImageBase64 } from './loadImage';
 
 export interface ParsedOllamaPrompt {
   request: TextGenerationRequest;

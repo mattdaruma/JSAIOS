@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "defaultEnvironment": "win-cmd",
+  "promptPrefix": "jsaios@honeykernel:~$ ",
+  "environments": {
+    "win-cmd": "WinCLIFormatter",
+    "win-powershell": "WinPowerShellFormatter",
+    "posix-bash": "POSIXBashFormatter",
+    "plain": "PlainTerminalFormatter"
+  },
+  "builtins": [
+    { "command": "help", "description": "Display HoneyKernel terminal reference or target help" },
+    { "command": "status", "description": "Display system status and uptime" },
+    { "command": "services", "description": "List registered service drivers" },
+    { "command": "clear", "description": "Clear terminal output screen" },
+    { "command": "exit", "description": "Quit terminal shell" }
+  ]
+}
