@@ -118,7 +118,7 @@ export async function handleChatCLI(
       systemDirective: parsed.systemDirective,
       options: parsed.options
     });
-    return formatConfigReport(updated);
+    return `Updated settings for active chat session '${updated.name}' (Provider: ${updated.providerId}, Model: ${updated.model}).`;
   }
 
   if (sub === 'list' || sub === 'ls') {

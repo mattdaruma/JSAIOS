@@ -126,10 +126,14 @@ describe('JSAIOS Chat Engine & Storage Decoupling', () => {
       expect(statusWithSession).toContain('Provider');
       expect(statusWithSession).toContain('Model');
 
-      // Test mid-session config via CLI
+      // Test mid-session config update via CLI
       const configRes = await handleChatCLI(kernel, ['config', '-m', 'claude-3.5-sonnet', '--temp', '0.8']);
       expect(configRes).toContain('claude-3.5-sonnet');
-      expect(configRes).toContain('temperature');
+
+      // Test chat config without arguments (returns full options report)
+      const reportRes = await handleChatCLI(kernel, ['config']);
+      expect(reportRes).toContain('temperature');
+      expect(reportRes).toContain('0.8');
 
       // Test session switch auto-setting default
       const switchRes = await handleChatCLI(kernel, ['switch', 'TestSessionCLI']);
