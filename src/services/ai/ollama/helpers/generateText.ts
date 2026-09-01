@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Single-purpose helper: generateOllamaText
- * Formats request payload and streams text generation from Ollama HTTP API.
+ * Formats request payload and streams text generation & thinking reasoning blocks from Ollama HTTP API.
  */
 
 import type { TextGenerationRequest, TextGenerationResponse } from '../../AIService';
@@ -56,6 +56,7 @@ export async function generateOllamaText(
   const reader = (res.body as any).getReader();
   const decoder = new TextDecoder();
   let fullText = '';
+  let isInsideThinkingBlock = false;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -67,7 +68,27 @@ export async function generateOllamaText(
     for (const line of lines) {
       try {
         const parsed = JSON.parse(line);
+
+        // Process thinking stream field from Ollama API
+        if (parsed.thinking) {
+          if (!isInsideThinkingBlock) {
+            isInsideThinkingBlock = true;
+            const openTag = '<think>\n';
+            fullText += openTag;
+            if (onChunk) onChunk(openTag);
+          }
+          fullText += parsed.thinking;
+          if (onChunk) onChunk(parsed.thinking);
+        }
+
+        // Process standard response stream field
         if (parsed.response) {
+          if (isInsideThinkingBlock) {
+            isInsideThinkingBlock = false;
+            const closeTag = '\n</think>\n\n';
+            fullText += closeTag;
+            if (onChunk) onChunk(closeTag);
+          }
           fullText += parsed.response;
           if (onChunk) onChunk(parsed.response);
         }
@@ -75,6 +96,12 @@ export async function generateOllamaText(
         // Ignore partial JSON chunks
       }
     }
+  }
+
+  if (isInsideThinkingBlock) {
+    const closeTag = '\n</think>\n\n';
+    fullText += closeTag;
+    if (onChunk) onChunk(closeTag);
   }
 
   return {

@@ -7,23 +7,24 @@
 import readline from 'readline';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import { TerminalInterpreter } from './TerminalInterpreter';
-import { ANSI, formatPrompt, formatStatusOutput } from './helpers/cliColors';
+import { getTerminalFormatter } from './helpers/getTerminalFormatter';
 
 export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): void {
   const interpreter = new TerminalInterpreter(kernel);
+  const formatter = getTerminalFormatter();
   const rawPromptStr = customPrompt || 'jsaios@honeykernel:~$ ';
-  const coloredPrompt = formatPrompt(rawPromptStr);
+  const formattedPrompt = formatter.formatPrompt(rawPromptStr);
 
-  console.log(`\n${ANSI.brightCyan}=======================================================================${ANSI.reset}`);
-  console.log(` ${ANSI.brightYellow}${ANSI.bold}JSAIOS${ANSI.reset} - ${ANSI.brightCyan}JavaScript AI Operating System v1.0.0 (HoneyKernel Core)${ANSI.reset}`);
-  console.log(` ${ANSI.dim}Pure System Terminal Active. Orchestrated by Declarative JSON Manifest.${ANSI.reset}`);
-  console.log(` ${ANSI.dim}Press CTRL+C or type "exit" to gracefully shut down and free resources.${ANSI.reset}`);
-  console.log(`${ANSI.brightCyan}=======================================================================${ANSI.reset}\n`);
+  console.log(`\n${formatter.formatHeader('=======================================================================')}`);
+  console.log(` ${formatter.formatCLICommand('JSAIOS')} - JavaScript AI Operating System v1.0.0 (HoneyKernel Core)`);
+  console.log(` Pure System Terminal Active. Orchestrated by Declarative JSON Manifest.`);
+  console.log(` Press CTRL+C or type "exit" to gracefully shut down and free resources.`);
+  console.log(`${formatter.formatHeader('=======================================================================\n')}`);
 
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: coloredPrompt
+    prompt: formattedPrompt
   });
 
   let isShuttingDown = false;
@@ -32,7 +33,7 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): vo
     if (isShuttingDown) return;
     isShuttingDown = true;
 
-    console.log(`\n${ANSI.brightRed}[CLI Shell] Intercepted signal '${signalName}'. Triggering graceful shutdown...${ANSI.reset}`);
+    console.log(`\n${formatter.formatError(`[CLI Shell] Intercepted signal '${signalName}'. Triggering graceful shutdown...`)}`);
     await kernel.shutdown();
     rl.close();
     process.exit(0);
@@ -64,10 +65,10 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): vo
         } else if (hasStreamed) {
           console.log();
         } else if (output) {
-          console.log(formatStatusOutput(output));
+          console.log(formatter.formatStatusOutput(output));
         }
       } catch (err: any) {
-        console.error(`${ANSI.brightRed}[System Shell Error]: ${err.message || err}${ANSI.reset}`);
+        console.error(formatter.formatError(`[System Shell Error]: ${err.message || err}`));
       }
     }
 

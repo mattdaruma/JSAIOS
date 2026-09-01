@@ -9,27 +9,11 @@ import { ChatEngine } from '../../../engines/chat/ChatEngine';
 import { FileSessionStorage } from '../storage/FileSessionStorage';
 import { loadLocalImageBase64 } from '../../../services/ai/ollama/helpers/loadImage';
 import { parseChatCLIArgs } from '../../../engines/chat/helpers/chatOptions';
+import { CHAT_ENGINE_DESCRIPTOR } from './helpers/chatDescriptor';
+import { getTerminalFormatter } from '../helpers/getTerminalFormatter';
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
-import type { ServiceDescriptor } from '../../../kernel/types';
 
-export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
-  id: 'chat',
-  name: 'JSAIOS Chat Engine',
-  version: '1.0.0',
-  status: 'running',
-  capabilities: ['chat', 'multi-turn', 'multimodal', 'sticky-context'],
-  cliCommands: [
-    { command: 'chat status', description: 'View active chat session status, options, and persistence metadata' },
-    { command: 'chat new <name> [options]', description: 'Create a new interactive chat session with initial settings' },
-    { command: 'chat config [options]', description: 'Alter active session settings (provider, model, temperature, etc.) mid-session' },
-    { command: 'chat list', description: 'List all active chat sessions' },
-    { command: 'chat switch <session_id>', description: 'Switch active chat session' },
-    { command: 'chat delete <session_id>', description: 'Delete a chat session from memory and disk' },
-    { command: 'chat system "<prompt>"', description: 'Set or update sticky system directive for active session' },
-    { command: 'chat send [options] <text>', description: 'Send a message turn to active session (supports single-turn option overrides)' },
-    { command: 'chat history [page] [limit] [--all]', description: 'View paginated turn log for active session' }
-  ]
-};
+export { CHAT_ENGINE_DESCRIPTOR };
 
 let globalChatEngine: ChatEngine | null = null;
 
@@ -57,6 +41,7 @@ export async function handleChatCLI(
   onStreamChunk?: (chunk: string) => void
 ): Promise<string> {
   const engine = getOrCreateChatEngine(kernel);
+  const formatter = getTerminalFormatter();
   const sub = (args[0] || '').toLowerCase();
 
   if (sub === 'status') {
@@ -154,7 +139,7 @@ export async function handleChatCLI(
     const messages = active.messages;
     if (messages.length === 0) return `Chat session '${active.name}' has no messages log yet.`;
 
-    const formatMsg = (m: any) => `[${m.role.toUpperCase()}${m.sticky ? ' (STICKY)' : ''}] ${m.content}${m.images ? ` [${m.images.length} image(s)]` : ''}`;
+    const formatMsg = (m: any) => formatter.formatChatMessage(m.role, m.content, m.sticky, m.images?.length);
 
     if (args.includes('--all') || args.includes('-a')) {
       const formattedMsgs = messages.map(formatMsg).join('\n\n');
@@ -195,13 +180,23 @@ export async function handleChatCLI(
     const userPrompt = promptParts.join(' ').trim();
     if (!userPrompt) return 'Error: Chat prompt text cannot be empty.';
 
+    let isThinking = false;
+    const wrappedChunkHandler = onStreamChunk
+      ? (chunk: string) => {
+          if (chunk.includes('<think>')) isThinking = true;
+          const formattedChunk = formatter.formatThinkingChunk(chunk, isThinking);
+          if (chunk.includes('</think>')) isThinking = false;
+          onStreamChunk(formattedChunk);
+        }
+      : undefined;
+
     try {
       return await engine.executeTurn({
         sessionId: active.id,
         userPrompt,
         images: images.length > 0 ? images : undefined,
         turnOptions: parsed.options,
-        onChunk: onStreamChunk
+        onChunk: wrappedChunkHandler
       });
     } catch (err: any) {
       return `Chat engine error: ${err.message || err}`;
