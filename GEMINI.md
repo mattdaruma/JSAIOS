@@ -4,6 +4,25 @@
 - **Architecture Specification**: Refer to [ARCHITECTURE.md](file:///c:/Users/jerry/JSAIOS/ARCHITECTURE.md) for full Hexagonal Architecture (Ports and Adapters) guidelines.
 - **Legacy Codebase (`ollama-chat`)**: Located at `c:\Users\jerry\ollama-chat` (or `~/ollama-chat`). Refer to this repository when checking prior architectural implementations, workflow designs, UI concepts, or feature details being rebuilt into JSAIOS.
 
+## Architectural Concern Trigger Index (Mandatory ARCHITECTURE.md Inspection)
+ALWAYS inspect and follow [ARCHITECTURE.md](file:///c:/Users/jerry/JSAIOS/ARCHITECTURE.md) when working on any of the following tasks:
+
+1. **Storage, Persistence, & Data Models**:
+   - *Triggers*: Adding session fields, implementing new persistence drivers, changing storage directories.
+   - *Rule*: Storage MUST implement `IChatSessionStorage` or output ports. Core engines (`src/engines/`) must NEVER call `fs` or database APIs directly. Refer to [ARCHITECTURE.md - Output Adapters](file:///c:/Users/jerry/JSAIOS/ARCHITECTURE.md#3-adapters-driving--driven-components).
+
+2. **Service Drivers (AI, Workflows, External APIs)**:
+   - *Triggers*: Creating/updating service drivers (e.g., `OllamaService`, `CopilotService`, `ComfyUIService`).
+   - *Rule*: Service drivers MUST operate exclusively via pure HTTP REST (`fetch()`). NEVER invoke local OS CLI binaries or spawn `child_process`. Refer to [ARCHITECTURE.md - Output Ports & Adapters](file:///c:/Users/jerry/JSAIOS/ARCHITECTURE.md#3-adapters-driving--driven-components).
+
+3. **CLI Commands, Output Formatting, & Frontends**:
+   - *Triggers*: Adding CLI subcommands, modifying output formatting/colors, adding HTTP REST or Web Shell adapters.
+   - *Rule*: Driving adapters (`src/shell/`) translate user/system actions into engine calls. CLI subcommands MUST be decomposed into single-purpose handler modules (<50 lines) under `src/shell/terminal/commands/`. Refer to [ARCHITECTURE.md - Teeny Tiny Command Handlers](file:///c:/Users/jerry/JSAIOS/ARCHITECTURE.md#4-teeny-tiny-single-purpose-command-handlers).
+
+4. **Core Kernel & OS Engines (`src/kernel/`, `src/engines/`)**:
+   - *Triggers*: Modifying kernel orchestration, event bus, engine turn logic, or session state.
+   - *Rule*: Core domain logic MUST remain 100% platform-agnostic, with zero dependencies on process stdout, readline, Express, or DOM APIs. Refer to [ARCHITECTURE.md - Core Kernel Isolation](file:///c:/Users/jerry/JSAIOS/ARCHITECTURE.md#1-hexagonal-domain-isolation-core-kernel-at-the-center).
+
 ## Environment & Terminal Execution Rules
 - **Terminal Execution (`cmd /c`)**: On Windows, PowerShell `.ps1` execution is disabled. ALWAYS execute npm and script commands via `cmd /c` (e.g. `cmd /c npm test`, `cmd /c npm start`).
 
