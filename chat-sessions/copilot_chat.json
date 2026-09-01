@@ -1,0 +1,38 @@
+{
+  "id": "copilot_chat",
+  "name": "Copilot Chat",
+  "providerId": "copilot",
+  "model": "default",
+  "messages": [
+    {
+      "id": "user_1788217101319_jvzf",
+      "role": "user",
+      "content": "Hello Copilot",
+      "sticky": false,
+      "timestamp": 1788217101319
+    },
+    {
+      "id": "assistant_1788217101320_t9wr",
+      "role": "assistant",
+      "content": "Hello from Copilot REST!",
+      "sticky": false,
+      "timestamp": 1788217101320
+    },
+    {
+      "id": "user_1788217447790_ang2",
+      "role": "user",
+      "content": "Hello Copilot",
+      "sticky": false,
+      "timestamp": 1788217447790
+    },
+    {
+      "id": "assistant_1788217447790_xni0",
+      "role": "assistant",
+      "content": "Hello from Copilot REST!",
+      "sticky": false,
+      "timestamp": 1788217447790
+    }
+  ],
+  "createdAt": 1788217101318,
+  "updatedAt": 1788217447790
+}

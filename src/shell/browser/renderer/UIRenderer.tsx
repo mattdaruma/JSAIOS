@@ -6,7 +6,7 @@
 import React from 'react';
 import type { UINodeConfig } from '../types';
 
-import { Container } from '../layouts/Container';
+import { Layout } from '../layouts/Layout';
 
 import { Header } from '../components/Header';
 import { SidePanel } from '../components/SidePanel';
@@ -39,9 +39,9 @@ export const UIRenderer: React.FC<UIRendererProps> = ({ config, state = {}, onEv
 
   const compType = config.componentType.toLowerCase();
 
-  // Pure Layout Container
-  if (compType === 'container') {
-    return <Container {...config.layoutProps} {...config.props}>{renderChildren()}</Container>;
+  // Pure Layout Container (supports both 'layout' and 'container' in JSON)
+  if (compType === 'layout' || compType === 'container') {
+    return <Layout {...config.layoutProps} {...config.props}>{renderChildren()}</Layout>;
   }
 
   // Component Primitives & Overlays

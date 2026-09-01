@@ -1,16 +1,16 @@
 /**
- * JSAIOS - Generic Layout Container
+ * JSAIOS - Generic Layout Container Primitive
  * Flexible layout pane supporting flex directions, grid templates, padding, gaps, scrollability, and Tailwind styling.
  */
 
 import React from 'react';
 import type { UILayoutProps } from '../types';
 
-interface ContainerProps extends UILayoutProps {
+interface LayoutProps extends UILayoutProps {
   children?: React.ReactNode;
 }
 
-export const Container: React.FC<ContainerProps> = ({
+export const Layout: React.FC<LayoutProps> = ({
   direction = 'column',
   wrap = false,
   align = 'stretch',
