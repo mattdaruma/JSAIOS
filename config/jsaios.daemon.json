@@ -9,6 +9,11 @@
     "port": 3001,
     "host": "127.0.0.1",
     "ipcGateway": true,
+    "logging": {
+      "level": "info",
+      "logFile": "logs/jsaiosd.log",
+      "logToConsole": true
+    },
     "cors": {
       "enabled": true,
       "allowOrigin": "*",
