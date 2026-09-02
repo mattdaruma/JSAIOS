@@ -13,19 +13,25 @@ import type {
   AssembledContext,
   IContextTemplateStorage
 } from './helpers/types';
+import type { ITokenizerService } from '../../services/tokenizer/ITokenizerService';
+import { HeuristicTokenizerService } from '../../services/tokenizer/HeuristicTokenizerService';
 import { interpolateTemplate } from './helpers/ContextTemplate';
 import { evaluateConditionalRules, type EvaluationState } from './helpers/ConditionEvaluator';
-import { estimateTokenCount, pruneContextItems } from './helpers/TokenWindowPruner';
+import { pruneContextItems } from './helpers/TokenWindowPruner';
 
 export class ContextEngine {
   private templates: Map<string, SystemDirectiveTemplate> = new Map();
   private conditionalRules: ConditionalRule[] = [];
   private activeContextItems: Map<string, ContextItem> = new Map();
+  private tokenizer: ITokenizerService;
 
   constructor(
     private kernel?: HoneyKernel,
-    private storageAdapter?: IContextTemplateStorage
-  ) {}
+    private storageAdapter?: IContextTemplateStorage,
+    tokenizerAdapter?: ITokenizerService
+  ) {
+    this.tokenizer = tokenizerAdapter || new HeuristicTokenizerService();
+  }
 
   public registerTemplate(template: SystemDirectiveTemplate): void {
     this.templates.set(template.id, template);
@@ -78,11 +84,11 @@ export class ContextEngine {
       .map((i) => i.media)
       .filter(Boolean) as MediaContextItem[];
 
-    // Estimate & Prune
-    const systemTokens = estimateTokenCount(systemPrompt);
-    const prunedItems = pruneContextItems(combined, maxTokenBudget, systemTokens);
+    // Estimate & Prune using ITokenizerService
+    const systemTokens = this.tokenizer.countTokens(systemPrompt);
+    const prunedItems = pruneContextItems(combined, maxTokenBudget, this.tokenizer, systemTokens);
 
-    const itemsTokens = prunedItems.reduce((sum, item) => sum + estimateTokenCount(item.content), 0);
+    const itemsTokens = prunedItems.reduce((sum, item) => sum + this.tokenizer.countTokens(item.content), 0);
     const totalTokens = systemTokens + itemsTokens;
 
     return {

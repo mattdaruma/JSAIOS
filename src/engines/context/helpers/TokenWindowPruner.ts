@@ -1,19 +1,15 @@
 /**
  * JSAIOS - Single-purpose helper: TokenWindowPruner
- * Estimates token counts and prunes lower-priority context items to fit token budget limits.
+ * Uses ITokenizerService to prune lower-priority context items to fit token budget limits.
  */
 
 import type { ContextItem } from './types';
-
-export function estimateTokenCount(text: string): number {
-  if (!text) return 0;
-  // Standard heuristic: ~4 characters per token
-  return Math.ceil(text.length / 4);
-}
+import type { ITokenizerService } from '../../../services/tokenizer/ITokenizerService';
 
 export function pruneContextItems(
   items: ContextItem[],
   maxTokenBudget: number,
+  tokenizer: ITokenizerService,
   reservedTokens: number = 0
 ): ContextItem[] {
   const availableBudget = Math.max(0, maxTokenBudget - reservedTokens);
@@ -29,7 +25,7 @@ export function pruneContextItems(
   const retained: ContextItem[] = [];
 
   for (const item of sorted) {
-    const itemTokens = estimateTokenCount(item.content);
+    const itemTokens = tokenizer.countTokens(item.content);
     if (currentUsage + itemTokens <= availableBudget || item.sticky) {
       retained.push(item);
       currentUsage += itemTokens;
