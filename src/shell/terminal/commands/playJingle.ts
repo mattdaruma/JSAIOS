@@ -1,8 +1,7 @@
 /**
  * JSAIOS - Single-purpose helper: playJingle CLI Handler
  * Pure fun/goof CLI command playing the betterthanyou.wav jingle.
- * Plays an in-memory silent PCM WAV pulse beforehand to warm up the sound card DAC driver (D3 -> D0 state transition)
- * before triggering the actual jingle.
+ * Plays a silent PCM WAV stream and sleeps for 500ms to allow sound card DAC hardware amplifier to fully warm up.
  */
 
 import { exec } from 'child_process';
@@ -21,9 +20,9 @@ export function handlePlayJingle(): string {
 
   if (platform === 'win32') {
     const escaped = wavPath.replace(/\\/g, '\\\\').replace(/'/g, "''");
-    // 44-byte silent PCM WAV stream in memory to warm up DAC, followed by jingle playback
+    // Silent PCM header, start background silent playback, sleep 500ms to warm hardware DAC, then play jingle
     const silentWavBytes = '82,73,70,70,38,0,0,0,87,65,86,69,102,109,116,32,16,0,0,0,1,0,1,0,68,172,0,0,136,88,1,0,2,0,16,0,100,97,116,97,2,0,0,0,0,0';
-    command = `powershell -c "$s = [System.IO.MemoryStream]::new([byte[]](${silentWavBytes})); $wp = New-Object Media.SoundPlayer $s; $wp.PlaySync(); $p = New-Object Media.SoundPlayer '${escaped}'; $p.Load(); $p.PlaySync()"`;
+    command = `powershell -c "$s = [System.IO.MemoryStream]::new([byte[]](${silentWavBytes})); $wp = New-Object Media.SoundPlayer $s; $wp.Play(); [System.Threading.Thread]::Sleep(500); $p = New-Object Media.SoundPlayer '${escaped}'; $p.Load(); $p.PlaySync()"`;
   } else if (platform === 'darwin') {
     command = `afplay "${wavPath}"`;
   } else {
