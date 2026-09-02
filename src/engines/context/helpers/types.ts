@@ -47,7 +47,8 @@ export interface CustomFieldCondition {
 
 export interface ContextPackItem {
   id: string;
-  template: string;
+  promptId: string; // References standalone SystemDirectiveTemplate ID
+  inlineTemplate?: string; // Optional fallback template if standalone template ID is omitted
   priority: number;
   condition?: CustomFieldCondition;
 }

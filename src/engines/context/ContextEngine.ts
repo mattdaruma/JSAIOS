@@ -46,6 +46,10 @@ export class ContextEngine {
     return this.templates.get(id);
   }
 
+  public listTemplates(): SystemDirectiveTemplate[] {
+    return Array.from(this.templates.values());
+  }
+
   public registerPack(pack: ContextPack): void {
     this.packs.set(pack.id, pack);
   }
@@ -142,9 +146,14 @@ export class ContextEngine {
             if (!isMatch) continue;
           }
 
-          // Interpolate template content
+          // Resolve template content from standalone template or inline fallback
+          let templateStr = packItem.inlineTemplate || '';
+          if (packItem.promptId && this.templates.has(packItem.promptId)) {
+            templateStr = this.templates.get(packItem.promptId)!.template;
+          }
+
           const interpolated = interpolateTemplate(
-            { id: packItem.id, name: packItem.id, template: packItem.template },
+            { id: packItem.id, name: packItem.id, template: templateStr },
             packFields
           );
 
