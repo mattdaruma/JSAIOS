@@ -1,7 +1,7 @@
 /**
  * JSAIOS - Single-purpose helper: playJingle CLI Handler
  * Pure fun/goof CLI command playing the betterthanyou.wav jingle.
- * Easily toggled or commented out.
+ * Uses native winmm.dll PlaySound API on Windows to bypass .NET SoundPlayer latency and initial attack clipping.
  */
 
 import { exec } from 'child_process';
@@ -19,7 +19,9 @@ export function handlePlayJingle(): string {
   let command = '';
 
   if (platform === 'win32') {
-    command = `powershell -c "(New-Object Media.SoundPlayer '${wavPath.replace(/'/g, "''")}').PlaySync()"`;
+    const escaped = wavPath.replace(/\\/g, '\\\\').replace(/'/g, "''");
+    // Pre-load via .NET SoundPlayer and play to eliminate stream startup delay
+    command = `powershell -c "$p = New-Object Media.SoundPlayer '${escaped}'; $p.Load(); $p.PlaySync()"`;
   } else if (platform === 'darwin') {
     command = `afplay "${wavPath}"`;
   } else {
