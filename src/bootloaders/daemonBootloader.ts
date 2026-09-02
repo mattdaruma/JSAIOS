@@ -5,12 +5,21 @@
 
 import { JSAIOSDaemon } from '../kernel/daemon/JSAIOSDaemon';
 
-export async function bootDaemon(): Promise<JSAIOSDaemon> {
+export function parseConfigPathFromArgv(): string | undefined {
+  const configIndex = process.argv.indexOf('--config');
+  if (configIndex !== -1 && process.argv[configIndex + 1]) {
+    return process.argv[configIndex + 1];
+  }
+  return undefined;
+}
+
+export async function bootDaemon(customManifestPath?: string): Promise<JSAIOSDaemon> {
   console.log('=====================================================');
   console.log(' JSAIOS OS Micro-Kernel Daemon (jsaiosd)');
   console.log('=====================================================');
 
-  const daemon = new JSAIOSDaemon();
+  const manifestPath = customManifestPath || parseConfigPathFromArgv();
+  const daemon = new JSAIOSDaemon(manifestPath);
   await daemon.boot();
 
   const handleExit = async (signalName: string) => {

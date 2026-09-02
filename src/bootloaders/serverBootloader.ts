@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Server Bootloader
- * Boots HoneyKernel Core, registers micro-services, and starts data-driven JSAIOSServerAdapter.
+ * Parses dynamic --config <path> CLI arguments or loads default server manifest (jsaios.server.json).
  */
 
 import path from 'path';
@@ -11,7 +11,15 @@ import { ComfyUIService } from '../services/ai/comfyui/ComfyUIService';
 import { CopilotService } from '../services/ai/copilot/CopilotService';
 import { JSAIOSServerAdapter } from '../shell/server/JSAIOSServerAdapter';
 
-export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter: JSAIOSServerAdapter }> {
+export function parseConfigPathFromArgv(): string | undefined {
+  const configIndex = process.argv.indexOf('--config');
+  if (configIndex !== -1 && process.argv[configIndex + 1]) {
+    return process.argv[configIndex + 1];
+  }
+  return undefined;
+}
+
+export async function bootServer(customManifestPath?: string): Promise<{ kernel: HoneyKernel; serverAdapter: JSAIOSServerAdapter }> {
   console.log('=====================================================');
   console.log(' JSAIOS Server Bootloader - Data-Driven REST Server');
   console.log('=====================================================');
@@ -19,7 +27,7 @@ export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter
   const kernel = new HoneyKernel();
   let port = 3000;
   let host = '127.0.0.1';
-  let serverManifestFile = path.join(process.cwd(), 'config', 'jsaios.server.json');
+  const serverManifestFile = customManifestPath || parseConfigPathFromArgv() || path.join(process.cwd(), 'config', 'jsaios.server.json');
 
   try {
     if (fs.existsSync(serverManifestFile)) {

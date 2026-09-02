@@ -9,8 +9,8 @@ import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import { TerminalInterpreter } from './TerminalInterpreter';
 import { getTerminalFormatter } from './helpers/getTerminalFormatter';
 
-export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string): void {
-  const interpreter = new TerminalInterpreter(kernel);
+export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, manifestPath?: string): void {
+  const interpreter = new TerminalInterpreter(kernel, manifestPath);
   const manifest = interpreter.getManifest();
   const formatter = getTerminalFormatter(manifest.defaultEnvironment);
   const rawPromptStr = customPrompt || manifest.promptPrefix || 'jsaios@honeykernel:~$ ';
