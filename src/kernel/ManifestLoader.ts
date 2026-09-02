@@ -31,3 +31,7 @@ export class ManifestLoader {
     return fallback;
   }
 }
+
+export function loadManifest(customPath?: string): JSAIOSManifest {
+  return ManifestLoader.loadManifest(customPath);
+}
