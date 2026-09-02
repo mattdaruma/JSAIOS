@@ -1,18 +1,18 @@
 /**
- * JSAIOS - Data-Driven Generic Terminal Command Interpreter
- * Parses interactive shell inputs and dispatches commands dynamically via HoneyKernel and declarative JSON manifests.
- * 100% domain-agnostic: contains zero AI or chat domain logic.
+ * JSAIOS - Adapter: CommandInterpreter
+ * Data-Driven Generic Terminal & Server Command Interpreter.
+ * Parses interactive shell and server REST command inputs and dispatches commands dynamically via HoneyKernel and declarative JSON manifests.
  */
 
 import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { ServiceDescriptor } from '../../kernel/types';
-import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../../adapters/cli/chat/ChatCLIAdapter';
-import { handleOllamaCLI } from '../../adapters/cli/services/OllamaCLIAdapter';
-import { handleComfyCLI } from '../../adapters/cli/services/ComfyCLIAdapter';
-import { handleCopilotCLI } from '../../adapters/cli/services/CopilotCLIAdapter';
-import { handleContextCommand, CONTEXT_ENGINE_DESCRIPTOR } from './commands/context/index';
+import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../cli/chat/ChatCLIAdapter';
+import { handleOllamaCLI } from '../cli/services/OllamaCLIAdapter';
+import { handleComfyCLI } from '../cli/services/ComfyCLIAdapter';
+import { handleCopilotCLI } from '../cli/services/CopilotCLIAdapter';
+import { handleContextCommand, CONTEXT_ENGINE_DESCRIPTOR } from '../../shell/terminal/commands/context/index';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
 import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
@@ -26,7 +26,7 @@ export interface TerminalManifestConfig {
   builtins: Array<{ command: string; description: string }>;
 }
 
-export class TerminalInterpreter {
+export class CommandInterpreter {
   private contextEngine: ContextEngine = new ContextEngine();
   private config: TerminalManifestConfig = {
     version: '1.0.0',
@@ -228,3 +228,5 @@ export class TerminalInterpreter {
     ].join('\n');
   }
 }
+
+export { CommandInterpreter as TerminalInterpreter };

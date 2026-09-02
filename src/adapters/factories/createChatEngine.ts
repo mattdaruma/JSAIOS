@@ -1,13 +1,13 @@
 /**
- * JSAIOS - Single-purpose helper: createChatEngine
+ * JSAIOS - Adapter Factory: createChatEngine
  * Factory function for creating or retrieving singleton ChatEngine instances with storage configuration.
  */
 
 import fs from 'fs';
 import path from 'path';
-import type { HoneyKernel } from '../../../kernel/HoneyKernel';
-import { ChatEngine } from '../ChatEngine';
-import { FileSessionStorage } from '../../../adapters/storage/FileSessionStorage';
+import type { HoneyKernel } from '../../kernel/HoneyKernel';
+import { ChatEngine } from '../../engines/chat/ChatEngine';
+import { FileSessionStorage } from '../storage/FileSessionStorage';
 
 let globalChatEngine: ChatEngine | null = null;
 

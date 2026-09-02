@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HoneyKernel } from '../../src/kernel/HoneyKernel';
-import { TerminalInterpreter } from '../../src/shell/terminal/TerminalInterpreter';
+import { CommandInterpreter as TerminalInterpreter } from '../../src/adapters/interpreter/CommandInterpreter';
 
 describe('JSAIOS Context Engine CLI Commands', () => {
   let kernel: HoneyKernel;

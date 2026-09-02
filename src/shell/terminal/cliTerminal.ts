@@ -6,11 +6,11 @@
 
 import readline from 'readline';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
-import { TerminalInterpreter } from './TerminalInterpreter';
+import { CommandInterpreter } from '../../adapters/interpreter/CommandInterpreter';
 import { getTerminalFormatter } from './helpers/getTerminalFormatter';
 
 export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, manifestPath?: string): void {
-  const interpreter = new TerminalInterpreter(kernel, manifestPath);
+  const interpreter = new CommandInterpreter(kernel, manifestPath);
   const manifest = interpreter.getManifest();
   const formatter = getTerminalFormatter(manifest.defaultEnvironment);
   const rawPromptStr = customPrompt || manifest.promptPrefix || 'jsaios@honeykernel:~$ ';
@@ -42,7 +42,7 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
   };
 
   process.on('SIGINT', () => handleGracefulExit('SIGINT (CTRL+C)'));
-  process.on('SIGTERM', () => handleGracefulExit('SIGTERM'));
+  process.on('SIGTERM', () => handleHandleExit ? handleGracefulExit('SIGTERM') : handleGracefulExit('SIGTERM'));
 
   rl.prompt();
 

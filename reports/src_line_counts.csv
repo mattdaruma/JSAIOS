@@ -1,11 +1,12 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
-"src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",231,198,6,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",233,199,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",217,187,12,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",206,173,4,250,false
 "src/shell/browser/helpers/BrowserLocalCommandDispatcher.ts","BrowserLocalCommandDispatcher.ts",".ts","TypeScript Logic",175,153,9,250,false
 "src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",152,141,7,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",149,135,5,250,false
 "src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",146,127,8,250,false
+"src/adapters/cli/chat/ChatCLIAdapter.ts","ChatCLIAdapter.ts",".ts","TypeScript Logic",142,122,5,250,false
 "src/adapters/cli/services/parseOllamaOptions.ts","parseOllamaOptions.ts",".ts","TypeScript Logic",131,123,4,250,false
 "src/shell/browser/components/SearchControlBar.tsx","SearchControlBar.tsx",".tsx","React Component",130,122,5,250,false
 "src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",129,109,26,250,false
@@ -61,7 +62,6 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/bootloaders/cliBootloader.ts","cliBootloader.ts",".ts","TypeScript Logic",54,43,5,250,false
 "src/adapters/cli/chat/handleChatSend.ts","handleChatSend.ts",".ts","TypeScript Logic",53,46,4,250,false
 "src/services/ai/copilot/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",52,44,5,250,false
-"src/adapters/cli/chat/ChatCLIAdapter.ts","ChatCLIAdapter.ts",".ts","TypeScript Logic",51,41,5,250,false
 "src/shell/browser/components/PaginationFooter.tsx","PaginationFooter.tsx",".tsx","React Component",50,43,4,250,false
 "src/adapters/cli/services/OllamaCLIAdapter.ts","OllamaCLIAdapter.ts",".ts","TypeScript Logic",49,40,4,250,false
 "src/services/ai/comfyui/helpers/getNodeInfo.ts","getNodeInfo.ts",".ts","TypeScript Logic",46,39,4,250,false
@@ -75,8 +75,8 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/components/Modal.tsx","Modal.tsx",".tsx","React Component",43,38,4,250,false
 "src/adapters/cli/chat/handleChatConfig.ts","handleChatConfig.ts",".ts","TypeScript Logic",42,34,4,250,false
 "src/adapters/cli/chat/handleChatStatus.ts","handleChatStatus.ts",".ts","TypeScript Logic",41,33,4,250,false
+"src/adapters/factories/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",40,35,5,250,false
 "src/bootloaders/browserBootloader.tsx","browserBootloader.tsx",".tsx","React Component",40,34,5,250,false
-"src/engines/chat/helpers/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",40,35,5,250,false
 "src/shell/terminal/tokenize.ts","tokenize.ts",".ts","TypeScript Logic",40,34,4,250,false
 "src/shell/terminal/commands/context/assembleContext.ts","assembleContext.ts",".ts","TypeScript Logic",39,32,4,250,false
 "src/engines/context/helpers/TokenWindowPruner.ts","TokenWindowPruner.ts",".ts","TypeScript Logic",38,31,6,250,false

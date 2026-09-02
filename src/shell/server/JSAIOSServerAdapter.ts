@@ -7,8 +7,8 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
-import { getOrCreateChatEngine } from '../../engines/chat/helpers/createChatEngine';
-import { TerminalInterpreter } from '../terminal/TerminalInterpreter';
+import { getOrCreateChatEngine } from '../../adapters/factories/createChatEngine';
+import { CommandInterpreter } from '../../adapters/interpreter/CommandInterpreter';
 import { dispatchServerAction, type RouteTargetConfig } from './helpers/serverActionDispatcher';
 
 export interface CorsConfig {
@@ -55,7 +55,7 @@ export class JSAIOSServerAdapter {
   public start(): Promise<void> {
     return new Promise((resolve, reject) => {
       const engine = getOrCreateChatEngine(this.kernel);
-      const interpreter = new TerminalInterpreter(this.kernel);
+      const interpreter = new CommandInterpreter(this.kernel);
 
       const targetMap: Record<string, any> = {
         kernel: this.kernel,

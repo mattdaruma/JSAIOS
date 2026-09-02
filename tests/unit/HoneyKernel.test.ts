@@ -4,7 +4,7 @@ import { ServiceRegistry } from '../../src/kernel/ServiceRegistry';
 import { EventBus } from '../../src/kernel/EventBus';
 import { OllamaService } from '../../src/services/ai/ollama/OllamaService';
 import { ComfyUIService } from '../../src/services/ai/comfyui/ComfyUIService';
-import { TerminalInterpreter } from '../../src/shell/terminal/TerminalInterpreter';
+import { CommandInterpreter as TerminalInterpreter } from '../../src/adapters/interpreter/CommandInterpreter';
 
 describe('JSAIOS HoneyKernel Core & Service Registry', () => {
   let kernel: HoneyKernel;
