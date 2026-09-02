@@ -47,7 +47,7 @@
               "title": "JSAIOS Kernel Daemon (jsaiosd)",
               "category": "kernel",
               "badge": "Daemon OS Host",
-              "description": "Feature-flagged background OS process (config/jsaios.config.json -> daemon.enabled) hosting HoneyKernel, active micro-services, and built-in HTTP/WebSocket IPC gateway on port 3001.",
+              "description": "Feature-flagged background OS process (config/jsaios.daemon.json -> daemon.enabled) hosting HoneyKernel, active micro-services, and built-in HTTP/WebSocket IPC gateway on port 3001.",
               "codeSnippet": "npm run start:daemon  # Launches background jsaiosd OS process",
               "tags": ["daemon", "jsaiosd", "ipc", "feature-flag"]
             },
