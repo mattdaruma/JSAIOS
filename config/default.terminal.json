@@ -13,6 +13,7 @@
     { "command": "status", "description": "Display system status and uptime" },
     { "command": "services", "description": "List registered service drivers" },
     { "command": "context", "description": "Inspect & assemble system directive prompt templates (context list|show|assemble)" },
+    { "command": "jingle", "description": "Play JSAIOS sound jingle (betterthanyou.wav)" },
     { "command": "clear", "description": "Clear terminal output screen" },
     { "command": "exit", "description": "Quit terminal shell" }
   ]

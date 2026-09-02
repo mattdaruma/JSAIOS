@@ -27,6 +27,7 @@ export const FILE_TYPE_CONFIG: Record<string, ExtensionConfig> = {
   '.svg': { category: 'SVG Asset', maxRecommendedLines: 1000 }
 };
 
+const BINARY_EXTENSIONS = ['.wav', '.mp3', '.png', '.jpg', '.jpeg', '.webp', '.ico', '.pdf'];
 const DEFAULT_CONFIG: ExtensionConfig = { category: 'Generic File', maxRecommendedLines: 300 };
 
 interface FileLineStat {
@@ -50,10 +51,11 @@ function scanDirectory(dirPath: string): string[] {
   for (const file of list) {
     const filePath = path.join(dirPath, file);
     const stat = fs.statSync(filePath);
+    const ext = path.extname(file).toLowerCase();
 
     if (stat && stat.isDirectory()) {
       results = results.concat(scanDirectory(filePath));
-    } else {
+    } else if (!BINARY_EXTENSIONS.includes(ext)) {
       results.push(filePath);
     }
   }

@@ -1,5 +1,5 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
-"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",233,199,6,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",237,203,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",226,194,12,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",206,173,4,250,false
 "src/shell/browser/helpers/BrowserLocalCommandDispatcher.ts","BrowserLocalCommandDispatcher.ts",".ts","TypeScript Logic",175,153,9,250,false
@@ -92,6 +92,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/components/SidePanel.tsx","SidePanel.tsx",".tsx","React Component",34,29,4,250,false
 "src/services/ai/comfyui/helpers/generateMedia.ts","generateMedia.ts",".ts","TypeScript Logic",33,26,4,250,false
 "src/shell/browser/components/Badge.tsx","Badge.tsx",".tsx","React Component",33,28,4,250,false
+"src/shell/terminal/commands/playJingle.ts","playJingle.ts",".ts","TypeScript Logic",33,25,5,250,false
 "src/services/ai/comfyui/helpers/getModels.ts","getModels.ts",".ts","TypeScript Logic",32,25,4,250,false
 "src/services/ai/comfyui/helpers/listWorkflows.ts","listWorkflows.ts",".ts","TypeScript Logic",30,26,4,250,false
 "src/services/ai/ServiceFactory.ts","ServiceFactory.ts",".ts","TypeScript Logic",29,22,4,250,false

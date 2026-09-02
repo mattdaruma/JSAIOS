@@ -13,6 +13,7 @@ import { handleOllamaCLI } from '../cli/services/OllamaCLIAdapter';
 import { handleComfyCLI } from '../cli/services/ComfyCLIAdapter';
 import { handleCopilotCLI } from '../cli/services/CopilotCLIAdapter';
 import { handleContextCommand, CONTEXT_ENGINE_DESCRIPTOR } from '../../shell/terminal/commands/context/index';
+import { handlePlayJingle } from '../../shell/terminal/commands/playJingle';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
 import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
@@ -43,6 +44,7 @@ export class CommandInterpreter {
       { command: 'status', description: 'Display system status and uptime' },
       { command: 'services', description: 'List registered service drivers' },
       { command: 'context', description: 'Inspect & assemble system directive prompt templates (context list|show|assemble)' },
+      { command: 'jingle', description: 'Play JSAIOS sound jingle (betterthanyou.wav)' },
       { command: 'clear', description: 'Clear terminal output screen' },
       { command: 'exit', description: 'Quit terminal shell' }
     ]
@@ -89,6 +91,8 @@ export class CommandInterpreter {
       case 'context':
         if (args[1] === 'help') return this.handleTargetHelp('context');
         return handleContextCommand(args.slice(1), this.contextEngine);
+      case 'jingle':
+        return handlePlayJingle();
       case 'clear':
         return '__CLEAR__';
     }
