@@ -54,7 +54,7 @@ export class TerminalInterpreter {
 
   private loadManifest(customManifestPath?: string): void {
     try {
-      const targetPath = customManifestPath || path.join(process.cwd(), 'config', 'jsaios.terminal.json');
+      const targetPath = customManifestPath || path.join(process.cwd(), 'config', 'default.terminal.json');
       if (fs.existsSync(targetPath)) {
         const parsed = JSON.parse(fs.readFileSync(targetPath, 'utf-8'));
         this.config = { ...this.config, ...parsed };

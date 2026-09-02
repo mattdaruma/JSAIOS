@@ -39,7 +39,7 @@ export class JSAIOSServerAdapter {
 
   private loadConfiguration(customManifestPath?: string): void {
     try {
-      const manifestPath = customManifestPath || path.join(process.cwd(), 'config', 'jsaios.server.json');
+      const manifestPath = customManifestPath || path.join(process.cwd(), 'config', 'default.server.json');
       if (fs.existsSync(manifestPath)) {
         const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
         if (parsed.routes) this.routes = parsed.routes;
@@ -117,7 +117,7 @@ export class JSAIOSServerAdapter {
 
       this.server.on('error', (err: any) => {
         if (err.code === 'EADDRINUSE') {
-          reject(new Error(`Port ${this.port} is already in use by another process. Please terminate the process on port ${this.port} or update 'port' in config/jsaios.server.json.`));
+          reject(new Error(`Port ${this.port} is already in use by another process. Please terminate the process on port ${this.port} or update 'port' in config/default.server.json.`));
         } else {
           reject(err);
         }

@@ -22,7 +22,7 @@ export async function bootCLISystem(customManifestPath?: string): Promise<HoneyK
   loadSecrets();
 
   const manifest = loadManifest(manifestPath);
-  console.log(`[Bootloader] Booting ${manifest.system?.name || 'JSAIOS'} from manifest '${manifestPath || 'config/jsaios.daemon.json'}'...`);
+  console.log(`[Bootloader] Booting ${manifest.system?.name || 'JSAIOS'} from manifest '${manifestPath || 'config/default.daemon.json'}'...`);
 
   if (manifest.services) {
     for (const serviceCfg of manifest.services) {

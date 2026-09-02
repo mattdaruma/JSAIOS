@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Server Bootloader
- * Parses dynamic --config <path> CLI arguments or loads default server manifest (jsaios.server.json).
+ * Parses dynamic --config <path> CLI arguments or loads default server manifest (default.server.json).
  */
 
 import path from 'path';
@@ -27,7 +27,7 @@ export async function bootServer(customManifestPath?: string): Promise<{ kernel:
   const kernel = new HoneyKernel();
   let port = 3000;
   let host = '127.0.0.1';
-  const serverManifestFile = customManifestPath || parseConfigPathFromArgv() || path.join(process.cwd(), 'config', 'jsaios.server.json');
+  const serverManifestFile = customManifestPath || parseConfigPathFromArgv() || path.join(process.cwd(), 'config', 'default.server.json');
 
   try {
     if (fs.existsSync(serverManifestFile)) {

@@ -47,7 +47,7 @@
               "title": "JSAIOS Kernel Daemon (jsaiosd)",
               "category": "kernel",
               "badge": "Daemon OS Host",
-              "description": "Feature-flagged background OS process (config/jsaios.daemon.json -> daemon.enabled) hosting HoneyKernel, active micro-services, and built-in HTTP/WebSocket IPC gateway on port 3001.",
+              "description": "Feature-flagged background OS process (config/default.daemon.json -> daemon.enabled) hosting HoneyKernel, active micro-services, and built-in HTTP/WebSocket IPC gateway on port 3001.",
               "codeSnippet": "npm run start:daemon  # Launches background jsaiosd OS process",
               "tags": ["daemon", "jsaiosd", "ipc", "feature-flag"]
             },
@@ -128,7 +128,7 @@
               "title": "Interactive System Terminal Commands",
               "category": "cli",
               "badge": "CLI Reference",
-              "description": "Core shell builtins and subcommands available in System Terminal Shell (npm run start:cli). Fully data-driven via config/jsaios.terminal.json manifest.",
+              "description": "Core shell builtins and subcommands available in System Terminal Shell (npm run start:cli). Fully data-driven via config/default.terminal.json manifest.",
               "codeSnippet": "help                          # Display system reference\nstatus                        # Display kernel uptime & active services\nservices                      # List registered AI transport drivers\nchat new <name> -p <provider> # Create a new chat session\nchat send --temp 0.7 <prompt> # Send prompt to active session",
               "tags": ["cli", "terminal", "commands", "subcommands"]
             },

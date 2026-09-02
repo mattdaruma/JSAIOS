@@ -19,7 +19,7 @@ export function getOrCreateChatEngine(kernel: HoneyKernel): ChatEngine {
   if (!globalChatEngine) {
     let storageDir = 'chat-sessions';
     try {
-      const configPath = path.join(process.cwd(), 'config', 'jsaios.daemon.json');
+      const configPath = path.join(process.cwd(), 'config', 'default.daemon.json');
       if (fs.existsSync(configPath)) {
         const parsed = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
         if (Array.isArray(parsed.engines)) {
