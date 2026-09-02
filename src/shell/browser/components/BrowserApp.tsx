@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { UIRenderer } from '../renderer/UIRenderer';
 import { stripAnsi } from '../helpers/stripAnsi';
 import type { IClientAdapter } from '../types';
-import uiManifest from '../../../../config/jsaios.ui.json';
+import browserManifest from '../../../../config/jsaios.browser.json';
 import '../styles/globals.css';
 
 export interface BrowserAppProps {
@@ -78,7 +78,7 @@ export const BrowserApp: React.FC<BrowserAppProps> = ({
     }
   };
 
-  const targetConfig = uiConfig || uiManifest.root;
+  const targetConfig = uiConfig || browserManifest.root;
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-zinc-950">

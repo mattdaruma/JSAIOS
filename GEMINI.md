@@ -31,7 +31,7 @@ ALWAYS inspect and follow [ARCHITECTURE.md](file:///c:/Users/jerry/JSAIOS/ARCHIT
 ### 1. Separation of Code & Configuration (`src/` vs. `config/`)
 - **Strict Rule**: The `src/` directory is ONLY for generic driving logic, algorithms, and core OS engine code.
 - **Zero Data Files in `src/`**: Zero JSON configurations, workflow definitions, system manifests, or static data templates belong inside `src/`.
-- **Top-Level `config/` Directory**: System manifests (`config/jsaios.daemon.json`, `config/jsaios.server.json`, `config/jsaios.terminal.json`, `config/jsaios.ui.json`) belong exclusively in top-level `config/`.
+- **Top-Level `config/` Directory**: System manifests (`config/jsaios.daemon.json`, `config/jsaios.server.json`, `config/jsaios.terminal.json`, `config/jsaios.browser.json`) belong exclusively in top-level `config/`.
 
 ### 2. No Defensive Guard Clauses & Data Integrity Philosophy
 - **Strict Rule**: We do not create guard clauses. We write good logic with effective transformations and rely on the user to configure and produce good and valid data.
