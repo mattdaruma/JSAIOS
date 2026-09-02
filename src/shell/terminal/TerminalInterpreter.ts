@@ -161,7 +161,7 @@ export class TerminalInterpreter {
   }
 
   /**
-   * Render detailed CLI commands and options for a specific engine or micro-service
+   * Render detailed CLI commands and options for a specific engine, micro-service, or core builtin
    */
   private handleTargetHelp(targetId: string): string {
     const query = targetId.toLowerCase().trim();
@@ -170,13 +170,24 @@ export class TerminalInterpreter {
       return this.renderDescriptorHelp(CHAT_ENGINE_DESCRIPTOR);
     }
 
+    const builtin = this.config.builtins.find(b => b.command.toLowerCase() === query);
+    if (builtin) {
+      return [
+        '=======================================================================',
+        ` Reference: Core Shell Command '${builtin.command}'`,
+        '=======================================================================',
+        `  ${builtin.command.padEnd(15)} - ${builtin.description}`,
+        '======================================================================='
+      ].join('\n');
+    }
+
     const activeServices = this.kernel.getStatus().activeServices;
     const service = activeServices.find(
       s => s.id.toLowerCase() === query || s.name.toLowerCase().includes(query) || (query === 'comfy' && s.id === 'comfyui')
     );
 
     if (!service) {
-      return `Target '${targetId}' not found. Type 'help' to view active engines and service drivers.`;
+      return `Target '${targetId}' not found. Type 'help' to view active commands, engines, and service drivers.`;
     }
 
     return this.renderDescriptorHelp(service);
