@@ -52,3 +52,8 @@ ALWAYS inspect and follow [ARCHITECTURE.md](file:///c:/Users/jerry/JSAIOS/ARCHIT
 ### 7. Pure REST API Architecture for Service Drivers
 - **Strict Rule**: All service drivers in `src/services/` MUST operate exclusively via pure HTTP REST API calls (`fetch()`).
 - **Zero Local CLI Binary / `child_process` Dependencies**: Service drivers must NEVER invoke local OS CLI binaries or spawn shell child processes (e.g. `copilot.exe`, `child_process.exec`). Drivers must remain 100% platform-agnostic and executable across Node, Bun, Web Shells, and Browser environments.
+
+### 8. Strict Module Isolation & No Sibling Imports Rule
+- **Shell Isolation (`src/shell/`)**: Driving shells (`src/shell/terminal/`, `src/shell/browser/`, `src/shell/server/`) MUST NEVER import from sibling shell directories. Shells live in different execution environments (Node vs Browser vs Express) and cross-shell imports break web bundling.
+- **Service Isolation (`src/services/`)**: AI REST service drivers MUST NEVER import from sibling service drivers.
+- **Engine Isolation (`src/engines/`)**: Core domain engines (`src/engines/chat/`, `src/engines/context/`) MUST NOT use direct static sibling imports. Use constructor dependency injection of output interfaces/ports, or orchestrate via `HoneyKernel` / driving shells.

@@ -17,11 +17,11 @@ JSAIOS follows **Hexagonal Architecture** (also known as the **Ports and Adapter
                        +-------------------+-------------------+
                                            |
                                            v
-                             +-------------+-------------+
-                             |       INPUT PORTS         |
-                             |  (TerminalInterpreter,    |
-                             |   Engine Dispatchers)     |
-                             +-------------+-------------+
+                              +-------------+-------------+
+                              |       INPUT PORTS         |
+                              |  (TerminalInterpreter,    |
+                              |   Engine Dispatchers)     |
+                              +-------------+-------------+
                                            |
                                            v
                        +-------------------+-------------------+
@@ -30,11 +30,11 @@ JSAIOS follows **Hexagonal Architecture** (also known as the **Ports and Adapter
                        +-------------------+-------------------+
                                            |
                                            v
-                             +-------------+-------------+
-                             |       OUTPUT PORTS        |
-                             |  (IChatSessionStorage,    |
-                             |   AIService Interfaces)   |
-                             +-------------+-------------+
+                              +-------------+-------------+
+                              |       OUTPUT PORTS        |
+                              |  (IChatSessionStorage,    |
+                              |   AIService Interfaces)   |
+                              +-------------+-------------+
                                            |
                                            v
                        +-------------------+-------------------+
@@ -60,3 +60,8 @@ Communication between the kernel core and the outside world happens strictly thr
 In accordance with JSAIOS Teeny Tiny Code Files Philosophy:
 - Driving CLI adapters split complex subcommands into bite-sized, single-purpose handlers inside dedicated subdirectories (`src/shell/terminal/commands/chat/`).
 - Main command entry points act as lightweight routers that dispatch subcommands to single-purpose handler modules.
+
+### 5. Strict Module Isolation & No Sibling Imports Rule
+- **Driving Shell Isolation (`src/shell/`)**: Driving shells (`src/shell/terminal/`, `src/shell/browser/`, `src/shell/server/`) MUST NEVER import from sibling shell directories. Shells live in different execution environments (Node vs Browser vs Express) and cross-shell imports break web bundling.
+- **Driven Service Isolation (`src/services/`)**: AI REST service drivers MUST NEVER import from sibling service drivers.
+- **Core Engine Isolation (`src/engines/`)**: Core domain engines (`src/engines/chat/`, `src/engines/context/`) MUST NOT use direct static sibling imports. Use constructor dependency injection of output interfaces/ports, or orchestrate via `HoneyKernel` / driving shells.
