@@ -19,19 +19,13 @@ export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter
   const kernel = new HoneyKernel();
   let port = 3000;
   let host = '127.0.0.1';
-  let routesFile = path.join(process.cwd(), 'config', 'jsaios.routes.json');
+  let serverManifestFile = path.join(process.cwd(), 'config', 'jsaios.server.json');
 
   try {
-    const configPath = path.join(process.cwd(), 'config', 'jsaios.config.json');
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-      const srv = Array.isArray(config.servers)
-        ? (config.servers.find((s: any) => s.enabled !== false) || config.servers[0])
-        : config.server;
-
-      if (srv?.port) port = srv.port;
-      if (srv?.host) host = srv.host;
-      if (srv?.routesFile) routesFile = path.join(process.cwd(), srv.routesFile);
+    if (fs.existsSync(serverManifestFile)) {
+      const config = JSON.parse(fs.readFileSync(serverManifestFile, 'utf-8'));
+      if (config.port) port = config.port;
+      if (config.host) host = config.host;
     }
   } catch {
     // Fallback defaults
@@ -44,7 +38,7 @@ export async function bootServer(): Promise<{ kernel: HoneyKernel; serverAdapter
 
   await kernel.boot();
 
-  const serverAdapter = new JSAIOSServerAdapter(kernel, port, host, routesFile);
+  const serverAdapter = new JSAIOSServerAdapter(kernel, port, host, serverManifestFile);
   try {
     await serverAdapter.start();
   } catch (err: any) {

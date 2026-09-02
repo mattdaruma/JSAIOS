@@ -1,30 +1,21 @@
 {
   "system": {
-    "name": "JSAIOS",
+    "name": "JSAIOS OS Daemon",
     "version": "1.0.0",
-    "environment": "server"
+    "environment": "daemon"
   },
   "daemon": {
     "enabled": true,
     "port": 3001,
     "host": "127.0.0.1",
-    "ipcGateway": true
-  },
-  "servers": [
-    {
-      "id": "http-rest",
-      "port": 3000,
-      "host": "localhost",
-      "routesFile": "config/jsaios.routes.json",
+    "ipcGateway": true,
+    "cors": {
       "enabled": true,
-      "cors": {
-        "enabled": true,
-        "allowOrigin": "*",
-        "allowMethods": "GET, POST, OPTIONS",
-        "allowHeaders": "Content-Type, Authorization"
-      }
+      "allowOrigin": "*",
+      "allowMethods": "GET, POST, OPTIONS, PUT, DELETE",
+      "allowHeaders": "Content-Type, Authorization, X-Requested-With"
     }
-  ],
+  },
   "engines": [
     {
       "id": "chat",
@@ -60,7 +51,6 @@
     {
       "id": "terminal",
       "type": "cli",
-      "prompt": "jsaios@honeykernel:~$ ",
       "enabled": true
     },
     {
@@ -68,7 +58,6 @@
       "type": "browser",
       "mode": "daemon-client",
       "endpoint": "http://127.0.0.1:3001",
-      "prompt": "jsaios@honeykernel:~$ ",
       "enabled": true
     },
     {
@@ -76,7 +65,6 @@
       "type": "browser",
       "mode": "in-browser-kernel",
       "requiresSecrets": false,
-      "prompt": "jsaios@honeykernel:~$ ",
       "enabled": true
     }
   ]

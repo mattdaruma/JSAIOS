@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Driving Adapter: JSAIOSServerAdapter
- * Pure Data-Driven HTTP REST API Server Adapter. Reads route target mappings and CORS rules from declarative JSON manifests.
+ * Pure Data-Driven HTTP REST API Server Adapter. Reads server routes and server-specific CORS rules from declarative JSON manifests.
  */
 
 import http from 'http';
@@ -32,18 +32,20 @@ export class JSAIOSServerAdapter {
     private kernel: HoneyKernel,
     private port: number = 3000,
     private host: string = '127.0.0.1',
-    routesManifestPath?: string
+    serverManifestPath?: string
   ) {
-    this.loadConfiguration(routesManifestPath);
+    this.loadConfiguration(serverManifestPath);
   }
 
   private loadConfiguration(customManifestPath?: string): void {
     try {
-      const manifestPath = customManifestPath || path.join(process.cwd(), 'config', 'jsaios.routes.json');
+      const manifestPath = customManifestPath || path.join(process.cwd(), 'config', 'jsaios.server.json');
       if (fs.existsSync(manifestPath)) {
         const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
         if (parsed.routes) this.routes = parsed.routes;
         if (parsed.cors) this.cors = { ...this.cors, ...parsed.cors };
+        if (parsed.port) this.port = parsed.port;
+        if (parsed.host) this.host = parsed.host;
       }
     } catch {
       // Fallback
@@ -62,7 +64,7 @@ export class JSAIOSServerAdapter {
       };
 
       this.server = http.createServer(async (req, res) => {
-        // Apply Declarative CORS Rules
+        // Apply Server-Specific Declarative CORS Rules
         if (this.cors.enabled) {
           res.setHeader('Access-Control-Allow-Origin', this.cors.allowOrigin);
           res.setHeader('Access-Control-Allow-Methods', this.cors.allowMethods);
@@ -115,7 +117,7 @@ export class JSAIOSServerAdapter {
 
       this.server.on('error', (err: any) => {
         if (err.code === 'EADDRINUSE') {
-          reject(new Error(`Port ${this.port} is already in use by another process. Please terminate the process on port ${this.port} or update 'server.port' in config/jsaios.config.json.`));
+          reject(new Error(`Port ${this.port} is already in use by another process. Please terminate the process on port ${this.port} or update 'port' in config/jsaios.server.json.`));
         } else {
           reject(err);
         }

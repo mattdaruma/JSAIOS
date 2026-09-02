@@ -1,70 +1,78 @@
 /**
- * JSAIOS - Kernel Daemon Class: JSAIOSDaemon
- * Orchestrates background HoneyKernel Core, registers micro-services, and manages HTTP/WebSocket IPC gateway.
- * Feature-flagged via config/jsaios.config.json.
+ * JSAIOS - OS Process Host: JSAIOSDaemon (jsaiosd)
+ * Feature-flagged background OS process host managing HoneyKernel, micro-services, and HTTP/WebSocket IPC.
  */
 
-import path from 'path';
+import http from 'http';
 import { HoneyKernel } from '../HoneyKernel';
-import { loadManifest } from '../ManifestLoader';
-import { loadSecrets } from '../loadSecrets';
-import { createServiceFromConfig } from '../../services/ai/ServiceFactory';
-import { getOrCreateChatEngine } from '../../engines/chat/helpers/createChatEngine';
-import { JSAIOSServerAdapter } from '../../shell/server/JSAIOSServerAdapter';
+import { ManifestLoader } from '../helpers/ManifestLoader';
+import type { DaemonConfig } from '../types';
 
 export class JSAIOSDaemon {
   private kernel: HoneyKernel;
-  private serverAdapter?: JSAIOSServerAdapter;
+  private server: http.Server | null = null;
+  private daemonConfig: DaemonConfig;
 
-  constructor() {
-    this.kernel = new HoneyKernel();
+  constructor(customManifestPath?: string) {
+    const manifest = ManifestLoader.loadManifest(customManifestPath);
+    this.daemonConfig = manifest.daemon || {
+      enabled: true,
+      port: 3001,
+      host: '127.0.0.1',
+      ipcGateway: true
+    };
+    this.kernel = new HoneyKernel(customManifestPath);
   }
 
-  public async boot(manifestPath?: string): Promise<void> {
-    loadSecrets();
-    const manifest = loadManifest(manifestPath);
-
-    console.log(`[JSAIOSDaemon] Starting OS Kernel Daemon (${manifest.system.name} v${manifest.system.version})...`);
-
-    // Register active AI micro-services
-    for (const serviceCfg of manifest.services) {
-      if (serviceCfg.enabled !== false) {
-        const serviceInstance = createServiceFromConfig(serviceCfg);
-        if (serviceInstance) {
-          this.kernel.registerService(serviceInstance);
-        }
-      }
+  public async boot(): Promise<void> {
+    if (!this.daemonConfig.enabled) {
+      console.log('[JSAIOSDaemon] Daemon feature flag disabled in manifest. Skipping daemon startup.');
+      return;
     }
 
-    // Boot HoneyKernel in daemon process
     await this.kernel.boot();
 
-    // Initialize Chat Engine
-    getOrCreateChatEngine(this.kernel);
-
-    // Check Daemon Feature Flag Configuration
-    const daemonCfg = manifest.daemon;
-    if (daemonCfg && daemonCfg.enabled) {
-      const port = daemonCfg.port || 3001;
-      const host = daemonCfg.host || '127.0.0.1';
-      const routesFile = path.join(process.cwd(), 'config', 'jsaios.routes.json');
-
-      console.log(`[JSAIOSDaemon] Feature Flag ACTIVE: Starting HTTP/WebSocket IPC Server on ${host}:${port}...`);
-      this.serverAdapter = new JSAIOSServerAdapter(this.kernel, port, host, routesFile);
-      await this.serverAdapter.start();
-    } else {
-      console.log('[JSAIOSDaemon] Feature Flag INACTIVE: Daemon HTTP IPC server disabled in configuration.');
+    if (this.daemonConfig.ipcGateway) {
+      await this.startIPCServer();
     }
   }
 
-  public getKernel(): HoneyKernel {
-    return this.kernel;
+  private startIPCServer(): Promise<void> {
+    return new Promise((resolve) => {
+      this.server = http.createServer((req, res) => {
+        // Open CORS for local OS daemon IPC
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+        if (req.method === 'OPTIONS') {
+          res.writeHead(204);
+          res.end();
+          return;
+        }
+
+        if (req.url === '/api/daemon/status') {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ status: 'running', kernelStatus: this.kernel.getStatus() }));
+          return;
+        }
+
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Daemon route not found' }));
+      });
+
+      this.server.listen(this.daemonConfig.port, this.daemonConfig.host, () => {
+        console.log(`[JSAIOSDaemon] OS Daemon (jsaiosd) IPC Gateway active on http://${this.daemonConfig.host}:${this.daemonConfig.port}`);
+        resolve();
+      });
+    });
   }
 
   public async shutdown(): Promise<void> {
-    if (this.serverAdapter) {
-      await this.serverAdapter.stop();
+    if (this.server) {
+      this.server.close();
     }
     await this.kernel.shutdown();
+    console.log('[JSAIOSDaemon] Daemon host shut down cleanly.');
   }
 }

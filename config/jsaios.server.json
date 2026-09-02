@@ -1,5 +1,8 @@
 {
   "version": "1.0.0",
+  "name": "JSAIOS REST Server Gateway",
+  "port": 3000,
+  "host": "localhost",
   "cors": {
     "enabled": true,
     "allowOrigin": "*",
