@@ -2,6 +2,8 @@
  * JSAIOS - HoneyKernel Core Interfaces & Types
  */
 
+export type CustomFields = Record<string, string>;
+
 export type ServiceStatus = 'uninitialized' | 'initializing' | 'running' | 'degraded' | 'failed' | 'stopped';
 
 export interface CommandOption {

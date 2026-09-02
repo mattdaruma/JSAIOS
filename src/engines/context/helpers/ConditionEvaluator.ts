@@ -1,15 +1,37 @@
 /**
  * JSAIOS - Single-purpose helper: ConditionEvaluator
- * Evaluates conditional context rules against session metadata and prompt conditions.
+ * Evaluates conditional context rules and custom field conditions against session metadata and prompt conditions.
  */
 
-import type { ConditionalRule, ContextItem } from './types';
+import type { ConditionalRule, ContextItem, CustomFieldCondition } from './types';
+import type { CustomFields } from '../../../kernel/types';
 
 export interface EvaluationState {
   providerId?: string;
   modelFamily?: string;
   hasMedia?: boolean;
   metadata?: Record<string, any>;
+  customFields?: CustomFields;
+}
+
+export function evaluateCustomFieldCondition(
+  condition: CustomFieldCondition,
+  customFields: CustomFields = {}
+): boolean {
+  const fieldValue = customFields[condition.field];
+
+  switch (condition.operator) {
+    case 'exists':
+      return fieldValue !== undefined && fieldValue !== null && fieldValue !== '';
+    case 'equals':
+      return String(fieldValue || '').toLowerCase() === String(condition.value || '').toLowerCase();
+    case 'not-equals':
+      return String(fieldValue || '').toLowerCase() !== String(condition.value || '').toLowerCase();
+    case 'contains':
+      return String(fieldValue || '').toLowerCase().includes(String(condition.value || '').toLowerCase());
+    default:
+      return false;
+  }
 }
 
 export function evaluateConditionalRules(
@@ -34,7 +56,7 @@ export function evaluateConditionalRules(
     }
 
     if (customKey) {
-      const stateVal = state.metadata?.[customKey];
+      const stateVal = state.metadata?.[customKey] || state.customFields?.[customKey];
       if (customValue !== undefined && String(stateVal) !== String(customValue)) {
         continue;
       }

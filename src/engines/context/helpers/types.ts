@@ -3,7 +3,11 @@
  * Pure domain contracts for templates, conditional context rules, media items, and storage ports.
  */
 
+import type { CustomFields } from '../../../kernel/types';
+
 export type ContextItemType = 'system-directive' | 'text-block' | 'media-item' | 'code-ast' | 'tool-definition';
+
+export type ContextMergeStrategy = 'single-system-prompt' | 'multi-directives';
 
 export interface MediaContextItem {
   id: string;
@@ -30,9 +34,31 @@ export interface SystemDirectiveTemplate {
   id: string;
   name: string;
   template: string; // e.g. "You are an expert {{language}} developer working in {{project_name}}."
-  defaultVariables?: Record<string, string>;
+  defaultVariables?: CustomFields;
   description?: string;
   tags?: string[];
+}
+
+export interface CustomFieldCondition {
+  field: string;
+  operator: 'equals' | 'contains' | 'exists' | 'not-equals';
+  value?: string;
+}
+
+export interface ContextPackItem {
+  id: string;
+  template: string;
+  priority: number;
+  condition?: CustomFieldCondition;
+}
+
+export interface ContextPack {
+  id: string;
+  name: string;
+  description?: string;
+  mergeStrategy: ContextMergeStrategy;
+  items: ContextPackItem[];
+  defaultCustomFields?: CustomFields;
 }
 
 export interface ConditionalRule {
@@ -53,6 +79,7 @@ export interface AssembledContext {
   contextItems: ContextItem[];
   mediaItems: MediaContextItem[];
   estimatedTokens: number;
+  customFields?: CustomFields;
 }
 
 export interface IContextTemplateStorage {
@@ -60,4 +87,9 @@ export interface IContextTemplateStorage {
   saveTemplate(template: SystemDirectiveTemplate): Promise<void>;
   listTemplates(): Promise<SystemDirectiveTemplate[]>;
   deleteTemplate(id: string): Promise<boolean>;
+
+  loadPack?(id: string): Promise<ContextPack | null>;
+  savePack?(pack: ContextPack): Promise<void>;
+  listPacks?(): Promise<ContextPack[]>;
+  deletePack?(id: string): Promise<boolean>;
 }

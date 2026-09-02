@@ -12,7 +12,7 @@ import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../../adapters/cli/chat/C
 import { handleOllamaCLI } from '../../adapters/cli/services/OllamaCLIAdapter';
 import { handleComfyCLI } from '../../adapters/cli/services/ComfyCLIAdapter';
 import { handleCopilotCLI } from '../../adapters/cli/services/CopilotCLIAdapter';
-import { handleContextCommand } from './commands/context/index';
+import { handleContextCommand, CONTEXT_ENGINE_DESCRIPTOR } from './commands/context/index';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
 import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
@@ -68,9 +68,6 @@ export class TerminalInterpreter {
     return this.config;
   }
 
-  /**
-   * Interpret and execute an input command line string
-   */
   public async execute(
     input: string,
     onStreamChunk?: (chunkText: string) => void
@@ -81,32 +78,26 @@ export class TerminalInterpreter {
     const args = trimmed.split(/\s+/);
     const mainCommand = args[0].toLowerCase();
 
-    // 1. Core System Shell Built-in Targets
     switch (mainCommand) {
       case 'help':
         if (args[1]) return this.handleTargetHelp(args[1]);
         return this.handleHelp();
-
       case 'status':
         return this.handleStatus();
-
       case 'services':
         return this.handleServices();
-
       case 'context':
+        if (args[1] === 'help') return this.handleTargetHelp('context');
         return handleContextCommand(args.slice(1), this.contextEngine);
-
       case 'clear':
         return '__CLEAR__';
     }
 
-    // 2. Chat Engine Dynamic Target Dispatcher
     if (mainCommand === 'chat') {
       if (args[1] === 'help') return this.handleTargetHelp('chat');
       return handleChatCLI(this.kernel, args.slice(1), onStreamChunk);
     }
 
-    // 3. Service Drivers CLI Command Dispatcher
     if (mainCommand === 'ollama') {
       const srv = this.kernel.getService<OllamaService>('ollama');
       if (srv) return handleOllamaCLI(srv, args.slice(1), onStreamChunk);
@@ -125,12 +116,8 @@ export class TerminalInterpreter {
     return `Command not recognized: '${mainCommand}'. Type 'help' for available CLI commands.`;
   }
 
-  /**
-   * Render core kernel reference or delegate to service/engine help
-   */
   public handleHelp(): string {
     const activeServices = this.kernel.getStatus().activeServices;
-
     const lines: string[] = [
       '=======================================================================',
       ' JSAIOS HoneyKernel Core Terminal Reference',
@@ -146,7 +133,7 @@ export class TerminalInterpreter {
     lines.push('');
     lines.push(' Registered Engines & Modules:');
     lines.push('  • chat         - JSAIOS Interactive Chat Engine (Use \'help chat\' or \'chat help\')');
-    lines.push('  • context      - Context Management Engine (Use \'context list\', \'context show\', \'context assemble\')');
+    lines.push('  • context      - Context Management Engine (Use \'help context\' or \'context list\')');
 
     if (activeServices.length > 0) {
       lines.push('');
@@ -160,15 +147,11 @@ export class TerminalInterpreter {
     return lines.join('\n');
   }
 
-  /**
-   * Render detailed CLI commands and options for a specific engine, micro-service, or core builtin
-   */
   private handleTargetHelp(targetId: string): string {
     const query = targetId.toLowerCase().trim();
 
-    if (query === 'chat') {
-      return this.renderDescriptorHelp(CHAT_ENGINE_DESCRIPTOR);
-    }
+    if (query === 'chat') return this.renderDescriptorHelp(CHAT_ENGINE_DESCRIPTOR);
+    if (query === 'context') return this.renderDescriptorHelp(CONTEXT_ENGINE_DESCRIPTOR);
 
     const builtin = this.config.builtins.find(b => b.command.toLowerCase() === query);
     if (builtin) {

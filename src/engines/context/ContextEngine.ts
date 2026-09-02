@@ -1,26 +1,31 @@
 /**
  * JSAIOS - Engine: ContextEngine
- * Core OS domain engine managing system prompt templates, conditional context rules,
- * multimodal media attachments, and token budget window pruning.
+ * Core OS domain engine managing system prompt templates, Context Packs (sets), conditional context rules,
+ * multimodal media attachments, custom fields, and token budget window pruning.
  */
 
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
+import type { CustomFields } from '../../kernel/types';
 import type {
   ContextItem,
   SystemDirectiveTemplate,
   MediaContextItem,
   ConditionalRule,
   AssembledContext,
-  IContextTemplateStorage
+  IContextTemplateStorage,
+  ContextPack,
+  ContextPackItem,
+  ContextMergeStrategy
 } from './helpers/types';
 import type { ITokenizerService } from '../../services/tokenizer/ITokenizerService';
 import { HeuristicTokenizerService } from '../../services/tokenizer/HeuristicTokenizerService';
 import { interpolateTemplate } from './helpers/ContextTemplate';
-import { evaluateConditionalRules, type EvaluationState } from './helpers/ConditionEvaluator';
+import { evaluateConditionalRules, evaluateCustomFieldCondition, type EvaluationState } from './helpers/ConditionEvaluator';
 import { pruneContextItems } from './helpers/TokenWindowPruner';
 
 export class ContextEngine {
   private templates: Map<string, SystemDirectiveTemplate> = new Map();
+  private packs: Map<string, ContextPack> = new Map();
   private conditionalRules: ConditionalRule[] = [];
   private activeContextItems: Map<string, ContextItem> = new Map();
   private tokenizer: ITokenizerService;
@@ -41,6 +46,44 @@ export class ContextEngine {
     return this.templates.get(id);
   }
 
+  public registerPack(pack: ContextPack): void {
+    this.packs.set(pack.id, pack);
+  }
+
+  public getPack(id: string): ContextPack | undefined {
+    return this.packs.get(id);
+  }
+
+  public listPacks(): ContextPack[] {
+    return Array.from(this.packs.values());
+  }
+
+  public createPack(id: string, name: string, mergeStrategy: ContextMergeStrategy = 'single-system-prompt', defaultCustomFields: CustomFields = {}): ContextPack {
+    const pack: ContextPack = {
+      id,
+      name,
+      mergeStrategy,
+      items: [],
+      defaultCustomFields
+    };
+    this.registerPack(pack);
+    if (this.storageAdapter && this.storageAdapter.savePack) {
+      this.storageAdapter.savePack(pack).catch(() => {});
+    }
+    return pack;
+  }
+
+  public addPromptToPack(packId: string, item: ContextPackItem): boolean {
+    const pack = this.packs.get(packId);
+    if (!pack) return false;
+    pack.items = pack.items.filter((i) => i.id !== item.id);
+    pack.items.push(item);
+    if (this.storageAdapter && this.storageAdapter.savePack) {
+      this.storageAdapter.savePack(pack).catch(() => {});
+    }
+    return true;
+  }
+
   public registerConditionalRule(rule: ConditionalRule): void {
     this.conditionalRules.push(rule);
   }
@@ -59,25 +102,74 @@ export class ContextEngine {
 
   public assembleContext(options: {
     templateId?: string;
-    variables?: Record<string, string>;
+    packId?: string;
+    variables?: CustomFields;
+    customFields?: CustomFields;
     evaluationState?: EvaluationState;
     maxTokenBudget?: number;
   }): AssembledContext {
-    const { templateId, variables = {}, evaluationState = {}, maxTokenBudget = 4096 } = options;
+    const {
+      templateId,
+      packId,
+      variables = {},
+      customFields = {},
+      evaluationState = {},
+      maxTokenBudget = 4096
+    } = options;
 
-    let systemPrompt = '';
+    const mergedCustomFields: CustomFields = { ...variables, ...customFields };
+    const contextItemsToAssemble: ContextItem[] = Array.from(this.activeContextItems.values());
+    const promptParts: string[] = [];
+
+    // 1. Single Template Processing
     if (templateId) {
       const tmpl = this.templates.get(templateId);
       if (tmpl) {
-        systemPrompt = interpolateTemplate(tmpl, variables);
+        promptParts.push(interpolateTemplate(tmpl, mergedCustomFields));
       }
     }
 
-    const items = Array.from(this.activeContextItems.values());
+    // 2. Context Pack Set Processing
+    if (packId) {
+      const pack = this.packs.get(packId);
+      if (pack) {
+        const packFields = { ...pack.defaultCustomFields, ...mergedCustomFields };
+
+        for (const packItem of pack.items) {
+          // Evaluate condition if present
+          if (packItem.condition) {
+            const isMatch = evaluateCustomFieldCondition(packItem.condition, packFields);
+            if (!isMatch) continue;
+          }
+
+          // Interpolate template content
+          const interpolated = interpolateTemplate(
+            { id: packItem.id, name: packItem.id, template: packItem.template },
+            packFields
+          );
+
+          if (pack.mergeStrategy === 'multi-directives') {
+            contextItemsToAssemble.push({
+              id: packItem.id,
+              type: 'system-directive',
+              content: interpolated,
+              priority: packItem.priority
+            });
+          } else {
+            promptParts.push(interpolated);
+          }
+        }
+      }
+    }
+
+    const systemPrompt = promptParts.join('\n\n');
 
     // Evaluate conditional rules
-    const injected = evaluateConditionalRules(this.conditionalRules, evaluationState);
-    const combined = [...items, ...injected];
+    const injected = evaluateConditionalRules(this.conditionalRules, {
+      ...evaluationState,
+      customFields: mergedCustomFields
+    });
+    const combined = [...contextItemsToAssemble, ...injected];
 
     // Collect media items
     const mediaItems: MediaContextItem[] = combined
@@ -95,7 +187,8 @@ export class ContextEngine {
       systemPrompt,
       contextItems: prunedItems,
       mediaItems,
-      estimatedTokens: totalTokens
+      estimatedTokens: totalTokens,
+      customFields: mergedCustomFields
     };
   }
 
@@ -111,6 +204,12 @@ export class ContextEngine {
       const stored = await this.storageAdapter.listTemplates();
       for (const tmpl of stored) {
         this.templates.set(tmpl.id, tmpl);
+      }
+      if (this.storageAdapter.listPacks) {
+        const storedPacks = await this.storageAdapter.listPacks();
+        for (const pack of storedPacks) {
+          this.packs.set(pack.id, pack);
+        }
       }
     }
   }
