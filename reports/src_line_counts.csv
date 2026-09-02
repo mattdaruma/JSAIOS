@@ -1,5 +1,5 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
-"src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",229,193,18,250,false
+"src/shell/terminal/TerminalInterpreter.ts","TerminalInterpreter.ts",".ts","TypeScript Logic",237,200,18,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",206,173,4,250,false
 "src/shell/browser/helpers/BrowserLocalCommandDispatcher.ts","BrowserLocalCommandDispatcher.ts",".ts","TypeScript Logic",175,153,9,250,false
 "src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",152,141,7,250,false
@@ -74,6 +74,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/helpers/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",40,35,5,250,false
 "src/kernel/ManifestLoader.ts","ManifestLoader.ts",".ts","TypeScript Logic",40,32,5,250,false
 "src/shell/terminal/tokenize.ts","tokenize.ts",".ts","TypeScript Logic",40,34,4,250,false
+"src/shell/terminal/commands/context/assembleContext.ts","assembleContext.ts",".ts","TypeScript Logic",39,32,4,250,false
 "src/engines/context/helpers/TokenWindowPruner.ts","TokenWindowPruner.ts",".ts","TypeScript Logic",38,31,6,250,false
 "src/kernel/loadSecrets.ts","loadSecrets.ts",".ts","TypeScript Logic",38,32,4,250,false
 "src/adapters/storage/InMemorySessionStorage.ts","InMemorySessionStorage.ts",".ts","TypeScript Logic",37,29,4,250,false
@@ -88,11 +89,14 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/services/ai/comfyui/helpers/listWorkflows.ts","listWorkflows.ts",".ts","TypeScript Logic",30,26,4,250,false
 "src/services/ai/ServiceFactory.ts","ServiceFactory.ts",".ts","TypeScript Logic",29,22,4,250,false
 "src/shell/browser/components/Typography.tsx","Typography.tsx",".tsx","React Component",29,25,4,250,false
+"src/shell/terminal/commands/context/showTemplate.ts","showTemplate.ts",".ts","TypeScript Logic",29,23,4,250,false
 "src/services/ai/copilot/helpers/checkHealth.ts","checkHealth.ts",".ts","TypeScript Logic",28,24,4,250,false
+"src/shell/terminal/commands/context/index.ts","index.ts",".ts","TypeScript Logic",28,21,4,250,false
 "src/adapters/storage/InMemoryContextStorage.ts","InMemoryContextStorage.ts",".ts","TypeScript Logic",27,20,4,250,false
 "src/services/ai/ollama/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",27,22,4,250,false
 "src/services/ai/ollama/helpers/loadImage.ts","loadImage.ts",".ts","TypeScript Logic",26,20,4,250,false
 "src/engines/context/helpers/ContextTemplate.ts","ContextTemplate.ts",".ts","TypeScript Logic",22,17,4,250,false
+"src/shell/terminal/commands/context/listTemplates.ts","listTemplates.ts",".ts","TypeScript Logic",21,16,4,250,false
 "src/shell/browser/helpers/loadUIConfig.ts","loadUIConfig.ts",".ts","TypeScript Logic",19,14,5,250,false
 "src/shell/browser/styles/globals.css","globals.css",".css","Stylesheet",19,17,0,500,false
 "src/shell/browser/components/SearchableCardGrid.tsx","SearchableCardGrid.tsx",".tsx","React Component",17,13,4,250,false

@@ -12,6 +12,7 @@
     { "command": "help", "description": "Display HoneyKernel terminal reference or target help" },
     { "command": "status", "description": "Display system status and uptime" },
     { "command": "services", "description": "List registered service drivers" },
+    { "command": "context", "description": "Inspect & assemble system directive prompt templates (context list|show|assemble)" },
     { "command": "clear", "description": "Clear terminal output screen" },
     { "command": "exit", "description": "Quit terminal shell" }
   ]

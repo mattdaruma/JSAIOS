@@ -12,6 +12,8 @@ import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../../adapters/cli/chat/C
 import { handleOllamaCLI } from '../../adapters/cli/services/OllamaCLIAdapter';
 import { handleComfyCLI } from '../../adapters/cli/services/ComfyCLIAdapter';
 import { handleCopilotCLI } from '../../adapters/cli/services/CopilotCLIAdapter';
+import { handleContextCommand } from './commands/context/index';
+import { ContextEngine } from '../../engines/context/ContextEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
 import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
 import type { CopilotService } from '../../services/ai/copilot/CopilotService';
@@ -25,6 +27,7 @@ export interface TerminalManifestConfig {
 }
 
 export class TerminalInterpreter {
+  private contextEngine: ContextEngine = new ContextEngine();
   private config: TerminalManifestConfig = {
     version: '1.0.0',
     defaultEnvironment: 'win-cmd',
@@ -39,6 +42,7 @@ export class TerminalInterpreter {
       { command: 'help', description: 'Display HoneyKernel terminal reference or target help' },
       { command: 'status', description: 'Display system status and uptime' },
       { command: 'services', description: 'List registered service drivers' },
+      { command: 'context', description: 'Inspect & assemble system directive prompt templates (context list|show|assemble)' },
       { command: 'clear', description: 'Clear terminal output screen' },
       { command: 'exit', description: 'Quit terminal shell' }
     ]
@@ -88,6 +92,9 @@ export class TerminalInterpreter {
 
       case 'services':
         return this.handleServices();
+
+      case 'context':
+        return handleContextCommand(args.slice(1), this.contextEngine);
 
       case 'clear':
         return '__CLEAR__';
@@ -139,6 +146,7 @@ export class TerminalInterpreter {
     lines.push('');
     lines.push(' Registered Engines & Modules:');
     lines.push('  • chat         - JSAIOS Interactive Chat Engine (Use \'help chat\' or \'chat help\')');
+    lines.push('  • context      - Context Management Engine (Use \'context list\', \'context show\', \'context assemble\')');
 
     if (activeServices.length > 0) {
       lines.push('');
