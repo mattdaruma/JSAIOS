@@ -1,6 +1,7 @@
 /**
  * JSAIOS - Single-purpose helper: inspectComfyWorkflow
  * Parses a saved ComfyUI workflow JSON graph and extracts configurable user inputs/options.
+ * Retries multiple ComfyUI REST server endpoint formats for maximum API version compatibility.
  */
 
 export interface WorkflowInputOption {
@@ -50,33 +51,44 @@ export async function inspectComfyWorkflow(
   endpoint: string,
   rawWorkflowId: string
 ): Promise<WorkflowInspectionResult | null> {
-  try {
-    const cleanName = rawWorkflowId.replace(/^["']|["']$/g, '').trim();
-    if (!cleanName) return null;
+  const cleanName = rawWorkflowId.replace(/^["']|["']$/g, '').trim();
+  if (!cleanName) return null;
 
-    const targetFileName = cleanName.endsWith('.json') ? cleanName : `${cleanName}.json`;
+  const targetFileName = cleanName.endsWith('.json') ? cleanName : `${cleanName}.json`;
+  const encodedTarget = encodeURIComponent(targetFileName);
+  const encodedName = encodeURIComponent(cleanName);
 
-    // URI encode filename for spaces and special characters
-    const encodedTarget = encodeURIComponent(targetFileName);
-    let res = await fetch(`${endpoint}/userdata/workflows/${encodedTarget}`);
+  // Robust multi-endpoint fallback list matching all ComfyUI server variants
+  const candidateUrls = [
+    `${endpoint}/userdata/workflows/${encodedTarget}`,
+    `${endpoint}/userdata/workflows/${targetFileName}`,
+    `${endpoint}/userdata/workflows/${encodedName}`,
+    `${endpoint}/userdata?dir=workflows&filename=${encodedTarget}`,
+    `${endpoint}/userdata?dir=workflows&file=${encodedTarget}`,
+    `${endpoint}/userdata?filename=workflows/${encodedTarget}`,
+    `${endpoint}/userdata?file=workflows/${encodedTarget}`,
+    `${endpoint}/userdata/${encodedTarget}`,
+    `${endpoint}/userdata/${encodedName}`
+  ];
 
-    // Fallback: try raw cleanName if extension check differed
-    if (!res.ok && cleanName !== targetFileName) {
-      const encodedRaw = encodeURIComponent(cleanName);
-      res = await fetch(`${endpoint}/userdata/workflows/${encodedRaw}`);
+  for (const url of candidateUrls) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const graph = await res.json();
+        if (graph && typeof graph === 'object') {
+          const options = extractWorkflowOptions(graph);
+          return {
+            workflowId: targetFileName,
+            nodeCount: Object.keys(graph.nodes || graph).length,
+            options
+          };
+        }
+      }
+    } catch {
+      // Continue trying next candidate endpoint format
     }
-
-    if (!res.ok) return null;
-
-    const graph = await res.json();
-    const options = extractWorkflowOptions(graph);
-
-    return {
-      workflowId: targetFileName,
-      nodeCount: Object.keys(graph.nodes || graph).length,
-      options
-    };
-  } catch {
-    return null;
   }
+
+  return null;
 }

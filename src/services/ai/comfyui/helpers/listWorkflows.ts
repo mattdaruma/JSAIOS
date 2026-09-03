@@ -11,19 +11,27 @@ export interface WorkflowFileInfo {
 }
 
 export async function fetchComfyWorkflows(endpoint: string): Promise<WorkflowFileInfo[]> {
-  try {
-    const res = await fetch(`${endpoint}/userdata?dir=workflows`);
-    if (!res.ok) return [];
+  const candidateEndpoints = [
+    `${endpoint}/userdata?dir=workflows`,
+    `${endpoint}/userdata/workflows`
+  ];
 
-    const data = await res.json();
-    if (Array.isArray(data)) {
-      return data.map((item: any) => ({
-        id: typeof item === 'string' ? item : item.filename || item.name,
-        filename: typeof item === 'string' ? item : item.filename || item.name
-      }));
+  for (const url of candidateEndpoints) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        return data.map((item: any) => ({
+          id: typeof item === 'string' ? item : item.filename || item.name || item.id,
+          filename: typeof item === 'string' ? item : item.filename || item.name || item.id
+        }));
+      }
+    } catch {
+      // Continue to next candidate URL
     }
-    return [];
-  } catch {
-    return [];
   }
+
+  return [];
 }
