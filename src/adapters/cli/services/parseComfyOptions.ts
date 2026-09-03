@@ -1,6 +1,7 @@
 /**
  * JSAIOS - Single-purpose helper: parseComfyOptions
  * Parses CLI option flags for ComfyUI media generation prompt commands.
+ * Supports standard flags (--width, --steps, --ckpt) and dynamic node-qualified flags (--node2.text, --node3.clip, --ckpt_name).
  */
 
 import type { MediaGenerationRequest } from '../../../services/ai/AIService';
@@ -19,13 +20,16 @@ export function parseComfyOptions(rawTokens: string[]): ParsedComfyPrompt {
   let seed: number | undefined = undefined;
   let samplerName: string | undefined = undefined;
   let checkpoint: string | undefined = undefined;
+  const customNodeOptions: Record<string, any> = {};
   const promptParts: string[] = [];
 
   for (let i = 0; i < rawTokens.length; i++) {
     const token = rawTokens[i];
 
-    if (token === '--neg') {
+    if (token === '--neg' || token === '--negative') {
       negativePrompt = rawTokens[++i];
+    } else if (token === '--pos' || token === '--positive') {
+      promptParts.push(rawTokens[++i]);
     } else if (token.startsWith('--neg=')) {
       negativePrompt = token.split('=').slice(1).join('=');
     } else if (token === '--steps') {
@@ -45,19 +49,28 @@ export function parseComfyOptions(rawTokens: string[]): ParsedComfyPrompt {
       if (!isNaN(val)) seed = val;
     } else if (token === '--sampler') {
       samplerName = rawTokens[++i];
-    } else if (token === '--ckpt') {
+    } else if (token === '--ckpt' || token === '--ckpt_name') {
       checkpoint = rawTokens[++i];
+    } else if (token.startsWith('--')) {
+      const paramKey = token.slice(2);
+      const paramVal = rawTokens[++i];
+      if (paramVal !== undefined) {
+        const num = Number(paramVal);
+        customNodeOptions[paramKey] = !isNaN(num) && paramVal.trim() !== '' ? num : paramVal;
+      }
     } else {
       promptParts.push(token);
     }
   }
 
   const promptText = promptParts.join(' ');
-  if (!promptText) return { request: {} as any, error: 'Error: Prompt text cannot be empty after options flags.' };
+  if (!promptText && Object.keys(customNodeOptions).length === 0) {
+    return { request: {} as any, error: 'Error: Prompt text cannot be empty after options flags.' };
+  }
 
   return {
     request: {
-      prompt: promptText,
+      prompt: promptText || 'Generation Task',
       negativePrompt,
       steps,
       cfg,
@@ -65,7 +78,8 @@ export function parseComfyOptions(rawTokens: string[]): ParsedComfyPrompt {
       height,
       seed,
       samplerName,
-      checkpoint
+      checkpoint,
+      options: customNodeOptions
     }
   };
 }

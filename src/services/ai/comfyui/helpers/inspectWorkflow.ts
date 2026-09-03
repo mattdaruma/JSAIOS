@@ -1,47 +1,26 @@
 /**
  * JSAIOS - Single-purpose helper: inspectComfyWorkflow
  * Parses a saved ComfyUI workflow JSON graph and extracts configurable user inputs & options.
- * Fetches file content from ComfyUI REST endpoint using path-encoded userdata URIs.
+ * Disambiguates duplicate input names across nodes and generates ready-to-run CLI flags.
  */
+
+import { resolveGraphRoot } from './resolveGraphRoot';
 
 export interface WorkflowInputOption {
   nodeId: string;
   classType: string;
+  nodeTitle?: string;
   inputName: string;
   currentValue: any;
   valueType: string;
+  flagName: string;
+  nodeFlagName: string;
 }
 
 export interface WorkflowInspectionResult {
   workflowId: string;
   nodeCount: number;
   options: WorkflowInputOption[];
-}
-
-export function resolveGraphRoot(rawResponse: any): any {
-  if (!rawResponse || typeof rawResponse !== 'object') return rawResponse;
-
-  if (rawResponse.workflow && typeof rawResponse.workflow === 'object') {
-    return resolveGraphRoot(rawResponse.workflow);
-  }
-
-  if (typeof rawResponse.json === 'string') {
-    try {
-      return resolveGraphRoot(JSON.parse(rawResponse.json));
-    } catch {}
-  } else if (rawResponse.json && typeof rawResponse.json === 'object') {
-    return resolveGraphRoot(rawResponse.json);
-  }
-
-  if (typeof rawResponse.data === 'string') {
-    try {
-      return resolveGraphRoot(JSON.parse(rawResponse.data));
-    } catch {}
-  } else if (rawResponse.data && typeof rawResponse.data === 'object') {
-    return resolveGraphRoot(rawResponse.data);
-  }
-
-  return rawResponse;
 }
 
 const KNOWN_WIDGET_MAPS: Record<string, string[]> = {
@@ -56,35 +35,28 @@ const KNOWN_WIDGET_MAPS: Record<string, string[]> = {
 };
 
 export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
-  const options: WorkflowInputOption[] = [];
+  const rawOptions: Array<Omit<WorkflowInputOption, 'flagName' | 'nodeFlagName'>> = [];
   const root = resolveGraphRoot(graphJson);
-  if (!root || typeof root !== 'object') return options;
+  if (!root || typeof root !== 'object') return [];
 
   const rawNodes = root.nodes || root.prompt || root;
 
   const processNode = (nodeId: string, classType: string, nodeObj: any) => {
     if (!nodeObj || typeof nodeObj !== 'object') return;
+    const nodeTitle = nodeObj.title || nodeObj.properties?.['Node name for S&R'] || undefined;
 
-    // 1. Inspect 'widgets' array (LiteGraph widget objects)
     if (Array.isArray(nodeObj.widgets)) {
       nodeObj.widgets.forEach((w: any, idx: number) => {
         if (w && typeof w === 'object') {
           const name = w.name || w.label || `widget_${idx + 1}`;
           const val = w.value !== undefined ? w.value : w.val;
           if (val !== undefined && val !== null && typeof val !== 'object') {
-            options.push({
-              nodeId,
-              classType,
-              inputName: name,
-              currentValue: val,
-              valueType: typeof val
-            });
+            rawOptions.push({ nodeId, classType, nodeTitle, inputName: name, currentValue: val, valueType: typeof val });
           }
         }
       });
     }
 
-    // 2. Inspect 'widgets_values' array or object
     if (Array.isArray(nodeObj.widgets_values)) {
       const widgetSlots = Array.isArray(nodeObj.inputs)
         ? nodeObj.inputs.filter((s: any) => s.widget || (s.type !== 'MODEL' && s.type !== 'CONDITIONING' && s.type !== 'LATENT' && s.type !== 'VAE'))
@@ -95,41 +67,21 @@ export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
         if (val !== undefined && val !== null && typeof val !== 'object') {
           const slot = widgetSlots[idx];
           const name = slot?.widget?.name || slot?.name || knownNames[idx] || `widget_${idx + 1}`;
-          options.push({
-            nodeId,
-            classType,
-            inputName: name,
-            currentValue: val,
-            valueType: typeof val
-          });
+          rawOptions.push({ nodeId, classType, nodeTitle, inputName: name, currentValue: val, valueType: typeof val });
         }
       });
     } else if (nodeObj.widgets_values && typeof nodeObj.widgets_values === 'object') {
       for (const [k, v] of Object.entries(nodeObj.widgets_values)) {
         if (v !== undefined && v !== null && typeof v !== 'object') {
-          options.push({
-            nodeId,
-            classType,
-            inputName: k,
-            currentValue: v,
-            valueType: typeof v
-          });
+          rawOptions.push({ nodeId, classType, nodeTitle, inputName: k, currentValue: v, valueType: typeof val });
         }
       }
     }
 
-    // 3. Inspect 'inputs' (Object or Array)
     if (nodeObj.inputs && !Array.isArray(nodeObj.inputs) && typeof nodeObj.inputs === 'object') {
       for (const [inputName, val] of Object.entries(nodeObj.inputs)) {
-        // Ignore linked array connections like ["4", 0]
         if (!Array.isArray(val) && typeof val !== 'object' && val !== undefined && val !== null) {
-          options.push({
-            nodeId,
-            classType,
-            inputName,
-            currentValue: val,
-            valueType: typeof val
-          });
+          rawOptions.push({ nodeId, classType, nodeTitle, inputName, currentValue: val, valueType: typeof val });
         }
       }
     } else if (Array.isArray(nodeObj.inputs)) {
@@ -137,30 +89,17 @@ export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
         if (slot && typeof slot === 'object') {
           const val = slot.value !== undefined ? slot.value : slot.val;
           if (val !== undefined && val !== null && typeof val !== 'object') {
-            options.push({
-              nodeId,
-              classType,
-              inputName: slot.name || `slot_${idx + 1}`,
-              currentValue: val,
-              valueType: typeof val
-            });
+            rawOptions.push({ nodeId, classType, nodeTitle, inputName: slot.name || `slot_${idx + 1}`, currentValue: val, valueType: typeof val });
           }
         }
       });
     }
 
-    // 4. Inspect 'properties' or 'values' object
     const props = nodeObj.properties || nodeObj.values;
     if (props && typeof props === 'object' && !Array.isArray(props)) {
       for (const [propKey, val] of Object.entries(props)) {
         if (val !== undefined && val !== null && typeof val !== 'object' && !propKey.startsWith('Node name')) {
-          options.push({
-            nodeId,
-            classType,
-            inputName: propKey,
-            currentValue: val,
-            valueType: typeof val
-          });
+          rawOptions.push({ nodeId, classType, nodeTitle, inputName: propKey, currentValue: val, valueType: typeof val });
         }
       }
     }
@@ -169,33 +108,39 @@ export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
   if (Array.isArray(rawNodes)) {
     for (const node of rawNodes) {
       if (node && typeof node === 'object') {
-        const nodeId = String(node.id ?? node.title ?? 'node');
-        const classType = node.type || node.class_type || 'UnknownNode';
-        processNode(nodeId, classType, node);
+        processNode(String(node.id ?? node.title ?? 'node'), node.type || node.class_type || 'UnknownNode', node);
       }
     }
   } else if (rawNodes && typeof rawNodes === 'object') {
     for (const [nodeId, nodeObj] of Object.entries(rawNodes)) {
       if (nodeObj && typeof nodeObj === 'object') {
-        const classType = (nodeObj as any).class_type || (nodeObj as any).type || 'UnknownNode';
-        processNode(nodeId, classType, nodeObj);
+        processNode(nodeId, (nodeObj as any).class_type || (nodeObj as any).type || 'UnknownNode', nodeObj);
       }
     }
   }
 
-  // Deduplicate options for the same nodeId + inputName
-  const uniqueOptions: WorkflowInputOption[] = [];
+  const uniqueRaw: Array<Omit<WorkflowInputOption, 'flagName' | 'nodeFlagName'>> = [];
   const seenKeys = new Set<string>();
 
-  for (const opt of options) {
+  for (const opt of rawOptions) {
     const key = `${opt.nodeId}:${opt.inputName}`;
     if (!seenKeys.has(key)) {
       seenKeys.add(key);
-      uniqueOptions.push(opt);
+      uniqueRaw.push(opt);
     }
   }
 
-  return uniqueOptions;
+  const nameCounts: Record<string, number> = {};
+  for (const opt of uniqueRaw) {
+    nameCounts[opt.inputName] = (nameCounts[opt.inputName] || 0) + 1;
+  }
+
+  return uniqueRaw.map(opt => {
+    const isShared = (nameCounts[opt.inputName] || 0) > 1;
+    const nodeFlagName = `--node${opt.nodeId}.${opt.inputName}`;
+    const flagName = isShared ? nodeFlagName : `--${opt.inputName}`;
+    return { ...opt, flagName, nodeFlagName };
+  });
 }
 
 export async function inspectComfyWorkflow(
@@ -206,8 +151,6 @@ export async function inspectComfyWorkflow(
   if (!cleanName) return null;
 
   const targetFileName = `${cleanName}.json`;
-  
-  // Encoded full path relative to /userdata/ (e.g. "workflows%2FText%20to%20Image.json")
   const encodedSubdirPath = encodeURIComponent(`workflows/${targetFileName}`);
   const encodedSubdirClean = encodeURIComponent(`workflows/${cleanName}`);
   const encodedFileName = encodeURIComponent(targetFileName);
@@ -229,21 +172,11 @@ export async function inspectComfyWorkflow(
           const root = resolveGraphRoot(rawJson);
           const options = extractWorkflowOptions(root);
           const rawNodes = root.nodes || root.prompt || root;
-          const nodeCount = Array.isArray(rawNodes)
-            ? rawNodes.length
-            : Object.keys(rawNodes).length;
-
-          return {
-            workflowId: cleanName,
-            nodeCount,
-            options
-          };
+          const nodeCount = Array.isArray(rawNodes) ? rawNodes.length : Object.keys(rawNodes).length;
+          return { workflowId: cleanName, nodeCount, options };
         }
       }
-    } catch {
-      // Continue to next candidate URL
-    }
+    } catch {}
   }
-
   return null;
 }

@@ -53,17 +53,30 @@ export async function handleComfyCLI(service: ComfyUIService, args: string[]): P
 
     const grouped: Record<string, typeof result.options> = {};
     for (const opt of result.options) {
-      const key = `Node ${opt.nodeId} [${opt.classType}]`;
+      const titleSuffix = opt.nodeTitle ? ` "${opt.nodeTitle}"` : '';
+      const key = `Node ${opt.nodeId} [${opt.classType}]${titleSuffix}`;
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(opt);
     }
 
+    const exampleFlags: string[] = [];
+
     for (const groupKey of Object.keys(grouped)) {
       lines.push(`\n ${groupKey}:`);
       for (const opt of grouped[groupKey]) {
-        lines.push(`    - ${opt.inputName} (${opt.valueType}): ${JSON.stringify(opt.currentValue)}`);
+        lines.push(`    - ${opt.inputName} (${opt.valueType}): ${JSON.stringify(opt.currentValue)}  [Flag: ${opt.flagName}]`);
+        if (exampleFlags.length < 3) {
+          exampleFlags.push(`${opt.flagName} ${JSON.stringify(opt.currentValue)}`);
+        }
       }
     }
+
+    lines.push('\n=======================================================================');
+    lines.push(` 💡 How to Pass Options via CLI:`);
+    lines.push(`    Use '--<option_name> <value>' for unique parameters, or '--node<id>.<option_name> <value>' for specific nodes.`);
+    lines.push(`\n 🚀 Example CLI Command:`);
+    lines.push(`    comfy prompt "${result.workflowId}" ${exampleFlags.join(' ')}`);
+    lines.push('=======================================================================');
 
     return lines.join('\n');
   }

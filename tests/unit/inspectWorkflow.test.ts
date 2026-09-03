@@ -32,11 +32,13 @@ describe('ComfyUI Workflow Inspection', () => {
     expect(seedOpt).toBeDefined();
     expect(seedOpt?.currentValue).toBe(42);
     expect(seedOpt?.valueType).toBe('number');
+    expect(seedOpt?.flagName).toBe('--seed');
 
     const promptOpt = options.find((o) => o.nodeId === '6' && o.inputName === 'text');
     expect(promptOpt).toBeDefined();
     expect(promptOpt?.currentValue).toBe('a majestic mountain landscape');
     expect(promptOpt?.valueType).toBe('string');
+    expect(promptOpt?.flagName).toBe('--text');
 
     // Ensure linked slot ['4', 0] was ignored
     const modelOpt = options.find((o) => o.inputName === 'model');
@@ -69,5 +71,29 @@ describe('ComfyUI Workflow Inspection', () => {
 
     const ksamplerOpt = options.find((o) => o.nodeId === '3' && o.currentValue === 123456);
     expect(ksamplerOpt).toBeDefined();
+  });
+
+  it('should disambiguate duplicate input names using node-specific flags', () => {
+    const duplicateWorkflowJson = {
+      '2': {
+        class_type: 'CLIPTextEncode',
+        title: 'Positive Prompt',
+        inputs: { text: 'a cat' }
+      },
+      '3': {
+        class_type: 'CLIPTextEncode',
+        title: 'Negative Prompt',
+        inputs: { text: 'blurry' }
+      }
+    };
+
+    const options = extractWorkflowOptions(duplicateWorkflowJson);
+    const pos = options.find(o => o.nodeId === '2');
+    const neg = options.find(o => o.nodeId === '3');
+
+    expect(pos?.flagName).toBe('--node2.text');
+    expect(neg?.flagName).toBe('--node3.text');
+    expect(pos?.nodeTitle).toBe('Positive Prompt');
+    expect(neg?.nodeTitle).toBe('Negative Prompt');
   });
 });
