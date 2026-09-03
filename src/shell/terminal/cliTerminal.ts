@@ -1,7 +1,7 @@
 /**
  * JSAIOS - Pure System Terminal CLI Shell
  * Listens to process.stdin and outputs to process.stdout.
- * Gracefully intercepts SIGINT (CTRL+C) and SIGTERM to release service resources before exiting.
+ * Clears terminal screen on launch and intercepts SIGINT (CTRL+C) / SIGTERM for graceful shutdown.
  */
 
 import readline from 'readline';
@@ -10,13 +10,16 @@ import { CommandInterpreter } from '../../adapters/interpreter/CommandInterprete
 import { getTerminalFormatter } from './helpers/getTerminalFormatter';
 
 export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, manifestPath?: string): void {
+  // Clear terminal screen on launch (like Vite / modern dev CLI hosts)
+  console.clear();
+
   const interpreter = new CommandInterpreter(kernel, manifestPath);
   const manifest = interpreter.getManifest();
   const formatter = getTerminalFormatter(manifest.defaultEnvironment);
   const rawPromptStr = customPrompt || manifest.promptPrefix || 'jsaios@honeykernel:~$ ';
   const formattedPrompt = formatter.formatPrompt(rawPromptStr);
 
-  console.log(`\n${formatter.formatHeader('=======================================================================')}`);
+  console.log(`${formatter.formatHeader('=======================================================================')}`);
   console.log(` ${formatter.formatCLICommand('JSAIOS')} - JavaScript AI Operating System v1.0.0 (HoneyKernel Core)`);
   console.log(` Pure System Terminal Active. Orchestrated by Declarative JSON Manifest.`);
   console.log(` Core Commands: 'help' (command reference), 'status' (kernel info), 'services' (drivers), 'clear', 'exit'.`);
@@ -42,7 +45,7 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
   };
 
   process.on('SIGINT', () => handleGracefulExit('SIGINT (CTRL+C)'));
-  process.on('SIGTERM', () => handleHandleExit ? handleGracefulExit('SIGTERM') : handleGracefulExit('SIGTERM'));
+  process.on('SIGTERM', () => handleGracefulExit('SIGTERM'));
 
   rl.prompt();
 
