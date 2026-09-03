@@ -1,16 +1,37 @@
 /**
  * JSAIOS - Pure System Terminal CLI Shell
  * Listens to process.stdin and outputs to process.stdout.
- * Clears terminal screen on launch and intercepts SIGINT (CTRL+C) / SIGTERM for graceful shutdown.
+ * Features data-driven Tab autocompletion, persistent shell history across restarts, and graceful shutdown.
  */
 
 import readline from 'readline';
+import fs from 'fs';
+import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import { CommandInterpreter } from '../../adapters/interpreter/CommandInterpreter';
 import { getTerminalFormatter } from './helpers/getTerminalFormatter';
 
+const HISTORY_FILE = path.join(process.cwd(), 'logs', 'terminal_history.txt');
+
+function loadTerminalHistory(): string[] {
+  try {
+    if (fs.existsSync(HISTORY_FILE)) {
+      const content = fs.readFileSync(HISTORY_FILE, 'utf-8');
+      return content.split('\n').map(l => l.trim()).filter(Boolean);
+    }
+  } catch {}
+  return [];
+}
+
+function appendTerminalHistory(commandLine: string): void {
+  try {
+    const logsDir = path.dirname(HISTORY_FILE);
+    if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+    fs.appendFileSync(HISTORY_FILE, `${commandLine.trim()}\n`, 'utf-8');
+  } catch {}
+}
+
 export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, manifestPath?: string): void {
-  // Clear terminal screen on launch (like Vite / modern dev CLI hosts)
   console.clear();
 
   const interpreter = new CommandInterpreter(kernel, manifestPath);
@@ -26,11 +47,18 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
   console.log(` Type "help" to view full command reference or "exit" to shut down.`);
   console.log(`${formatter.formatHeader('=======================================================================\n')}`);
 
+  const initialHistory = loadTerminalHistory();
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: formattedPrompt
+    prompt: formattedPrompt,
+    completer: (line: string) => interpreter.getCompletions(line)
   });
+
+  if (Array.isArray((rl as any).history)) {
+    (rl as any).history.push(...initialHistory.reverse());
+  }
 
   let isShuttingDown = false;
 
@@ -51,6 +79,10 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
 
   rl.on('line', async (line) => {
     const input = line.trim();
+
+    if (input) {
+      appendTerminalHistory(input);
+    }
 
     if (input.toLowerCase() === 'exit' || input.toLowerCase() === 'quit') {
       await handleGracefulExit('exit command');

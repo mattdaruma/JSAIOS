@@ -16,6 +16,7 @@ import { handleContextCommand } from '../../shell/terminal/commands/context/inde
 import { handleChainCommand } from '../../shell/terminal/commands/chain/index';
 import { handlePlayJingle } from '../../shell/terminal/commands/playJingle';
 import { renderDescriptorHelp, renderCoreCommandHelp, suggestFuzzyTarget } from './helpers/renderHelp';
+import { getCompletions as computeCompletions } from './helpers/getCompletions';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import { ChainEngine } from '../../engines/chain/ChainEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
@@ -90,6 +91,10 @@ export class CommandInterpreter {
 
   public getChainEngine(): ChainEngine {
     return this.chainEngine;
+  }
+
+  public getCompletions(line: string): [string[], string] {
+    return computeCompletions(line, this.config, this.kernel);
   }
 
   public async execute(
