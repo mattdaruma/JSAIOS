@@ -8,6 +8,12 @@
     "enabled": true,
     "port": 3001,
     "host": "127.0.0.1",
+    "mode": "http",
+    "pipeName": "\\\\.\\pipe\\jsaiosd",
+    "security": {
+      "requireAuth": true,
+      "authToken": "jsaios-daemon-secret-token"
+    },
     "ipcGateway": true,
     "logging": {
       "level": "info",

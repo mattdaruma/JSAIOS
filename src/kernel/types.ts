@@ -91,10 +91,18 @@ export interface ShellConfig {
   enabled: boolean;
 }
 
+export interface DaemonSecurityConfig {
+  requireAuth: boolean;
+  authToken: string;
+}
+
 export interface DaemonConfig {
   enabled: boolean;
   port: number;
   host: string;
+  mode?: 'http' | 'pipe' | 'named-pipe' | 'direct';
+  pipeName?: string;
+  security?: DaemonSecurityConfig;
   ipcGateway: boolean;
 }
 
