@@ -83,7 +83,7 @@ export class ComfyUIService extends AIService {
     return getComfyUINodeInfo(this.baseUrl, nodeName);
   }
 
-  public async getWorkflows(): Promise<string[]> {
+  public async getWorkflows(): Promise<any[]> {
     return fetchComfyWorkflows(this.baseUrl);
   }
 

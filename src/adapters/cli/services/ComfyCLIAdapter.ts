@@ -21,7 +21,10 @@ export async function handleComfyCLI(service: ComfyUIService, args: string[]): P
     if (workflows.length === 0) return 'No saved workflows reported by ComfyUI server (/userdata?dir=workflows/).';
     return [
       'ComfyUI Server Saved Workflows:',
-      ...workflows.map(w => ` • ${w}`)
+      ...workflows.map(w => {
+        const name = typeof w === 'string' ? w : (w.filename || w.id || JSON.stringify(w));
+        return ` • ${name}`;
+      })
     ].join('\n');
   }
 
