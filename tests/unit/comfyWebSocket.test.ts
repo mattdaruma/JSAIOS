@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { connectComfyWebSocket } from '../../src/services/ai/comfyui/helpers/connectComfyWebSocket';
 import { ComfyUIService } from '../../src/services/ai/comfyui/ComfyUIService';
+import { printLogAbovePrompt, setActiveReadlineInterface } from '../../src/shell/terminal/helpers/printLogAbovePrompt';
 
 describe('ComfyUI Live WebSocket Event Stream', () => {
   it('should initialize WebSocket controller cleanly with generated client ID', () => {
@@ -84,5 +85,29 @@ describe('ComfyUI Live WebSocket Event Stream', () => {
     expect(wsCreated).toBe(false);
 
     vi.unstubAllGlobals();
+  });
+
+  it('should clear line and redraw prompt when printLogAbovePrompt is called', () => {
+    let promptRedrawn = false;
+    let lineErased = false;
+
+    const mockRL: any = {
+      output: {
+        write: (str: string) => {
+          if (str.includes('\x1b[2K')) lineErased = true;
+        }
+      },
+      prompt: (preserve: boolean) => {
+        if (preserve) promptRedrawn = true;
+      }
+    };
+
+    setActiveReadlineInterface(mockRL);
+    printLogAbovePrompt('[Test] Background log above prompt');
+
+    expect(lineErased).toBe(true);
+    expect(promptRedrawn).toBe(true);
+
+    setActiveReadlineInterface(null);
   });
 });

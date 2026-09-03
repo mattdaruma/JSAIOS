@@ -11,6 +11,8 @@ import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import { CommandInterpreter } from '../../adapters/interpreter/CommandInterpreter';
 import { getTerminalFormatter } from './helpers/getTerminalFormatter';
 import { handleDraftClearOnDown } from './helpers/handleDraftHistory';
+import { setActiveReadlineInterface, printLogAbovePrompt } from './helpers/printLogAbovePrompt';
+import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
 
 const HISTORY_FILE = path.join(process.cwd(), 'logs', 'terminal_history.txt');
 
@@ -41,6 +43,11 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
   const rawPromptStr = customPrompt || manifest.promptPrefix || 'jsaios@honeykernel:~$ ';
   const formattedPrompt = formatter.formatPrompt(rawPromptStr);
 
+  const comfyService = kernel.getService<ComfyUIService>('comfyui');
+  if (comfyService && typeof comfyService.setLogHandler === 'function') {
+    comfyService.setLogHandler((msg) => printLogAbovePrompt(msg));
+  }
+
   console.log(`${formatter.formatHeader('=======================================================================')}`);
   console.log(` ${formatter.formatCLICommand('JSAIOS')} - JavaScript AI Operating System v1.0.0 (HoneyKernel Core)`);
   console.log(` Pure System Terminal Active. Orchestrated by Declarative JSON Manifest.`);
@@ -56,6 +63,8 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
     prompt: formattedPrompt,
     completer: (line: string) => interpreter.getCompletions(line)
   });
+
+  setActiveReadlineInterface(rl);
 
   if (Array.isArray((rl as any).history)) {
     (rl as any).history.push(...initialHistory.reverse());
@@ -76,6 +85,7 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
     if (isShuttingDown) return;
     isShuttingDown = true;
 
+    setActiveReadlineInterface(null);
     process.stdin.removeListener('keypress', keypressHandler);
     console.log(`\n${formatter.formatError(`[CLI Shell] Intercepted signal '${signalName}'. Triggering graceful shutdown...`)}`);
     await kernel.shutdown();

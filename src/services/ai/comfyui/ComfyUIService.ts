@@ -25,6 +25,7 @@ export class ComfyUIService implements AIService {
   private baseUrl: string;
   private enableWebSocket: boolean;
   private wsController: ComfyWebSocketController | null = null;
+  private onLogCallback?: (msg: string) => void;
 
   constructor(
     configOrBaseUrl: string | ComfyUIServiceConfig = 'http://localhost:8188',
@@ -37,6 +38,10 @@ export class ComfyUIService implements AIService {
       this.baseUrl = configOrBaseUrl.baseUrl || 'http://localhost:8188';
       this.enableWebSocket = configOrBaseUrl.enableWebSocket !== false;
     }
+  }
+
+  public setLogHandler(handler?: (msg: string) => void): void {
+    this.onLogCallback = handler;
   }
 
   public get descriptor(): ServiceDescriptor {
@@ -82,7 +87,14 @@ export class ComfyUIService implements AIService {
   public async initialize(): Promise<void> {
     console.log(`[ComfyUIService] Driver initialized (endpoint: ${this.baseUrl}, enableWebSocket: ${this.enableWebSocket})`);
     if (this.enableWebSocket) {
-      this.wsController = connectComfyWebSocket(this.baseUrl);
+      this.wsController = connectComfyWebSocket(
+        this.baseUrl,
+        undefined,
+        (msg) => {
+          if (this.onLogCallback) this.onLogCallback(msg);
+          else console.log(msg);
+        }
+      );
     }
   }
 
