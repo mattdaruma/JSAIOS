@@ -29,11 +29,13 @@ export async function handleComfyCLI(service: ComfyUIService, args: string[]): P
   }
 
   if (sub === 'options' || sub === 'inspect') {
-    const workflowId = args.slice(1).join(' ').trim();
-    if (!workflowId) return 'Usage: comfy options <workflow_name> (e.g. comfy options "Text to Image")';
-    const result = await service.inspectWorkflow(workflowId);
+    const rawInput = args.slice(1).join(' ').trim();
+    const cleanWorkflowId = rawInput.replace(/^["']|["']$/g, '').trim();
 
-    if (!result) return `Workflow '${workflowId}' not found on ComfyUI server. Use 'comfy workflows' to list available workflows.`;
+    if (!cleanWorkflowId) return 'Usage: comfy options <workflow_name> (e.g. comfy options "Text to Image.json")';
+    const result = await service.inspectWorkflow(cleanWorkflowId);
+
+    if (!result) return `Workflow '${cleanWorkflowId}' not found on ComfyUI server. Use 'comfy workflows' to list available workflows.`;
 
     const lines = [
       `=== Configurable Input Options for Workflow '${result.workflowId}' (${result.options.length} parameter(s) across ${result.nodeCount} node(s)) ===`

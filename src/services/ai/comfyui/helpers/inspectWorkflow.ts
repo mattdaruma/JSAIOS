@@ -48,18 +48,31 @@ export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
 
 export async function inspectComfyWorkflow(
   endpoint: string,
-  workflowId: string
+  rawWorkflowId: string
 ): Promise<WorkflowInspectionResult | null> {
   try {
-    const cleanId = workflowId.endsWith('.json') ? workflowId : `${workflowId}.json`;
-    const res = await fetch(`${endpoint}/userdata/workflows/${cleanId}`);
+    const cleanName = rawWorkflowId.replace(/^["']|["']$/g, '').trim();
+    if (!cleanName) return null;
+
+    const targetFileName = cleanName.endsWith('.json') ? cleanName : `${cleanName}.json`;
+
+    // URI encode filename for spaces and special characters
+    const encodedTarget = encodeURIComponent(targetFileName);
+    let res = await fetch(`${endpoint}/userdata/workflows/${encodedTarget}`);
+
+    // Fallback: try raw cleanName if extension check differed
+    if (!res.ok && cleanName !== targetFileName) {
+      const encodedRaw = encodeURIComponent(cleanName);
+      res = await fetch(`${endpoint}/userdata/workflows/${encodedRaw}`);
+    }
+
     if (!res.ok) return null;
 
     const graph = await res.json();
     const options = extractWorkflowOptions(graph);
 
     return {
-      workflowId: cleanId,
+      workflowId: targetFileName,
       nodeCount: Object.keys(graph.nodes || graph).length,
       options
     };
