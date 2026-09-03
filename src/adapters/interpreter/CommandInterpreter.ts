@@ -47,11 +47,12 @@ export class CommandInterpreter {
       'plain': 'PlainTerminalFormatter'
     },
     builtins: [
-      { command: 'help', description: 'Display HoneyKernel terminal reference or target help' },
+      { command: 'help [target]', description: "Display terminal reference or target help (e.g. 'help chat', 'help ollama')" },
       { command: 'status', description: 'Display system status and uptime' },
-      { command: 'services', description: 'List registered service drivers' },
-      { command: 'context', description: 'Inspect & assemble system directive prompt templates (context prompt|pack|assemble)' },
-      { command: 'chain', description: 'Manage and execute multi-step workflow chains (chain list|show|create|run)' },
+      { command: 'services', description: 'List registered service drivers & driver help instructions' },
+      { command: 'chat', description: "JSAIOS Interactive Chat Engine (Use 'chat help' or 'help chat')" },
+      { command: 'context', description: "Context Management Engine (Use 'context help' or 'help context')" },
+      { command: 'chain', description: "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')" },
       { command: 'clear', description: 'Clear terminal output screen' },
       { command: 'exit', description: 'Quit terminal shell' }
     ]
@@ -145,31 +146,16 @@ export class CommandInterpreter {
   }
 
   public handleHelp(): string {
-    const activeServices = this.kernel.getStatus().activeServices;
     const lines: string[] = [
       '=======================================================================',
       ' JSAIOS HoneyKernel Core Terminal Reference',
       '=======================================================================',
-      ' Core Kernel Commands:'
+      ' Core System Commands:'
     ];
 
     for (const b of this.config.builtins) {
       const padding = ' '.repeat(Math.max(2, 35 - b.command.length));
       lines.push(`  ${b.command}${padding}- ${b.description}`);
-    }
-
-    lines.push('');
-    lines.push(' Registered Engines & Modules:');
-    lines.push('  • chat         - JSAIOS Interactive Chat Engine (Use \'help chat\' or \'chat help\')');
-    lines.push('  • context      - Context Management Engine (Use \'help context\' or \'context list\')');
-    lines.push('  • chain        - Multi-Step Workflow Chain Engine (Use \'help chain\' or \'chain list\')');
-
-    if (activeServices.length > 0) {
-      lines.push('');
-      lines.push(' Registered Service Drivers (Type "help <service_id>" for detailed options):');
-      for (const service of activeServices) {
-        lines.push(`  • ${service.id.padEnd(12)} - ${service.name} (Use 'help ${service.id}')`);
-      }
     }
 
     lines.push('\n=======================================================================');
@@ -183,13 +169,13 @@ export class CommandInterpreter {
       return renderDescriptorHelp(this.config.descriptors[query]);
     }
 
-    const builtin = this.config.builtins.find(b => b.command.toLowerCase() === query);
+    const builtin = this.config.builtins.find(b => b.command.toLowerCase().startsWith(query));
     if (builtin) {
       return [
         '=======================================================================',
         ` Reference: Core Shell Command '${builtin.command}'`,
         '=======================================================================',
-        `  ${builtin.command.padEnd(15)} - ${builtin.description}`,
+        `  ${builtin.command.padEnd(20)} - ${builtin.description}`,
         '======================================================================='
       ].join('\n');
     }
@@ -200,7 +186,7 @@ export class CommandInterpreter {
     );
 
     if (!service) {
-      return `Target '${targetId}' not found. Type 'help' to view active commands, engines, and service drivers.`;
+      return `Target '${targetId}' not found. Type 'help' to view available system commands.`;
     }
 
     return renderDescriptorHelp(service);
@@ -219,14 +205,19 @@ export class CommandInterpreter {
 
   private handleServices(): string {
     const status = this.kernel.getStatus();
-    if (status.activeServices.length === 0) return 'No active services registered in HoneyKernel.';
+    if (status.activeServices.length === 0) return 'No active service drivers registered in HoneyKernel.';
 
-    return [
-      'Registered Micro-Services:',
-      ...status.activeServices.map(s =>
-        `• Service ID: '${s.id}' | Name: ${s.name} | Capabilities: [${s.capabilities.join(', ')}]`
-      )
-    ].join('\n');
+    const lines: string[] = [
+      '=== Registered Micro-Service Drivers ==='
+    ];
+
+    for (const s of status.activeServices) {
+      lines.push(`  • ${s.id.padEnd(12)} : ${s.name} [${s.status.toUpperCase()}]`);
+      lines.push(`                  Capabilities: [${s.capabilities.join(', ')}]`);
+      lines.push(`                  Type 'help ${s.id}' for available subcommands & parameters.\n`);
+    }
+
+    return lines.join('\n');
   }
 }
 

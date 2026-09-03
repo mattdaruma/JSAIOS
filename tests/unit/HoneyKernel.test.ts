@@ -59,7 +59,7 @@ describe('JSAIOS HoneyKernel Core & Service Registry', () => {
 
     const helpOutput = await interpreter.execute('help');
     expect(helpOutput).toContain('JSAIOS HoneyKernel Core Terminal Reference');
-    expect(helpOutput).toContain('ollama');
+    expect(helpOutput).toContain('services');
 
     const ollamaHelp = await interpreter.execute('help ollama');
     expect(ollamaHelp).toContain('--think');
@@ -76,6 +76,7 @@ describe('JSAIOS HoneyKernel Core & Service Registry', () => {
 
     const servicesOutput = await interpreter.execute('services');
     expect(servicesOutput).toContain('Ollama Transport Driver');
+    expect(servicesOutput).toContain('help ollama');
 
     const comfy = new ComfyUIService();
     kernel.registerService(comfy);

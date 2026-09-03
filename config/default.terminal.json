@@ -45,11 +45,12 @@
     }
   ],
   "builtins": [
-    { "command": "help", "description": "Display HoneyKernel terminal reference or target help" },
+    { "command": "help [target]", "description": "Display terminal reference or target help (e.g. 'help chat', 'help ollama')" },
     { "command": "status", "description": "Display system status and uptime" },
-    { "command": "services", "description": "List registered service drivers" },
-    { "command": "context", "description": "Inspect & assemble system directive prompt templates (context prompt|pack|assemble)" },
-    { "command": "chain", "description": "Manage and execute multi-step workflow chains (chain list|show|create|run)" },
+    { "command": "services", "description": "List registered service drivers & driver help instructions" },
+    { "command": "chat", "description": "JSAIOS Interactive Chat Engine (Use 'chat help' or 'help chat')" },
+    { "command": "context", "description": "Context Management Engine (Use 'context help' or 'help context')" },
+    { "command": "chain", "description": "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')" },
     { "command": "clear", "description": "Clear terminal output screen" },
     { "command": "exit", "description": "Quit terminal shell" }
   ],

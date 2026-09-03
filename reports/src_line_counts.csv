@@ -1,6 +1,6 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
-"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",234,200,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",226,194,12,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",225,191,6,250,false
 "src/engines/chain/ChainEngine.ts","ChainEngine.ts",".ts","TypeScript Logic",217,190,16,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",206,173,4,250,false
 "src/kernel/daemon/JSAIOSDaemon.ts","JSAIOSDaemon.ts",".ts","TypeScript Logic",177,150,7,250,false
