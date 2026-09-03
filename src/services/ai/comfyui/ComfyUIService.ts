@@ -50,18 +50,8 @@ export class ComfyUIService implements AIService {
           description: 'Inspect exposed input parameters and node structure for workflow template'
         },
         {
-          command: 'comfy prompt [options] <text>',
-          description: 'Submit media generation task to ComfyUI node graph pipeline',
-          options: [
-            { flag: '--neg "<prompt>"', description: 'Negative prompt string (unwanted features)' },
-            { flag: '--steps <num>', description: 'Denoising sampler steps integer (e.g. 20)' },
-            { flag: '--cfg <num>', description: 'Classifier-free guidance float (e.g. 7.5)' },
-            { flag: '--width <num>', description: 'Output image width pixels (e.g. 512, 1024)' },
-            { flag: '--height <num>', description: 'Output image height pixels (e.g. 512, 1024)' },
-            { flag: '--seed <num>', description: 'Random seed integer' },
-            { flag: '--sampler <name>', description: 'Sampler algorithm (euler, dpmpp_2m, k_euler_ancestral)' },
-            { flag: '--ckpt <name>', description: 'Model checkpoint safetensors filename' }
-          ]
+          command: 'comfy prompt <workflow> [options]',
+          description: 'Submit execution graph to ComfyUI node pipeline (options are dynamic per workflow; use \'comfy options <workflow>\' to inspect)'
         }
       ]
     };
