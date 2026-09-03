@@ -1,5 +1,8 @@
 # JSAIOS Project Rules & Guidelines
 
+> [!IMPORTANT]
+> **STRICT GIT PUSH POLICY**: Local `git commit` operations are allowed, but **NEVER execute `git push` automatically.** Pushing to remote GitHub `origin/main` MUST ONLY occur when explicitly instructed by the user.
+
 ## Related Projects & Architecture References
 - **Architecture Specification**: Refer to [ARCHITECTURE.md](file:///c:/Users/jerry/JSAIOS/ARCHITECTURE.md) for full Hexagonal Architecture (Ports and Adapters) guidelines.
 - **Legacy Codebase (`ollama-chat`)**: Located at `c:\Users\jerry\ollama-chat` (or `~/ollama-chat`). Refer to this repository when checking prior architectural implementations, workflow designs, UI concepts, or feature details being rebuilt into JSAIOS.
