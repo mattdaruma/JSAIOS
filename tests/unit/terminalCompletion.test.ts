@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HoneyKernel } from '../../src/kernel/HoneyKernel';
 import { CommandInterpreter } from '../../src/adapters/interpreter/CommandInterpreter';
+import { handleDraftClearOnDown } from '../../src/shell/terminal/helpers/handleDraftHistory';
 
 describe('JSAIOS Terminal Shell Autocompletion & Command History', () => {
   let kernel: HoneyKernel;
@@ -36,5 +37,20 @@ describe('JSAIOS Terminal Shell Autocompletion & Command History', () => {
   it('should return empty completions for unknown commands', () => {
     const [hits] = interpreter.getCompletions('unknowncmdxyz');
     expect(hits).toEqual([]);
+  });
+
+  it('should store in-progress draft text into history and clear terminal line when Down arrow is pressed', () => {
+    const mockRL: any = {
+      line: 'comfy options "Text to Image"',
+      historyIndex: -1,
+      history: ['help status'],
+      cursor: 30,
+      _refreshLine: () => {}
+    };
+
+    const handled = handleDraftClearOnDown(mockRL, 'down');
+    expect(handled).toBe(true);
+    expect(mockRL.line).toBe('');
+    expect(mockRL.history[0]).toBe('comfy options "Text to Image"');
   });
 });

@@ -293,7 +293,11 @@
         },
         {
           "command": "comfy prompt <workflow> [options]",
-          "description": "Submit execution graph to ComfyUI node pipeline (options are dynamic per workflow; use 'comfy options <workflow>' to inspect)"
+          "description": "Submit execution graph to ComfyUI node pipeline",
+          
+          "options": [
+            { "flag": "'comfy options <workflow>'", "description": "Options are dynamic per workflow." }
+          ]
         }
       ]
     },

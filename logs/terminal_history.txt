@@ -1,0 +1,16 @@
+help comfy
+help comfy
+help ollama
+help comfy
+help comfy
+help comfy
+exit
+help comfy
+exit
+help comfy
+comfy options Text to Image
+help
+help comfy
+comfy workflows
+comfy options Text to Image
+comfy models

@@ -14,10 +14,10 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/cli/services/parseOllamaOptions.ts","parseOllamaOptions.ts",".ts","TypeScript Logic",131,123,4,250,false
 "src/shell/browser/components/SearchControlBar.tsx","SearchControlBar.tsx",".tsx","React Component",130,122,5,250,false
 "src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",129,109,26,250,false
+"src/shell/terminal/cliTerminal.ts","cliTerminal.ts",".ts","TypeScript Logic",129,105,6,250,false
 "src/shell/terminal/commands/context/packCommands.ts","packCommands.ts",".ts","TypeScript Logic",124,100,4,250,false
 "src/adapters/storage/FileContextStorage.ts","FileContextStorage.ts",".ts","TypeScript Logic",123,111,10,250,false
 "src/kernel/types.ts","types.ts",".ts","TypeScript Logic",121,103,4,250,false
-"src/shell/terminal/cliTerminal.ts","cliTerminal.ts",".ts","TypeScript Logic",118,96,5,250,false
 "src/engines/chat/helpers/ChatSession.ts","ChatSession.ts",".ts","TypeScript Logic",113,100,6,250,false
 "src/services/ai/ollama/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",113,95,7,250,false
 "src/shell/browser/components/BrowserApp.tsx","BrowserApp.tsx",".tsx","React Component",113,101,5,250,false
@@ -87,6 +87,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/cli/chat/handleChatConfig.ts","handleChatConfig.ts",".ts","TypeScript Logic",42,34,4,250,false
 "src/services/ai/comfyui/helpers/listWorkflows.ts","listWorkflows.ts",".ts","TypeScript Logic",42,36,5,250,false
 "src/adapters/cli/chat/handleChatStatus.ts","handleChatStatus.ts",".ts","TypeScript Logic",41,33,4,250,false
+"src/shell/terminal/helpers/handleDraftHistory.ts","handleDraftHistory.ts",".ts","TypeScript Logic",41,30,7,250,false
 "src/adapters/factories/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",40,35,5,250,false
 "src/shell/terminal/tokenize.ts","tokenize.ts",".ts","TypeScript Logic",40,34,4,250,false
 "src/shell/terminal/commands/context/assembleContext.ts","assembleContext.ts",".ts","TypeScript Logic",39,32,4,250,false
@@ -125,4 +126,3 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/helpers/stripAnsi.ts","stripAnsi.ts",".ts","TypeScript Logic",12,10,4,250,false
 "src/services/tokenizer/ITokenizerService.ts","ITokenizerService.ts",".ts","TypeScript Logic",11,8,4,250,false
 "src/shell/browser/types.ts","types.ts",".ts","TypeScript Logic",9,7,3,250,false
-"src/shell/browser/vitest.config.ts","vitest.config.ts",".ts","TypeScript Logic",8,6,0,250,false

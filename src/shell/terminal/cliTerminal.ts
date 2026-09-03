@@ -1,7 +1,7 @@
 /**
  * JSAIOS - Pure System Terminal CLI Shell
  * Listens to process.stdin and outputs to process.stdout.
- * Features data-driven Tab autocompletion, persistent shell history across restarts, and graceful shutdown.
+ * Features data-driven Tab autocompletion, Down-arrow draft clear with Up-arrow recovery, persistent history, and graceful shutdown.
  */
 
 import readline from 'readline';
@@ -10,6 +10,7 @@ import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import { CommandInterpreter } from '../../adapters/interpreter/CommandInterpreter';
 import { getTerminalFormatter } from './helpers/getTerminalFormatter';
+import { handleDraftClearOnDown } from './helpers/handleDraftHistory';
 
 const HISTORY_FILE = path.join(process.cwd(), 'logs', 'terminal_history.txt');
 
@@ -60,12 +61,22 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
     (rl as any).history.push(...initialHistory.reverse());
   }
 
+  // Intercept Down keypress on uncommitted draft input
+  const keypressHandler = (_str: string, key: any) => {
+    if (key && key.name) {
+      handleDraftClearOnDown(rl, key.name);
+    }
+  };
+
+  process.stdin.on('keypress', keypressHandler);
+
   let isShuttingDown = false;
 
   const handleGracefulExit = async (signalName: string) => {
     if (isShuttingDown) return;
     isShuttingDown = true;
 
+    process.stdin.removeListener('keypress', keypressHandler);
     console.log(`\n${formatter.formatError(`[CLI Shell] Intercepted signal '${signalName}'. Triggering graceful shutdown...`)}`);
     await kernel.shutdown();
     rl.close();
