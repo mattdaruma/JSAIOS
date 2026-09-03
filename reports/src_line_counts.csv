@@ -85,7 +85,6 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/cli/chat/handleChatConfig.ts","handleChatConfig.ts",".ts","TypeScript Logic",42,34,4,250,false
 "src/adapters/cli/chat/handleChatStatus.ts","handleChatStatus.ts",".ts","TypeScript Logic",41,33,4,250,false
 "src/adapters/factories/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",40,35,5,250,false
-"src/bootloaders/browserBootloader.tsx","browserBootloader.tsx",".tsx","React Component",40,34,5,250,false
 "src/shell/terminal/tokenize.ts","tokenize.ts",".ts","TypeScript Logic",40,34,4,250,false
 "src/shell/terminal/commands/context/assembleContext.ts","assembleContext.ts",".ts","TypeScript Logic",39,32,4,250,false
 "src/engines/context/helpers/TokenWindowPruner.ts","TokenWindowPruner.ts",".ts","TypeScript Logic",38,31,6,250,false
@@ -110,6 +109,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/storage/InMemoryChainStorage.ts","InMemoryChainStorage.ts",".ts","TypeScript Logic",27,20,4,250,false
 "src/services/ai/ollama/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",27,22,4,250,false
 "src/services/ai/ollama/helpers/loadImage.ts","loadImage.ts",".ts","TypeScript Logic",26,20,4,250,false
+"src/shell/browser/browserBootloader.tsx","browserBootloader.tsx",".tsx","React Component",24,19,4,250,false
 "src/engines/context/helpers/ContextTemplate.ts","ContextTemplate.ts",".ts","TypeScript Logic",22,17,4,250,false
 "src/shell/terminal/commands/context/listTemplates.ts","listTemplates.ts",".ts","TypeScript Logic",21,16,4,250,false
 "src/shell/browser/helpers/loadUIConfig.ts","loadUIConfig.ts",".ts","TypeScript Logic",19,14,5,250,false
