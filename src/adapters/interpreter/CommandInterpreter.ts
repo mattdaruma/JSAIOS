@@ -49,7 +49,6 @@ export class CommandInterpreter {
       { command: 'services', description: 'List registered service drivers' },
       { command: 'context', description: 'Inspect & assemble system directive prompt templates (context list|show|assemble)' },
       { command: 'chain', description: 'Manage and execute multi-step workflow chains (chain list|show|create|run)' },
-      { command: 'jingle', description: 'Play JSAIOS audio jingle' },
       { command: 'clear', description: 'Clear terminal output screen' },
       { command: 'exit', description: 'Quit terminal shell' }
     ]

@@ -1,7 +1,8 @@
 /**
  * JSAIOS - Single-purpose helper: playJingle CLI Handler
- * Pure fun/goof CLI command playing the betterthanyou.wav jingle.
+ * Pure fun/goof CLI command playing the sound jingle.
  * Plays a silent PCM WAV stream and sleeps for 330ms (0.33s) to allow sound card DAC hardware amplifier to fully warm up.
+ * Returns empty string for silent easter egg execution.
  */
 
 import { exec } from 'child_process';
@@ -12,7 +13,7 @@ export function handlePlayJingle(): string {
   const wavPath = path.resolve(process.cwd(), 'src', 'betterthanyou.wav');
 
   if (!fs.existsSync(wavPath)) {
-    return `Jingle file not found at '${wavPath}'.`;
+    return '';
   }
 
   const platform = process.platform;
@@ -31,5 +32,5 @@ export function handlePlayJingle(): string {
 
   exec(command);
 
-  return '🎶 Playing JSAIOS Jingle... "Better than you!" 🎶';
+  return '';
 }
