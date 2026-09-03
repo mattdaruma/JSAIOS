@@ -1,6 +1,7 @@
 /**
  * JSAIOS - Single-purpose helper: inspectComfyWorkflow
- * Parses a saved ComfyUI workflow JSON graph (supporting UI exports, wrapper objects, & API prompt graphs) and extracts configurable options.
+ * Parses a saved ComfyUI workflow JSON graph and extracts configurable user inputs & options.
+ * Fetches file content from ComfyUI REST endpoint using path-encoded userdata URIs.
  */
 
 export interface WorkflowInputOption {
@@ -40,14 +41,6 @@ export function resolveGraphRoot(rawResponse: any): any {
     return resolveGraphRoot(rawResponse.data);
   }
 
-  if (typeof rawResponse.content === 'string') {
-    try {
-      return resolveGraphRoot(JSON.parse(rawResponse.content));
-    } catch {}
-  } else if (rawResponse.content && typeof rawResponse.content === 'object') {
-    return resolveGraphRoot(rawResponse.content);
-  }
-
   return rawResponse;
 }
 
@@ -58,7 +51,8 @@ const KNOWN_WIDGET_MAPS: Record<string, string[]> = {
   'CheckpointLoaderSimple': ['ckpt_name'],
   'EmptyLatentImage': ['width', 'height', 'batch_size'],
   'VAELoader': ['vae_name'],
-  'LoraLoader': ['lora_name', 'strength_model', 'strength_clip']
+  'LoraLoader': ['lora_name', 'strength_model', 'strength_clip'],
+  'SaveImage': ['filename_prefix']
 };
 
 export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
@@ -90,12 +84,17 @@ export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
       });
     }
 
-    // 2. Inspect 'widgets_values' (Array or Object of primitive values)
+    // 2. Inspect 'widgets_values' array or object
     if (Array.isArray(nodeObj.widgets_values)) {
+      const widgetSlots = Array.isArray(nodeObj.inputs)
+        ? nodeObj.inputs.filter((s: any) => s.widget || (s.type !== 'MODEL' && s.type !== 'CONDITIONING' && s.type !== 'LATENT' && s.type !== 'VAE'))
+        : [];
       const knownNames = KNOWN_WIDGET_MAPS[classType] || [];
+
       nodeObj.widgets_values.forEach((val: any, idx: number) => {
         if (val !== undefined && val !== null && typeof val !== 'object') {
-          const name = knownNames[idx] || `widget_${idx + 1}`;
+          const slot = widgetSlots[idx];
+          const name = slot?.widget?.name || slot?.name || knownNames[idx] || `widget_${idx + 1}`;
           options.push({
             nodeId,
             classType,
@@ -184,12 +183,12 @@ export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
     }
   }
 
-  // Deduplicate options for the same nodeId + inputName + currentValue
+  // Deduplicate options for the same nodeId + inputName
   const uniqueOptions: WorkflowInputOption[] = [];
   const seenKeys = new Set<string>();
 
   for (const opt of options) {
-    const key = `${opt.nodeId}:${opt.inputName}:${opt.currentValue}`;
+    const key = `${opt.nodeId}:${opt.inputName}`;
     if (!seenKeys.has(key)) {
       seenKeys.add(key);
       uniqueOptions.push(opt);
@@ -207,20 +206,18 @@ export async function inspectComfyWorkflow(
   if (!cleanName) return null;
 
   const targetFileName = `${cleanName}.json`;
-  const encodedTarget = encodeURIComponent(targetFileName);
-  const encodedClean = encodeURIComponent(cleanName);
+  
+  // Encoded full path relative to /userdata/ (e.g. "workflows%2FText%20to%20Image.json")
+  const encodedSubdirPath = encodeURIComponent(`workflows/${targetFileName}`);
+  const encodedSubdirClean = encodeURIComponent(`workflows/${cleanName}`);
+  const encodedFileName = encodeURIComponent(targetFileName);
 
   const candidateUrls = [
-    `${endpoint}/userdata/workflows/${encodedTarget}`,
+    `${endpoint}/userdata/${encodedSubdirPath}`,
+    `${endpoint}/userdata/${encodedSubdirClean}`,
+    `${endpoint}/userdata/workflows/${encodedFileName}`,
     `${endpoint}/userdata/workflows/${targetFileName}`,
-    `${endpoint}/userdata/workflows/${encodedClean}`,
-    `${endpoint}/userdata/workflows/${cleanName}`,
-    `${endpoint}/userdata?dir=workflows&filename=${encodedTarget}`,
-    `${endpoint}/userdata?dir=workflows&file=${encodedTarget}`,
-    `${endpoint}/userdata?filename=workflows/${encodedTarget}`,
-    `${endpoint}/userdata?file=workflows/${encodedTarget}`,
-    `${endpoint}/userdata/${encodedTarget}`,
-    `${endpoint}/userdata/${encodedClean}`
+    `${endpoint}/userdata?dir=workflows&filename=${encodedFileName}`
   ];
 
   for (const url of candidateUrls) {
