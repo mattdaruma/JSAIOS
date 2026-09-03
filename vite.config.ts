@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
 export default defineConfig({
+  root: 'src/shell/browser',
   plugins: [react(), tailwindcss()],
   server: {
     port: 3000,
@@ -14,7 +16,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'dist/browser',
+    outDir: path.resolve(__dirname, 'dist/browser'),
     emptyOutDir: true
   }
 });
