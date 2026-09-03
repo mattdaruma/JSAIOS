@@ -8,13 +8,14 @@ import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { ServiceDescriptor } from '../../kernel/types';
-import { CHAT_ENGINE_DESCRIPTOR, handleChatCLI } from '../cli/chat/ChatCLIAdapter';
+import { handleChatCLI } from '../cli/chat/ChatCLIAdapter';
 import { handleOllamaCLI } from '../cli/services/OllamaCLIAdapter';
 import { handleComfyCLI } from '../cli/services/ComfyCLIAdapter';
 import { handleCopilotCLI } from '../cli/services/CopilotCLIAdapter';
-import { handleContextCommand, CONTEXT_ENGINE_DESCRIPTOR } from '../../shell/terminal/commands/context/index';
-import { handleChainCommand, CHAIN_ENGINE_DESCRIPTOR } from '../../shell/terminal/commands/chain/index';
+import { handleContextCommand } from '../../shell/terminal/commands/context/index';
+import { handleChainCommand } from '../../shell/terminal/commands/chain/index';
 import { handlePlayJingle } from '../../shell/terminal/commands/playJingle';
+import { renderDescriptorHelp } from './helpers/renderHelp';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import { ChainEngine } from '../../engines/chain/ChainEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
@@ -27,6 +28,8 @@ export interface TerminalManifestConfig {
   promptPrefix: string;
   environments: Record<string, string>;
   builtins: Array<{ command: string; description: string }>;
+  descriptors?: Record<string, ServiceDescriptor>;
+  defaultTemplates?: Array<{ id: string; name: string; template: string; description?: string }>;
 }
 
 export class CommandInterpreter {
@@ -47,7 +50,7 @@ export class CommandInterpreter {
       { command: 'help', description: 'Display HoneyKernel terminal reference or target help' },
       { command: 'status', description: 'Display system status and uptime' },
       { command: 'services', description: 'List registered service drivers' },
-      { command: 'context', description: 'Inspect & assemble system directive prompt templates (context list|show|assemble)' },
+      { command: 'context', description: 'Inspect & assemble system directive prompt templates (context prompt|pack|assemble)' },
       { command: 'chain', description: 'Manage and execute multi-step workflow chains (chain list|show|create|run)' },
       { command: 'clear', description: 'Clear terminal output screen' },
       { command: 'exit', description: 'Quit terminal shell' }
@@ -64,6 +67,12 @@ export class CommandInterpreter {
       if (fs.existsSync(targetPath)) {
         const parsed = JSON.parse(fs.readFileSync(targetPath, 'utf-8'));
         this.config = { ...this.config, ...parsed };
+
+        if (Array.isArray(parsed.defaultTemplates)) {
+          for (const tmpl of parsed.defaultTemplates) {
+            this.contextEngine.registerTemplate(tmpl);
+          }
+        }
       }
     } catch {
       // Fallback defaults
@@ -72,6 +81,14 @@ export class CommandInterpreter {
 
   public getManifest(): TerminalManifestConfig {
     return this.config;
+  }
+
+  public getContextEngine(): ContextEngine {
+    return this.contextEngine;
+  }
+
+  public getChainEngine(): ChainEngine {
+    return this.chainEngine;
   }
 
   public async execute(
@@ -162,9 +179,9 @@ export class CommandInterpreter {
   private handleTargetHelp(targetId: string): string {
     const query = targetId.toLowerCase().trim();
 
-    if (query === 'chat') return this.renderDescriptorHelp(CHAT_ENGINE_DESCRIPTOR);
-    if (query === 'context') return this.renderDescriptorHelp(CONTEXT_ENGINE_DESCRIPTOR);
-    if (query === 'chain') return this.renderDescriptorHelp(CHAIN_ENGINE_DESCRIPTOR);
+    if (this.config.descriptors?.[query]) {
+      return renderDescriptorHelp(this.config.descriptors[query]);
+    }
 
     const builtin = this.config.builtins.find(b => b.command.toLowerCase() === query);
     if (builtin) {
@@ -186,36 +203,7 @@ export class CommandInterpreter {
       return `Target '${targetId}' not found. Type 'help' to view active commands, engines, and service drivers.`;
     }
 
-    return this.renderDescriptorHelp(service);
-  }
-
-  private renderDescriptorHelp(descriptor: ServiceDescriptor): string {
-    const lines: string[] = [
-      '=======================================================================',
-      ` Reference: ${descriptor.name} (${descriptor.id} v${descriptor.version})`,
-      '======================================================================='
-    ];
-
-    if (descriptor.commands && descriptor.commands.length > 0) {
-      for (const cmd of descriptor.commands) {
-        lines.push('');
-        const cmdPadding = ' '.repeat(Math.max(2, 37 - cmd.command.length));
-        lines.push(`  ${cmd.command}${cmdPadding}- ${cmd.description}`);
-
-        if (cmd.options && cmd.options.length > 0) {
-          lines.push('                                        Options:');
-          for (const opt of cmd.options) {
-            const optPadding = ' '.repeat(Math.max(2, 22 - opt.flag.length));
-            lines.push(`                                          ${opt.flag}${optPadding}${opt.description}`);
-          }
-        }
-      }
-    } else {
-      lines.push('  No commands documented.');
-    }
-
-    lines.push('\n=======================================================================');
-    return lines.join('\n');
+    return renderDescriptorHelp(service);
   }
 
   private handleStatus(): string {

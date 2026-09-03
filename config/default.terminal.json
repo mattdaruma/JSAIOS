@@ -12,8 +12,150 @@
     { "command": "help", "description": "Display HoneyKernel terminal reference or target help" },
     { "command": "status", "description": "Display system status and uptime" },
     { "command": "services", "description": "List registered service drivers" },
-    { "command": "context", "description": "Inspect & assemble system directive prompt templates (context list|show|assemble)" },
+    { "command": "context", "description": "Inspect & assemble system directive prompt templates (context prompt|pack|assemble)" },
+    { "command": "chain", "description": "Manage and execute multi-step workflow chains (chain list|show|create|run)" },
     { "command": "clear", "description": "Clear terminal output screen" },
     { "command": "exit", "description": "Quit terminal shell" }
-  ]
+  ],
+  "defaultTemplates": [
+    {
+      "id": "code-reviewer",
+      "name": "Code Reviewer",
+      "description": "Expert code review system prompt",
+      "template": "You are an expert {{language}} code reviewer."
+    },
+    {
+      "id": "concise-assistant",
+      "name": "Concise Assistant",
+      "description": "Direct concise response prompt",
+      "template": "You are a concise, direct AI assistant."
+    }
+  ],
+  "descriptors": {
+    "chat": {
+      "id": "chat",
+      "name": "JSAIOS Chat Engine",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["multi-turn-chat", "session-persistence", "sticky-context", "stream-tokens"],
+      "commands": [
+        {
+          "command": "chat new <session_name>",
+          "description": "Create a new interactive chat session",
+          "options": [
+            { "flag": "-p, --provider <id>", "description": "AI provider ID (ollama, copilot, comfyui)" },
+            { "flag": "-m, --model <name>", "description": "Target model name (llama3, gpt-4o, etc.)" }
+          ]
+        },
+        {
+          "command": "chat send <user_prompt>",
+          "description": "Send a prompt turn to the active chat session",
+          "options": [
+            { "flag": "-s, --session <id>", "description": "Target session ID" },
+            { "flag": "--temp <number>", "description": "Temperature override (0.0 to 1.0)" },
+            { "flag": "--image <path>", "description": "Attach image file for multimodal prompt" }
+          ]
+        },
+        {
+          "command": "chat list",
+          "description": "List active and persisted chat sessions"
+        },
+        {
+          "command": "chat history [session_id]",
+          "description": "Display message history for a session"
+        }
+      ]
+    },
+    "context": {
+      "id": "context",
+      "name": "Context Management Engine",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["templates", "context-packs", "conditional-rules", "custom-fields", "token-pruning"],
+      "commands": [
+        {
+          "command": "context prompt list",
+          "description": "List registered standalone prompt directive templates"
+        },
+        {
+          "command": "context prompt show <prompt_id>",
+          "description": "Display prompt template details and template content"
+        },
+        {
+          "command": "context prompt create <prompt_id>",
+          "description": "Create a new standalone prompt template",
+          "options": [
+            { "flag": "--template \"<str>\"", "description": "Template content string with {{variable}} tags" },
+            { "flag": "--name \"<str>\"", "description": "Human-readable template name" }
+          ]
+        },
+        {
+          "command": "context pack list",
+          "description": "List registered context packs"
+        },
+        {
+          "command": "context pack show <pack_id>",
+          "description": "Display context pack details, prompt references, and conditions"
+        },
+        {
+          "command": "context pack create <pack_id> <name>",
+          "description": "Create a new context pack set",
+          "options": [
+            { "flag": "--merge single|multi", "description": "Merge strategy: single-system-prompt or multi-directives" }
+          ]
+        },
+        {
+          "command": "context pack add-prompt <pack_id> <prompt_id>",
+          "description": "Add a prompt directive reference with optional custom field conditions to a pack",
+          "options": [
+            { "flag": "--field <key>", "description": "Custom field name for condition" },
+            { "flag": "--op equals|contains|exists", "description": "Condition operator" },
+            { "flag": "--value <val>", "description": "Condition target value" }
+          ]
+        },
+        {
+          "command": "context assemble [pack_id|template_id]",
+          "description": "Dry-run report: Evaluate conditions, interpolate custom fields, and assemble system prompt",
+          "options": [
+            { "flag": "--field key=val", "description": "Pass custom field variable" }
+          ]
+        }
+      ]
+    },
+    "chain": {
+      "id": "chain",
+      "name": "Multi-Step Workflow Chain Engine",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["multi-step-chains", "majority-voting-consensus", "per-step-context-control", "custom-field-filtering", "history-turn-capping", "inter-step-output-pipe"],
+      "commands": [
+        {
+          "command": "chain list",
+          "description": "List registered multi-step workflow chains"
+        },
+        {
+          "command": "chain show <id>",
+          "description": "Display workflow chain details, step sequence, and context rules"
+        },
+        {
+          "command": "chain create <chain_id> <name>",
+          "description": "Create a new multi-step workflow chain definition"
+        },
+        {
+          "command": "chain add-step <chain_id> <step_id> [step_name]",
+          "description": "Add a step to a workflow chain with context rules and majority voting",
+          "options": [
+            { "flag": "--vote <sample_count>", "description": "Enable Majority Voting self-consistency (e.g. --vote 3)" },
+            { "flag": "--pack <pack_id>", "description": "Attach Context Pack to step" },
+            { "flag": "--prompt <prompt_id>", "description": "Attach Prompt Template to step" },
+            { "flag": "--field <key>", "description": "Select specific user custom field" }
+          ]
+        },
+        {
+          "command": "chain run <chain_id> [user_prompt]",
+          "description": "Execute all steps in a multi-step workflow chain sequentially"
+        }
+      ]
+    }
+  }
 }

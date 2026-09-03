@@ -1,5 +1,5 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
-"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",247,212,6,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",234,200,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",226,194,12,250,false
 "src/engines/chain/ChainEngine.ts","ChainEngine.ts",".ts","TypeScript Logic",217,190,16,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",206,173,4,250,false
@@ -25,7 +25,6 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/context/helpers/types.ts","types.ts",".ts","TypeScript Logic",97,83,4,250,false
 "src/engines/chain/helpers/types.ts","types.ts",".ts","TypeScript Logic",94,80,10,250,false
 "src/shell/browser/hooks/useSearchableList.ts","useSearchableList.ts",".ts","TypeScript Logic",94,81,8,250,false
-"src/shell/terminal/commands/context/promptCommands.ts","promptCommands.ts",".ts","TypeScript Logic",94,80,5,250,false
 "src/services/ai/AIService.ts","AIService.ts",".ts","TypeScript Logic",90,79,4,250,false
 "src/shell/server/helpers/serverActionDispatcher.ts","serverActionDispatcher.ts",".ts","TypeScript Logic",88,77,7,250,false
 "src/shell/terminal/helpers/cliColors.ts","cliColors.ts",".ts","TypeScript Logic",88,79,18,250,false
@@ -40,6 +39,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/components/Input.tsx","Input.tsx",".tsx","React Component",77,70,4,250,false
 "src/adapters/daemon/DaemonClientAdapter.ts","DaemonClientAdapter.ts",".ts","TypeScript Logic",76,64,5,250,false
 "src/shell/browser/components/TextBlock.tsx","TextBlock.tsx",".tsx","React Component",76,65,5,250,false
+"src/shell/terminal/commands/context/promptCommands.ts","promptCommands.ts",".ts","TypeScript Logic",76,64,5,250,false
 "src/adapters/storage/FileSessionStorage.ts","FileSessionStorage.ts",".ts","TypeScript Logic",75,63,5,250,false
 "src/services/ai/copilot/CopilotService.ts","CopilotService.ts",".ts","TypeScript Logic",75,65,4,250,false
 "src/adapters/cli/chat/handleChatSessions.ts","handleChatSessions.ts",".ts","TypeScript Logic",74,66,4,250,false
@@ -92,8 +92,9 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/kernel/loadSecrets.ts","loadSecrets.ts",".ts","TypeScript Logic",38,32,4,250,false
 "src/kernel/ManifestLoader.ts","ManifestLoader.ts",".ts","TypeScript Logic",38,33,5,250,false
 "src/adapters/storage/InMemorySessionStorage.ts","InMemorySessionStorage.ts",".ts","TypeScript Logic",37,29,4,250,false
+"src/shell/terminal/commands/playJingle.ts","playJingle.ts",".ts","TypeScript Logic",37,29,7,250,false
+"src/adapters/interpreter/helpers/renderHelp.ts","renderHelp.ts",".ts","TypeScript Logic",36,30,4,250,false
 "src/shell/terminal/commands/context/createPack.ts","createPack.ts",".ts","TypeScript Logic",36,29,4,250,false
-"src/shell/terminal/commands/playJingle.ts","playJingle.ts",".ts","TypeScript Logic",36,28,6,250,false
 "src/services/tokenizer/HeuristicTokenizerService.ts","HeuristicTokenizerService.ts",".ts","TypeScript Logic",35,27,4,250,false
 "src/shell/browser/components/DatePicker.tsx","DatePicker.tsx",".tsx","React Component",35,31,4,250,false
 "src/shell/browser/components/Header.tsx","Header.tsx",".tsx","React Component",35,31,4,250,false

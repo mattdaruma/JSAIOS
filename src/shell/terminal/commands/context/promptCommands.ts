@@ -1,38 +1,20 @@
 /**
  * JSAIOS - Single-purpose helper: promptCommands CLI Handler
  * Handles 'context prompt list', 'context prompt show <id>', and 'context prompt create <id> --template "..."'.
+ * 100% data-driven: contains zero hardcoded prompt strings.
  */
 
 import type { ContextEngine } from '../../../../engines/context/ContextEngine';
 
-const DEFAULT_TEMPLATES = [
-  {
-    id: 'code-reviewer',
-    name: 'Code Reviewer',
-    description: 'Expert code review system prompt',
-    template: 'You are an expert {{language}} code reviewer.'
-  },
-  {
-    id: 'concise-assistant',
-    name: 'Concise Assistant',
-    description: 'Direct concise response prompt',
-    template: 'You are a concise, direct AI assistant.'
-  }
-];
-
 export function handlePromptCommands(args: string[], contextEngine: ContextEngine): string {
   const action = args[0]?.toLowerCase();
-
-  // Ensure default templates are registered in engine if empty
-  if (contextEngine.listTemplates().length === 0) {
-    for (const t of DEFAULT_TEMPLATES) {
-      contextEngine.registerTemplate(t);
-    }
-  }
 
   switch (action) {
     case 'list': {
       const templates = contextEngine.listTemplates();
+      if (templates.length === 0) {
+        return 'No standalone prompt templates registered. Create one using "context prompt create <id> --template \"...\"".';
+      }
       return [
         '=== Registered System Directive Templates ===',
         ...templates.map((t) => `  • ${t.id.padEnd(20)} : ${t.name} ${t.description ? `(${t.description})` : ''}`),
