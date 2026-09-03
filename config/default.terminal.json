@@ -26,6 +26,7 @@
       "type": "ai",
       "driver": "ComfyUIService",
       "endpoint": "http://localhost:8188",
+      "enableWebSocket": true,
       "enabled": true
     },
     {
@@ -293,11 +294,7 @@
         },
         {
           "command": "comfy prompt <workflow> [options]",
-          "description": "Submit execution graph to ComfyUI node pipeline",
-          
-          "options": [
-            { "flag": "'comfy options <workflow>'", "description": "Options are dynamic per workflow." }
-          ]
+          "description": "Submit execution graph to ComfyUI node pipeline (options are dynamic per workflow; use 'comfy options <workflow>' to inspect)"
         }
       ]
     },

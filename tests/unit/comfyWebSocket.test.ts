@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { connectComfyWebSocket } from '../../src/services/ai/comfyui/helpers/connectComfyWebSocket';
+import { ComfyUIService } from '../../src/services/ai/comfyui/ComfyUIService';
 
 describe('ComfyUI Live WebSocket Event Stream', () => {
   it('should initialize WebSocket controller cleanly with generated client ID', () => {
-    // Mock globalThis.WebSocket
     class MockWebSocket {
       public onopen: any;
       public onmessage: any;
@@ -46,19 +46,16 @@ describe('ComfyUI Live WebSocket Event Stream', () => {
 
     expect(controller).not.toBeNull();
 
-    // Simulate ComfyUI execution_start frame
     messageCallback(JSON.stringify({
       type: 'execution_start',
       data: { prompt_id: 'task_101' }
     }));
 
-    // Simulate ComfyUI progress frame
     messageCallback(JSON.stringify({
       type: 'progress',
       data: { value: 10, max: 20, prompt_id: 'task_101' }
     }));
 
-    // Simulate ComfyUI execution_success frame
     messageCallback(JSON.stringify({
       type: 'execution_success',
       data: { prompt_id: 'task_101' }
@@ -68,6 +65,23 @@ describe('ComfyUI Live WebSocket Event Stream', () => {
     expect(events[0].type).toBe('execution_start');
     expect(events[1].data.value).toBe(10);
     expect(events[2].type).toBe('execution_success');
+
+    vi.unstubAllGlobals();
+  });
+
+  it('should respect enableWebSocket feature flag when disabled in ComfyUIService config', async () => {
+    let wsCreated = false;
+    class MockWebSocket {
+      constructor() { wsCreated = true; }
+      close() {}
+    }
+
+    vi.stubGlobal('WebSocket', MockWebSocket);
+
+    const service = new ComfyUIService({ baseUrl: 'http://localhost:8188', enableWebSocket: false });
+    await service.initialize();
+
+    expect(wsCreated).toBe(false);
 
     vi.unstubAllGlobals();
   });

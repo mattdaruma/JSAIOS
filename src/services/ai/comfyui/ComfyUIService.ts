@@ -1,6 +1,7 @@
 /**
  * JSAIOS - Service Driver: ComfyUIService
  * Pure HTTP REST & WebSocket transport driver for local ComfyUI node graph execution server.
+ * Supports configurable enableWebSocket feature flag (defaults to true).
  */
 
 import type { AIService } from '../AIService';
@@ -14,11 +15,29 @@ import { inspectComfyWorkflow, type WorkflowInspectionResult } from './helpers/i
 import { generateComfyUIMedia } from './helpers/generateMedia';
 import { connectComfyWebSocket, type ComfyWebSocketController } from './helpers/connectComfyWebSocket';
 
+export interface ComfyUIServiceConfig {
+  baseUrl?: string;
+  enableWebSocket?: boolean;
+}
+
 export class ComfyUIService implements AIService {
   public readonly id = 'comfyui';
+  private baseUrl: string;
+  private enableWebSocket: boolean;
   private wsController: ComfyWebSocketController | null = null;
 
-  constructor(private baseUrl: string = 'http://localhost:8188') {}
+  constructor(
+    configOrBaseUrl: string | ComfyUIServiceConfig = 'http://localhost:8188',
+    enableWebSocket: boolean = true
+  ) {
+    if (typeof configOrBaseUrl === 'string') {
+      this.baseUrl = configOrBaseUrl;
+      this.enableWebSocket = enableWebSocket;
+    } else {
+      this.baseUrl = configOrBaseUrl.baseUrl || 'http://localhost:8188';
+      this.enableWebSocket = configOrBaseUrl.enableWebSocket !== false;
+    }
+  }
 
   public get descriptor(): ServiceDescriptor {
     return {
@@ -61,8 +80,10 @@ export class ComfyUIService implements AIService {
   }
 
   public async initialize(): Promise<void> {
-    console.log(`[ComfyUIService] Driver initialized (endpoint: ${this.baseUrl})`);
-    this.wsController = connectComfyWebSocket(this.baseUrl);
+    console.log(`[ComfyUIService] Driver initialized (endpoint: ${this.baseUrl}, enableWebSocket: ${this.enableWebSocket})`);
+    if (this.enableWebSocket) {
+      this.wsController = connectComfyWebSocket(this.baseUrl);
+    }
   }
 
   public async checkHealth(): Promise<boolean> {

@@ -48,6 +48,7 @@
       "type": "ai",
       "driver": "ComfyUIService",
       "endpoint": "http://localhost:8188",
+      "enableWebSocket": true,
       "enabled": true
     },
     {
