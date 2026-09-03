@@ -57,3 +57,7 @@ ALWAYS inspect and follow [ARCHITECTURE.md](file:///c:/Users/jerry/JSAIOS/ARCHIT
 - **Shell Isolation (`src/shell/`)**: Driving shells (`src/shell/terminal/`, `src/shell/browser/`, `src/shell/server/`) MUST NEVER import from sibling shell directories. Shells live in different execution environments (Node vs Browser vs Express) and cross-shell imports break web bundling.
 - **Service Isolation (`src/services/`)**: AI REST service drivers MUST NEVER import from sibling service drivers.
 - **Engine Isolation (`src/engines/`)**: Core domain engines (`src/engines/chat/`, `src/engines/context/`) MUST NOT use direct static sibling imports. Use constructor dependency injection of output interfaces/ports, or orchestrate via `HoneyKernel` / driving shells.
+
+### 9. Pragmatic, Zero-Flattery Peer Review Policy
+- **Strict Rule**: Maintain a direct, objective, and pragmatic engineering tone. Zero flattery, zero filler praise ("brilliant", "genius", "great idea"), and zero cheerleader commentary.
+- **Critical & Realistic Evaluation**: Act as a strict, pragmatic senior staff architect. Always evaluate proposed features against over-engineering risks, local hardware limitations, maintenance burden, readability for other developers, and standard industry conventions before endorsing implementation.
