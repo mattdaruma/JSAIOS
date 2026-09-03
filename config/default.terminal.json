@@ -237,7 +237,7 @@
       "name": "Ollama Transport Driver",
       "version": "1.0.0",
       "status": "running",
-      "capabilities": ["text-generation", "streaming", "chat", "model-enumeration", "thinking-mode"],
+      "capabilities": ["text-generation", "streaming", "chat", "model-enumeration", "thinking-mode", "multimodal"],
       "commands": [
         {
           "command": "ollama status",
@@ -248,10 +248,22 @@
           "description": "List locally pulled Ollama models available for inference"
         },
         {
-          "command": "ollama run <model> <prompt>",
-          "description": "Send direct prompt turn to an Ollama model",
+          "command": "ollama run <model> [options] <prompt>",
+          "description": "Send direct prompt turn to an Ollama model with full API options",
           "options": [
-            { "flag": "--think [true|false]", "description": "Toggle model thinking/reasoning mode (qwen, deepseek)" }
+            { "flag": "--think [true|false]", "description": "Toggle model reasoning mode (qwen, deepseek)" },
+            { "flag": "--temp <float>, -t", "description": "Sampler temperature float (0.0 to 2.0)" },
+            { "flag": "--system \"<text>\", -s", "description": "Set custom system directive prompt" },
+            { "flag": "--num-ctx <int>, --ctx", "description": "Context window size in tokens (e.g. 8192, 32768)" },
+            { "flag": "--keep-alive <time>", "description": "Model memory keep-alive duration (e.g. 5m, 10m, -1)" },
+            { "flag": "--max-tokens <int>", "description": "Maximum completion tokens limit (num_predict)" },
+            { "flag": "--top-p <float>", "description": "Nucleus sampling top-p threshold float" },
+            { "flag": "--top-k <int>", "description": "Top-k sampling cutoff integer" },
+            { "flag": "--seed <int>", "description": "Random seed integer for deterministic sampling" },
+            { "flag": "--repeat-penalty <float>", "description": "Repetition penalty multiplier" },
+            { "flag": "--format json", "description": "Force structured JSON response formatting" },
+            { "flag": "--raw", "description": "Bypass prompt template wrapper processing" },
+            { "flag": "--image <path>, -i", "description": "Attach local image file for multimodal prompt" }
           ]
         }
       ]
