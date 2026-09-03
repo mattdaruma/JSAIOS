@@ -13,8 +13,10 @@ import { handleOllamaCLI } from '../cli/services/OllamaCLIAdapter';
 import { handleComfyCLI } from '../cli/services/ComfyCLIAdapter';
 import { handleCopilotCLI } from '../cli/services/CopilotCLIAdapter';
 import { handleContextCommand, CONTEXT_ENGINE_DESCRIPTOR } from '../../shell/terminal/commands/context/index';
+import { handleChainCommand, CHAIN_ENGINE_DESCRIPTOR } from '../../shell/terminal/commands/chain/index';
 import { handlePlayJingle } from '../../shell/terminal/commands/playJingle';
 import { ContextEngine } from '../../engines/context/ContextEngine';
+import { ChainEngine } from '../../engines/chain/ChainEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
 import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
 import type { CopilotService } from '../../services/ai/copilot/CopilotService';
@@ -29,6 +31,8 @@ export interface TerminalManifestConfig {
 
 export class CommandInterpreter {
   private contextEngine: ContextEngine = new ContextEngine();
+  private chainEngine: ChainEngine = new ChainEngine(undefined, undefined, this.contextEngine);
+
   private config: TerminalManifestConfig = {
     version: '1.0.0',
     defaultEnvironment: 'win-cmd',
@@ -44,6 +48,7 @@ export class CommandInterpreter {
       { command: 'status', description: 'Display system status and uptime' },
       { command: 'services', description: 'List registered service drivers' },
       { command: 'context', description: 'Inspect & assemble system directive prompt templates (context list|show|assemble)' },
+      { command: 'chain', description: 'Manage and execute multi-step workflow chains (chain list|show|create|run)' },
       { command: 'jingle', description: 'Play JSAIOS sound jingle (betterthanyou.wav)' },
       { command: 'clear', description: 'Clear terminal output screen' },
       { command: 'exit', description: 'Quit terminal shell' }
@@ -91,6 +96,9 @@ export class CommandInterpreter {
       case 'context':
         if (args[1] === 'help') return this.handleTargetHelp('context');
         return handleContextCommand(args.slice(1), this.contextEngine);
+      case 'chain':
+        if (args[1] === 'help') return this.handleTargetHelp('chain');
+        return await handleChainCommand(args.slice(1), this.chainEngine);
       case 'jingle':
         return handlePlayJingle();
       case 'clear':
@@ -138,6 +146,7 @@ export class CommandInterpreter {
     lines.push(' Registered Engines & Modules:');
     lines.push('  • chat         - JSAIOS Interactive Chat Engine (Use \'help chat\' or \'chat help\')');
     lines.push('  • context      - Context Management Engine (Use \'help context\' or \'context list\')');
+    lines.push('  • chain        - Multi-Step Workflow Chain Engine (Use \'help chain\' or \'chain list\')');
 
     if (activeServices.length > 0) {
       lines.push('');
@@ -156,6 +165,7 @@ export class CommandInterpreter {
 
     if (query === 'chat') return this.renderDescriptorHelp(CHAT_ENGINE_DESCRIPTOR);
     if (query === 'context') return this.renderDescriptorHelp(CONTEXT_ENGINE_DESCRIPTOR);
+    if (query === 'chain') return this.renderDescriptorHelp(CHAIN_ENGINE_DESCRIPTOR);
 
     const builtin = this.config.builtins.find(b => b.command.toLowerCase() === query);
     if (builtin) {
