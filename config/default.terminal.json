@@ -45,14 +45,52 @@
     }
   ],
   "builtins": [
-    { "command": "help [target]", "description": "Display terminal reference or target help (e.g. 'help chat', 'help ollama')" },
-    { "command": "status", "description": "Display system status and uptime" },
-    { "command": "services", "description": "List registered service drivers & driver help instructions" },
-    { "command": "chat", "description": "JSAIOS Interactive Chat Engine (Use 'chat help' or 'help chat')" },
-    { "command": "context", "description": "Context Management Engine (Use 'context help' or 'help context')" },
-    { "command": "chain", "description": "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')" },
-    { "command": "clear", "description": "Clear terminal output screen" },
-    { "command": "exit", "description": "Quit terminal shell" }
+    {
+      "command": "help [target]",
+      "description": "Display system command reference or drill-down target help (e.g. 'help chat', 'help ollama')",
+      "options": [
+        { "flag": "help chat", "description": "View Interactive Chat Engine commands & options" },
+        { "flag": "help context", "description": "View Context Management Engine commands & options" },
+        { "flag": "help chain", "description": "View Multi-Step Workflow Chain Engine commands & options" },
+        { "flag": "help services", "description": "View registered AI service drivers & driver help tips" },
+        { "flag": "help ollama", "description": "View Ollama local LLM transport driver commands & options" },
+        { "flag": "help comfyui", "description": "View ComfyUI node workflow transport driver commands & options" },
+        { "flag": "help copilot", "description": "View GitHub Copilot REST Gateway driver commands & options" }
+      ]
+    },
+    {
+      "command": "status",
+      "description": "Display HoneyKernel OS booted state, uptime, and active service counts"
+    },
+    {
+      "command": "services",
+      "description": "List registered micro-service drivers, status, capabilities, and drill-down help tips",
+      "options": [
+        { "flag": "help ollama", "description": "View Ollama driver subcommands & parameters" },
+        { "flag": "help comfyui", "description": "View ComfyUI driver subcommands & parameters" },
+        { "flag": "help copilot", "description": "View Copilot driver subcommands & parameters" }
+      ]
+    },
+    {
+      "command": "chat",
+      "description": "JSAIOS Interactive Chat Engine (Use 'chat help' or 'help chat')"
+    },
+    {
+      "command": "context",
+      "description": "Context Management Engine (Use 'context help' or 'help context')"
+    },
+    {
+      "command": "chain",
+      "description": "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')"
+    },
+    {
+      "command": "clear",
+      "description": "Clear terminal output screen"
+    },
+    {
+      "command": "exit",
+      "description": "Quit terminal shell session"
+    }
   ],
   "defaultTemplates": [
     {

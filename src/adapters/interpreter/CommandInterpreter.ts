@@ -7,7 +7,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
-import type { ServiceDescriptor } from '../../kernel/types';
+import type { ServiceDescriptor, CommandDoc } from '../../kernel/types';
 import { handleChatCLI } from '../cli/chat/ChatCLIAdapter';
 import { handleOllamaCLI } from '../cli/services/OllamaCLIAdapter';
 import { handleComfyCLI } from '../cli/services/ComfyCLIAdapter';
@@ -15,7 +15,7 @@ import { handleCopilotCLI } from '../cli/services/CopilotCLIAdapter';
 import { handleContextCommand } from '../../shell/terminal/commands/context/index';
 import { handleChainCommand } from '../../shell/terminal/commands/chain/index';
 import { handlePlayJingle } from '../../shell/terminal/commands/playJingle';
-import { renderDescriptorHelp } from './helpers/renderHelp';
+import { renderDescriptorHelp, renderCoreCommandHelp, suggestFuzzyTarget } from './helpers/renderHelp';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import { ChainEngine } from '../../engines/chain/ChainEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
@@ -27,7 +27,7 @@ export interface TerminalManifestConfig {
   defaultEnvironment: string;
   promptPrefix: string;
   environments: Record<string, string>;
-  builtins: Array<{ command: string; description: string }>;
+  builtins: Array<CommandDoc>;
   descriptors?: Record<string, ServiceDescriptor>;
   defaultTemplates?: Array<{ id: string; name: string; template: string; description?: string }>;
 }
@@ -109,6 +109,7 @@ export class CommandInterpreter {
       case 'status':
         return this.handleStatus();
       case 'services':
+        if (args[1] === 'help') return this.handleTargetHelp('services');
         return this.handleServices();
       case 'context':
         if (args[1] === 'help') return this.handleTargetHelp('context');
@@ -128,16 +129,19 @@ export class CommandInterpreter {
     }
 
     if (mainCommand === 'ollama') {
+      if (args[1] === 'help') return this.handleTargetHelp('ollama');
       const srv = this.kernel.getService<OllamaService>('ollama');
       if (srv) return handleOllamaCLI(srv, args.slice(1), onStreamChunk);
     }
 
     if (mainCommand === 'comfy' || mainCommand === 'comfyui') {
+      if (args[1] === 'help') return this.handleTargetHelp('comfyui');
       const srv = this.kernel.getService<ComfyUIService>('comfyui');
       if (srv) return handleComfyCLI(srv, args.slice(1));
     }
 
     if (mainCommand === 'copilot') {
+      if (args[1] === 'help') return this.handleTargetHelp('copilot');
       const srv = this.kernel.getService<CopilotService>('copilot');
       if (srv) return handleCopilotCLI(srv, args.slice(1), onStreamChunk);
     }
@@ -159,6 +163,9 @@ export class CommandInterpreter {
     }
 
     lines.push('\n=======================================================================');
+    lines.push(' 💡 Tip: Type \'help <target>\' (e.g. \'help chat\', \'help services\', \'help ollama\')');
+    lines.push('        for detailed subcommands, arguments, and options.');
+    lines.push('=======================================================================');
     return lines.join('\n');
   }
 
@@ -169,15 +176,9 @@ export class CommandInterpreter {
       return renderDescriptorHelp(this.config.descriptors[query]);
     }
 
-    const builtin = this.config.builtins.find(b => b.command.toLowerCase().startsWith(query));
+    const builtin = this.config.builtins.find(b => b.command.toLowerCase().split(' ')[0] === query);
     if (builtin) {
-      return [
-        '=======================================================================',
-        ` Reference: Core Shell Command '${builtin.command}'`,
-        '=======================================================================',
-        `  ${builtin.command.padEnd(20)} - ${builtin.description}`,
-        '======================================================================='
-      ].join('\n');
+      return renderCoreCommandHelp(builtin);
     }
 
     const activeServices = this.kernel.getStatus().activeServices;
@@ -185,11 +186,17 @@ export class CommandInterpreter {
       s => s.id.toLowerCase() === query || s.name.toLowerCase().includes(query) || (query === 'comfy' && s.id === 'comfyui')
     );
 
-    if (!service) {
-      return `Target '${targetId}' not found. Type 'help' to view available system commands.`;
+    if (service) {
+      return renderDescriptorHelp(service.descriptor || service);
     }
 
-    return renderDescriptorHelp(service);
+    const available = [
+      ...this.config.builtins.map(b => b.command.split(' ')[0]),
+      ...Object.keys(this.config.descriptors || {}),
+      ...activeServices.map(s => s.id)
+    ];
+
+    return suggestFuzzyTarget(query, available);
   }
 
   private handleStatus(): string {
