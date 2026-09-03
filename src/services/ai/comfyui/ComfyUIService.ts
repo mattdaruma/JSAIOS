@@ -10,7 +10,7 @@ import { checkComfyUIHealth } from './helpers/checkHealth';
 import { getComfyUIModels } from './helpers/getModels';
 import { getComfyUINodeInfo } from './helpers/getNodeInfo';
 import { fetchComfyWorkflows } from './helpers/listWorkflows';
-import { inspectComfyWorkflow, WorkflowInspectionResult } from './helpers/inspectWorkflow';
+import { inspectComfyWorkflow, type WorkflowInspectionResult } from './helpers/inspectWorkflow';
 import { generateComfyUIMedia } from './helpers/generateMedia';
 
 export class ComfyUIService implements AIService {
