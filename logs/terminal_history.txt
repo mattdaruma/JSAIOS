@@ -19,3 +19,7 @@ help comfy
 comfy models
 comfy options Text to Image
 exit
+help comfy
+comfy models
+comfy options Text to Image
+comfy prompt "Text to Image" --width 1280 --height 1280 --images JSAIOS --clip "a cute happy robot waving to the camera 3d cartoony" --ckpt_name bismuthIllustrious_v80.safetensors

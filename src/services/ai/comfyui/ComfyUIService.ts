@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Service Driver: ComfyUIService
- * Pure HTTP REST API transport driver for local ComfyUI node graph execution server.
+ * Pure HTTP REST & WebSocket transport driver for local ComfyUI node graph execution server.
  */
 
 import type { AIService } from '../AIService';
@@ -12,9 +12,11 @@ import { getComfyUINodeInfo } from './helpers/getNodeInfo';
 import { fetchComfyWorkflows } from './helpers/listWorkflows';
 import { inspectComfyWorkflow, type WorkflowInspectionResult } from './helpers/inspectWorkflow';
 import { generateComfyUIMedia } from './helpers/generateMedia';
+import { connectComfyWebSocket, type ComfyWebSocketController } from './helpers/connectComfyWebSocket';
 
 export class ComfyUIService implements AIService {
   public readonly id = 'comfyui';
+  private wsController: ComfyWebSocketController | null = null;
 
   constructor(private baseUrl: string = 'http://localhost:8188') {}
 
@@ -30,7 +32,8 @@ export class ComfyUIService implements AIService {
         'image-synthesis',
         'video-synthesis',
         'audio-synthesis',
-        '3d-synthesis'
+        '3d-synthesis',
+        'websocket-events'
       ],
       commands: [
         {
@@ -59,6 +62,7 @@ export class ComfyUIService implements AIService {
 
   public async initialize(): Promise<void> {
     console.log(`[ComfyUIService] Driver initialized (endpoint: ${this.baseUrl})`);
+    this.wsController = connectComfyWebSocket(this.baseUrl);
   }
 
   public async checkHealth(): Promise<boolean> {
@@ -90,6 +94,14 @@ export class ComfyUIService implements AIService {
   public async generateMedia(
     request: MediaGenerationRequest
   ): Promise<MediaGenerationResponse> {
-    return generateComfyUIMedia(this.baseUrl, request);
+    const clientId = this.wsController?.clientId;
+    return generateComfyUIMedia(this.baseUrl, request, clientId);
+  }
+
+  public shutdown(): void {
+    if (this.wsController) {
+      this.wsController.close();
+      this.wsController = null;
+    }
   }
 }
