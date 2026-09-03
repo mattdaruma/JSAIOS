@@ -1,4 +1,9 @@
 {
+  "system": {
+    "name": "JSAIOS Terminal Shell Host",
+    "version": "1.0.0",
+    "environment": "terminal"
+  },
   "version": "1.0.0",
   "defaultEnvironment": "win-cmd",
   "promptPrefix": "jsaios@honeykernel:~$ ",
@@ -8,6 +13,37 @@
     "posix-bash": "POSIXBashFormatter",
     "plain": "PlainTerminalFormatter"
   },
+  "services": [
+    {
+      "id": "ollama",
+      "type": "ai",
+      "driver": "OllamaService",
+      "endpoint": "http://localhost:11434",
+      "enabled": true
+    },
+    {
+      "id": "comfyui",
+      "type": "ai",
+      "driver": "ComfyUIService",
+      "endpoint": "http://localhost:8188",
+      "enabled": true
+    },
+    {
+      "id": "copilot",
+      "type": "ai",
+      "driver": "CopilotService",
+      "endpoint": "local",
+      "enabled": true
+    }
+  ],
+  "engines": [
+    {
+      "id": "chat",
+      "type": "chat",
+      "storageDir": "chat-sessions",
+      "enabled": true
+    }
+  ],
   "builtins": [
     { "command": "help", "description": "Display HoneyKernel terminal reference or target help" },
     { "command": "status", "description": "Display system status and uptime" },
