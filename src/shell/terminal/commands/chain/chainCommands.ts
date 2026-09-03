@@ -34,6 +34,7 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
 
       for (const step of chain.steps) {
         lines.push(`  • [Step ID: ${step.id}] ${step.name}`);
+        if (step.enableMajorityVote) lines.push(`    Majority Voting: ENABLED (Samples: ${step.sampleCount || 3}, Strategy: ${step.voteStrategy || 'consensus-critic'})`);
         if (step.selectedPackIds?.length) lines.push(`    Context Packs: [${step.selectedPackIds.join(', ')}]`);
         if (step.selectedPromptIds?.length) lines.push(`    Prompt Templates: [${step.selectedPromptIds.join(', ')}]`);
         if (step.selectedUserFieldIds?.length) lines.push(`    User Custom Fields: [${step.selectedUserFieldIds.join(', ')}]`);
@@ -65,7 +66,19 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
       const stepName = args[3] || stepId;
 
       if (!chainId || !stepId) {
-        return 'Usage: chain add-step <chain_id> <step_id> [step_name] [--pack <pack_id>] [--prompt <prompt_id>] [--field <key>]';
+        return 'Usage: chain add-step <chain_id> <step_id> [step_name] [--vote <sample_count>] [--pack <pack_id>] [--prompt <prompt_id>] [--field <key>]';
+      }
+
+      let enableMajorityVote: boolean | undefined;
+      let sampleCount: number | undefined;
+      const voteIdx = args.indexOf('--vote');
+      if (voteIdx !== -1) {
+        enableMajorityVote = true;
+        if (args[voteIdx + 1] && !isNaN(parseInt(args[voteIdx + 1]))) {
+          sampleCount = parseInt(args[voteIdx + 1]);
+        } else {
+          sampleCount = 3;
+        }
       }
 
       let selectedPackIds: string[] | undefined;
@@ -84,6 +97,8 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
         id: stepId,
         name: stepName,
         enabled: true,
+        enableMajorityVote,
+        sampleCount,
         selectedPackIds,
         selectedPromptIds,
         selectedUserFieldIds
@@ -95,7 +110,8 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
         `=== Step Added to Workflow Chain ===`,
         `Chain ID: ${chainId}`,
         `Step ID: ${stepId}`,
-        `Step Name: ${stepName}`
+        `Step Name: ${stepName}`,
+        enableMajorityVote ? `Majority Voting: ENABLED (${sampleCount} samples)` : 'Majority Voting: Disabled'
       ].join('\n');
     }
 
@@ -114,7 +130,7 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
       ];
 
       for (const res of summary.stepResults) {
-        lines.push(`  • [${res.stepName}] (${res.durationMs} ms):\n    Output: ${res.responseContent}`);
+        lines.push(`  • [${res.stepName}] (${res.durationMs} ms)${res.majorityVoteApplied ? ` [Vote: ${res.sampledOutputs?.length} samples]` : ''}:\n    Output: ${res.responseContent}`);
       }
 
       return lines.join('\n');
@@ -126,7 +142,7 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
         '  • chain list                                        - List registered workflow chains',
         '  • chain show <id>                                   - View workflow chain details and steps',
         '  • chain create <chain_id> <name> [desc]             - Create a new workflow chain',
-        '  • chain add-step <chain_id> <step_id> [step_name]   - Add a step to workflow chain',
+        '  • chain add-step <chain_id> <step_id> [name] [--vote N] - Add a step to workflow chain',
         '  • chain run <chain_id> [prompt]                     - Execute multi-step workflow chain'
       ].join('\n');
   }

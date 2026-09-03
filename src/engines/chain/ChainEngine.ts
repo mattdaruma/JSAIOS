@@ -1,7 +1,7 @@
 /**
  * JSAIOS - Engine: ChainEngine
  * Core OS domain engine managing multi-step workflow chains, step context configuration,
- * inter-step output propagation, and sequential turn orchestration.
+ * majority voting self-consistency sampling, inter-step output propagation, and sequential turn orchestration.
  * 100% platform-agnostic: zero dependencies on fs, DOM, or process stdout.
  */
 
@@ -111,22 +111,68 @@ export class ChainEngine {
         stepSystemPrompt = packParts.join('\n\n');
       }
 
-      // Execute step turn via ChatEngine or mock fallback
-      let stepOutput = '';
-      if (this.chatEngine && sessionId) {
-        stepOutput = await this.chatEngine.executeTurn({
-          sessionId,
-          userPrompt: assembled.computedUserPrompt,
-          options: step.temperature !== undefined ? { temperature: step.temperature } : undefined
-        });
+      // Execute Majority Voting Sequential Sampling or Standard Turn
+      let finalStepOutput = '';
+      let sampledOutputs: string[] | undefined;
+      const majorityVoteApplied = !!step.enableMajorityVote;
+
+      if (step.enableMajorityVote) {
+        const sampleCount = step.sampleCount || 3;
+        sampledOutputs = [];
+
+        // Sequential sampling to keep VRAM usage flat
+        for (let i = 0; i < sampleCount; i++) {
+          let candidate = '';
+          if (this.chatEngine && sessionId) {
+            candidate = await this.chatEngine.executeTurn({
+              sessionId,
+              userPrompt: assembled.computedUserPrompt,
+              options: { temperature: step.temperature !== undefined ? step.temperature : 0.7 }
+            });
+          } else {
+            candidate = `[Sample ${i + 1} for step '${step.name}': Output text]`;
+          }
+          sampledOutputs.push(candidate);
+        }
+
+        // Consensus Strategy Resolution
+        if (step.voteStrategy === 'exact-match') {
+          // Check for exact string match consensus
+          const counts: Record<string, number> = {};
+          for (const s of sampledOutputs) counts[s] = (counts[s] || 0) + 1;
+          const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+          finalStepOutput = sorted[0] ? sorted[0][0] : sampledOutputs[0];
+        } else {
+          // Default: consensus-critic evaluation pass
+          const candidateList = sampledOutputs.map((s, idx) => `[Candidate ${idx + 1}]:\n${s}`).join('\n\n');
+          const criticPrompt = `Compare these ${sampleCount} candidate responses to the prompt and synthesize/select the single consensus answer:\n\n${candidateList}`;
+
+          if (this.chatEngine && sessionId) {
+            finalStepOutput = await this.chatEngine.executeTurn({
+              sessionId,
+              userPrompt: criticPrompt
+            });
+          } else {
+            finalStepOutput = sampledOutputs[0]; // Fallback mock consensus
+          }
+        }
       } else {
-        stepOutput = `[Step '${step.name}' Output for prompt: "${assembled.computedUserPrompt}"]`;
+        // Standard single execution pass
+        if (this.chatEngine && sessionId) {
+          finalStepOutput = await this.chatEngine.executeTurn({
+            sessionId,
+            userPrompt: assembled.computedUserPrompt,
+            options: step.temperature !== undefined ? { temperature: step.temperature } : undefined
+          });
+        } else {
+          finalStepOutput = `[Step '${step.name}' Output for prompt: "${assembled.computedUserPrompt}"]`;
+        }
       }
 
       // Attempt parsing JSON output if responseJsonSchema or structured response enabled
       let parsedJsonObject: Record<string, any> | undefined;
       try {
-        const jsonMatch = stepOutput.match(/\{[\s\S]*\}/);
+        const jsonMatch = finalStepOutput.match(/\{[\s\S]*\}/);
         if (jsonMatch) parsedJsonObject = JSON.parse(jsonMatch[0]);
       } catch {
         // Fallback
@@ -136,8 +182,10 @@ export class ChainEngine {
         stepId: step.id,
         stepName: step.name,
         outputPrompt: assembled.computedUserPrompt,
-        responseContent: stepOutput,
+        responseContent: finalStepOutput,
         parsedJsonObject,
+        sampledOutputs,
+        majorityVoteApplied,
         durationMs: Date.now() - stepStart
       };
 

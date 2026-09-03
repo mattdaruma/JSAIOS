@@ -11,7 +11,7 @@ export const CHAIN_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   name: 'Multi-Step Workflow Chain Engine',
   version: '1.0.0',
   status: 'running',
-  capabilities: ['multi-step-chains', 'per-step-context-control', 'custom-field-filtering', 'history-turn-capping', 'inter-step-output-pipe'],
+  capabilities: ['multi-step-chains', 'majority-voting-consensus', 'per-step-context-control', 'custom-field-filtering', 'history-turn-capping', 'inter-step-output-pipe'],
   commands: [
     {
       command: 'chain list',
@@ -27,8 +27,9 @@ export const CHAIN_ENGINE_DESCRIPTOR: ServiceDescriptor = {
     },
     {
       command: 'chain add-step <chain_id> <step_id> [step_name]',
-      description: 'Add a step to a workflow chain with context rules',
+      description: 'Add a step to a workflow chain with context rules and majority voting',
       options: [
+        { flag: '--vote <sample_count>', description: 'Enable Majority Voting self-consistency (e.g. --vote 3)' },
         { flag: '--pack <pack_id>', description: 'Attach Context Pack to step' },
         { flag: '--prompt <prompt_id>', description: 'Attach Prompt Template to step' },
         { flag: '--field <key>', description: 'Select specific user custom field' }

@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Chain Engine Types & Interfaces
- * Pure domain contracts for multi-step prompt workflow chains, step context control, step outputs, and storage ports.
+ * Pure domain contracts for multi-step prompt workflow chains, step context control, majority voting, step outputs, and storage ports.
  */
 
 import type { CustomFields } from '../../../kernel/types';
@@ -35,6 +35,11 @@ export interface ChainStep {
   includePreviousStepOutputs?: boolean;
   selectedStepOutputFieldIds?: string[]; // Specific JSON keys from previous step output
 
+  // Majority Voting & Self-Consistency Consensus
+  enableMajorityVote?: boolean;
+  sampleCount?: number; // Default: 3
+  voteStrategy?: 'consensus-critic' | 'exact-match';
+
   // Output Schema & Execution Overrides
   responseJsonSchema?: string;
   enableStructuredResponse?: boolean;
@@ -58,6 +63,8 @@ export interface ChainStepExecutionResult {
   outputPrompt: string;
   responseContent: string;
   parsedJsonObject?: Record<string, any>;
+  sampledOutputs?: string[];
+  majorityVoteApplied?: boolean;
   durationMs: number;
 }
 

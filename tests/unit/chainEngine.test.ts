@@ -81,4 +81,24 @@ describe('JSAIOS ChainEngine Multi-Step Workflow Architecture', () => {
     expect(summary.stepResults[1].stepName).toBe('Second Pass');
     expect(summary.stepResults[1].outputPrompt).toContain('Output from Step \'First Pass\'');
   });
+
+  it('should support Majority Voting sampling on steps', async () => {
+    chainEngine.createChain('voting-chain', 'Majority Vote Chain');
+    chainEngine.addStepToChain('voting-chain', {
+      id: 'step-vote',
+      name: 'Voted Step',
+      enableMajorityVote: true,
+      sampleCount: 3,
+      voteStrategy: 'exact-match'
+    });
+
+    const summary = await chainEngine.executeChain({
+      chainId: 'voting-chain',
+      userPrompt: 'Sample turn'
+    });
+
+    expect(summary.success).toBe(true);
+    expect(summary.stepResults[0].majorityVoteApplied).toBe(true);
+    expect(summary.stepResults[0].sampledOutputs?.length).toBe(3);
+  });
 });
