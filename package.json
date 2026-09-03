@@ -15,7 +15,7 @@
     "build:browser": "vite build --config src/shell/browser/vite.config.ts",
     "build:browser:local": "vite build --config src/shell/browser/vite.config.ts --mode standalone",
     "build:help": "vite build --config src/shell/browser/vite.config.ts --mode help",
-    "test": "vitest run --config src/shell/browser/vitest.config.ts",
+    "test": "vitest run",
     "report:lines": "tsx scripts/countLines.ts"
   },
   "dependencies": {
