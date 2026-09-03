@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { extractWorkflowOptions } from '../../src/services/ai/comfyui/helpers/inspectWorkflow';
 
 describe('ComfyUI Workflow Inspection', () => {
-  it('should extract non-linked node input parameters from workflow API JSON', () => {
+  it('should extract non-linked node input parameters from workflow API JSON (Schema 2)', () => {
     const sampleWorkflowJson = {
       '3': {
         class_type: 'KSampler',
@@ -41,5 +41,33 @@ describe('ComfyUI Workflow Inspection', () => {
     // Ensure linked slot ['4', 0] was ignored
     const modelOpt = options.find((o) => o.inputName === 'model');
     expect(modelOpt).toBeUndefined();
+  });
+
+  it('should extract widget values from ComfyUI Web UI saved workflow JSON (Schema 1)', () => {
+    const sampleUISavedWorkflow = {
+      nodes: [
+        {
+          id: 3,
+          type: 'KSampler',
+          widgets_values: [123456, 'randomize', 20, 8.0, 'euler', 'normal', 1.0]
+        },
+        {
+          id: 6,
+          type: 'CLIPTextEncode',
+          widgets_values: ['a hyperrealistic portrait of an astronaut']
+        }
+      ]
+    };
+
+    const options = extractWorkflowOptions(sampleUISavedWorkflow);
+
+    expect(options.length).toBeGreaterThan(0);
+
+    const promptOpt = options.find((o) => o.nodeId === '6');
+    expect(promptOpt).toBeDefined();
+    expect(promptOpt?.currentValue).toBe('a hyperrealistic portrait of an astronaut');
+
+    const ksamplerOpt = options.find((o) => o.nodeId === '3' && o.currentValue === 123456);
+    expect(ksamplerOpt).toBeDefined();
   });
 });

@@ -23,16 +23,17 @@ export async function handleComfyCLI(service: ComfyUIService, args: string[]): P
       'ComfyUI Server Saved Workflows:',
       ...workflows.map(w => {
         const name = typeof w === 'string' ? w : (w.filename || w.id || JSON.stringify(w));
-        return ` • ${name}`;
+        const cleanName = name.replace(/\.json$/i, '').trim();
+        return ` • ${cleanName}`;
       })
     ].join('\n');
   }
 
   if (sub === 'options' || sub === 'inspect') {
     const rawInput = args.slice(1).join(' ').trim();
-    const cleanWorkflowId = rawInput.replace(/^["']|["']$/g, '').trim();
+    const cleanWorkflowId = rawInput.replace(/^["']|["']$/g, '').replace(/\.json$/i, '').trim();
 
-    if (!cleanWorkflowId) return 'Usage: comfy options <workflow_name> (e.g. comfy options "Text to Image.json")';
+    if (!cleanWorkflowId) return 'Usage: comfy options <workflow_name> (e.g. comfy options "Text to Image")';
     const result = await service.inspectWorkflow(cleanWorkflowId);
 
     if (!result) return `Workflow '${cleanWorkflowId}' not found on ComfyUI server. Use 'comfy workflows' to list available workflows.`;

@@ -23,10 +23,14 @@ export async function fetchComfyWorkflows(endpoint: string): Promise<WorkflowFil
 
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        return data.map((item: any) => ({
-          id: typeof item === 'string' ? item : item.filename || item.name || item.id,
-          filename: typeof item === 'string' ? item : item.filename || item.name || item.id
-        }));
+        return data.map((item: any) => {
+          const rawName = typeof item === 'string' ? item : item.filename || item.name || item.id || '';
+          const cleanName = rawName.replace(/\.json$/i, '').trim();
+          return {
+            id: cleanName,
+            filename: cleanName
+          };
+        });
       }
     } catch {
       // Continue to next candidate URL
