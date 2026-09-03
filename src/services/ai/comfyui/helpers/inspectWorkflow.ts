@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Single-purpose helper: inspectComfyWorkflow
- * Parses a saved ComfyUI workflow JSON graph (supporting UI exports & API prompt graphs) and extracts configurable options.
+ * Parses a saved ComfyUI workflow JSON graph (supporting UI exports, wrapper objects, & API prompt graphs) and extracts configurable options.
  */
 
 export interface WorkflowInputOption {
@@ -17,11 +17,56 @@ export interface WorkflowInspectionResult {
   options: WorkflowInputOption[];
 }
 
+export function resolveGraphRoot(rawResponse: any): any {
+  if (!rawResponse || typeof rawResponse !== 'object') return rawResponse;
+
+  if (rawResponse.workflow && typeof rawResponse.workflow === 'object') {
+    return resolveGraphRoot(rawResponse.workflow);
+  }
+
+  if (typeof rawResponse.json === 'string') {
+    try {
+      return resolveGraphRoot(JSON.parse(rawResponse.json));
+    } catch {}
+  } else if (rawResponse.json && typeof rawResponse.json === 'object') {
+    return resolveGraphRoot(rawResponse.json);
+  }
+
+  if (typeof rawResponse.data === 'string') {
+    try {
+      return resolveGraphRoot(JSON.parse(rawResponse.data));
+    } catch {}
+  } else if (rawResponse.data && typeof rawResponse.data === 'object') {
+    return resolveGraphRoot(rawResponse.data);
+  }
+
+  if (typeof rawResponse.content === 'string') {
+    try {
+      return resolveGraphRoot(JSON.parse(rawResponse.content));
+    } catch {}
+  } else if (rawResponse.content && typeof rawResponse.content === 'object') {
+    return resolveGraphRoot(rawResponse.content);
+  }
+
+  return rawResponse;
+}
+
+const KNOWN_WIDGET_MAPS: Record<string, string[]> = {
+  'KSampler': ['seed', 'control_after_generate', 'steps', 'cfg', 'sampler_name', 'scheduler', 'denoise'],
+  'KSamplerAdvanced': ['add_noise', 'seed', 'control_after_generate', 'steps', 'cfg', 'sampler_name', 'scheduler', 'start_at_step', 'end_at_step', 'return_with_leftover_noise'],
+  'CLIPTextEncode': ['text'],
+  'CheckpointLoaderSimple': ['ckpt_name'],
+  'EmptyLatentImage': ['width', 'height', 'batch_size'],
+  'VAELoader': ['vae_name'],
+  'LoraLoader': ['lora_name', 'strength_model', 'strength_clip']
+};
+
 export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
   const options: WorkflowInputOption[] = [];
-  if (!graphJson || typeof graphJson !== 'object') return options;
+  const root = resolveGraphRoot(graphJson);
+  if (!root || typeof root !== 'object') return options;
 
-  const rawNodes = graphJson.nodes || graphJson.prompt || graphJson;
+  const rawNodes = root.nodes || root.prompt || root;
 
   const processNode = (nodeId: string, classType: string, nodeObj: any) => {
     if (!nodeObj || typeof nodeObj !== 'object') return;
@@ -47,12 +92,14 @@ export function extractWorkflowOptions(graphJson: any): WorkflowInputOption[] {
 
     // 2. Inspect 'widgets_values' (Array or Object of primitive values)
     if (Array.isArray(nodeObj.widgets_values)) {
+      const knownNames = KNOWN_WIDGET_MAPS[classType] || [];
       nodeObj.widgets_values.forEach((val: any, idx: number) => {
         if (val !== undefined && val !== null && typeof val !== 'object') {
+          const name = knownNames[idx] || `widget_${idx + 1}`;
           options.push({
             nodeId,
             classType,
-            inputName: `widget_${idx + 1}`,
+            inputName: name,
             currentValue: val,
             valueType: typeof val
           });
@@ -180,10 +227,11 @@ export async function inspectComfyWorkflow(
     try {
       const res = await fetch(url);
       if (res.ok) {
-        const graph = await res.json();
-        if (graph && typeof graph === 'object') {
-          const options = extractWorkflowOptions(graph);
-          const rawNodes = graph.nodes || graph.prompt || graph;
+        const rawJson = await res.json();
+        if (rawJson && typeof rawJson === 'object') {
+          const root = resolveGraphRoot(rawJson);
+          const options = extractWorkflowOptions(root);
+          const rawNodes = root.nodes || root.prompt || root;
           const nodeCount = Array.isArray(rawNodes)
             ? rawNodes.length
             : Object.keys(rawNodes).length;
