@@ -1,16 +1,41 @@
 /**
  * JSAIOS - Single-purpose helper: generateComfyUIMedia
- * Posts workflow execution graph to ComfyUI /prompt endpoint.
+ * Fetches target workflow from ComfyUI server, applies default graph baseline values + CLI overrides,
+ * and posts execution graph to ComfyUI /prompt endpoint.
  */
 
 import type { MediaGenerationRequest, MediaGenerationResponse } from '../../AIService';
 import { buildText2ImgWorkflow } from './buildWorkflow';
+import { inspectComfyWorkflow } from './inspectWorkflow';
+import { applyWorkflowOverrides } from './applyWorkflowOverrides';
 
 export async function generateComfyUIMedia(
   endpoint: string,
   request: MediaGenerationRequest
 ): Promise<MediaGenerationResponse> {
-  const promptGraph = request.workflowGraph || buildText2ImgWorkflow(request);
+  let promptGraph: any = undefined;
+
+  const targetWorkflowName = request.workflowName || request.model;
+
+  if (targetWorkflowName) {
+    const rawResult = await inspectComfyWorkflow(endpoint, targetWorkflowName);
+    if (rawResult) {
+      // Re-fetch raw graph JSON to apply overrides
+      const cleanName = targetWorkflowName.replace(/^["']|["']$/g, '').replace(/\.json$/i, '').trim();
+      const encodedSubdirPath = encodeURIComponent(`workflows/${cleanName}.json`);
+      try {
+        const res = await fetch(`${endpoint}/userdata/${encodedSubdirPath}`);
+        if (res.ok) {
+          const rawGraph = await res.json();
+          promptGraph = applyWorkflowOverrides(rawGraph, request);
+        }
+      } catch {}
+    }
+  }
+
+  if (!promptGraph) {
+    promptGraph = request.workflowGraph || buildText2ImgWorkflow(request);
+  }
 
   const res = await fetch(`${endpoint}/prompt`, {
     method: 'POST',

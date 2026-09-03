@@ -12,6 +12,7 @@ export interface ParsedComfyPrompt {
 }
 
 export function parseComfyOptions(rawTokens: string[]): ParsedComfyPrompt {
+  let workflowName: string | undefined = undefined;
   let negativePrompt: string | undefined = undefined;
   let steps: number | undefined = undefined;
   let cfg: number | undefined = undefined;
@@ -22,6 +23,8 @@ export function parseComfyOptions(rawTokens: string[]): ParsedComfyPrompt {
   let checkpoint: string | undefined = undefined;
   const customNodeOptions: Record<string, any> = {};
   const promptParts: string[] = [];
+
+  let isFirstPositional = true;
 
   for (let i = 0; i < rawTokens.length; i++) {
     const token = rawTokens[i];
@@ -59,18 +62,19 @@ export function parseComfyOptions(rawTokens: string[]): ParsedComfyPrompt {
         customNodeOptions[paramKey] = !isNaN(num) && paramVal.trim() !== '' ? num : paramVal;
       }
     } else {
-      promptParts.push(token);
+      if (isFirstPositional) {
+        workflowName = token.replace(/^["']|["']$/g, '');
+        isFirstPositional = false;
+      } else {
+        promptParts.push(token);
+      }
     }
-  }
-
-  const promptText = promptParts.join(' ');
-  if (!promptText && Object.keys(customNodeOptions).length === 0) {
-    return { request: {} as any, error: 'Error: Prompt text cannot be empty after options flags.' };
   }
 
   return {
     request: {
-      prompt: promptText || 'Generation Task',
+      workflowName,
+      prompt: promptParts.join(' ') || 'Generation Task',
       negativePrompt,
       steps,
       cfg,
