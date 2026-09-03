@@ -39,27 +39,27 @@ export class ComfyUIService extends AIService {
       commands: [
         {
           command: 'comfy status',
-          description: 'Check status of local ComfyUI server'
+          description: 'Check connectivity and health of local ComfyUI server'
         },
         {
           command: 'comfy workflows',
-          description: 'List saved workflow templates on server'
+          description: 'List saved node workflow templates on local ComfyUI server'
         },
         {
           command: 'comfy options <workflow>',
-          description: 'Inspect exposed input parameters for workflow template'
+          description: 'Inspect exposed input parameters and node structure for workflow template'
         },
         {
           command: 'comfy prompt [options] <text>',
-          description: 'Submit media generation task to ComfyUI',
+          description: 'Submit media generation task to ComfyUI node graph pipeline',
           options: [
-            { flag: '--neg "<prompt>"', description: 'Negative prompt string' },
-            { flag: '--steps <num>', description: 'Denoising sampler steps integer' },
-            { flag: '--cfg <num>', description: 'Classifier-free guidance float' },
-            { flag: '--width <num>', description: 'Output image width pixels' },
-            { flag: '--height <num>', description: 'Output image height pixels' },
+            { flag: '--neg "<prompt>"', description: 'Negative prompt string (unwanted features)' },
+            { flag: '--steps <num>', description: 'Denoising sampler steps integer (e.g. 20)' },
+            { flag: '--cfg <num>', description: 'Classifier-free guidance float (e.g. 7.5)' },
+            { flag: '--width <num>', description: 'Output image width pixels (e.g. 512, 1024)' },
+            { flag: '--height <num>', description: 'Output image height pixels (e.g. 512, 1024)' },
             { flag: '--seed <num>', description: 'Random seed integer' },
-            { flag: '--sampler <name>', description: 'Sampler name (euler, dpmpp_2m, etc.)' },
+            { flag: '--sampler <name>', description: 'Sampler algorithm (euler, dpmpp_2m, k_euler_ancestral)' },
             { flag: '--ckpt <name>', description: 'Model checkpoint safetensors filename' }
           ]
         }

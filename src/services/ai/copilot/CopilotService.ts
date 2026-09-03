@@ -20,21 +20,21 @@ export class CopilotService implements AIService {
       name: 'GitHub Copilot AI Service',
       version: '1.0.0',
       status: this.status,
-      capabilities: ['text-generation', 'chat', 'code-synthesis'],
+      capabilities: ['text-generation', 'chat', 'code-synthesis', 'models-list'],
       commands: [
         {
           command: 'copilot status',
-          description: 'Check Copilot REST API authorization and connectivity'
+          description: 'Check GitHub Copilot REST API authorization and token status'
         },
         {
           command: 'copilot models',
-          description: 'List available GitHub Copilot models (gpt-4o, claude-3.5-sonnet, etc.)'
+          description: 'List available GitHub Copilot models (gpt-4o, claude-3.5-sonnet, o3-mini, etc.)'
         },
         {
           command: 'copilot prompt <model> [options] <text>',
-          description: 'Send prompt to GitHub Copilot model (e.g. gpt-4o)',
+          description: 'Send direct prompt turn to a GitHub Copilot model',
           options: [
-            { flag: '--system "<text>", -s', description: 'Set custom system directive prompt' }
+            { flag: '-s, --system "<text>"', description: 'Set custom system directive prompt' }
           ]
         }
       ]

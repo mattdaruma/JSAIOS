@@ -21,21 +21,21 @@ export class OllamaService implements AIService {
       name: 'Ollama Transport Driver',
       version: '1.0.0',
       status: 'running',
-      capabilities: ['text-generation', 'streaming', 'chat', 'model-enumeration'],
+      capabilities: ['text-generation', 'streaming', 'chat', 'model-enumeration', 'thinking-mode'],
       commands: [
         {
           command: 'ollama status',
-          description: 'Ping local Ollama LLM provider health'
+          description: 'Ping local Ollama LLM provider REST API health'
         },
         {
           command: 'ollama models',
-          description: 'List available Ollama models'
+          description: 'List locally pulled Ollama models available for inference'
         },
         {
           command: 'ollama run <model> <prompt>',
-          description: 'Send prompt turn to Ollama model directly',
+          description: 'Send direct prompt turn to an Ollama model',
           options: [
-            { flag: '--think [true|false]', description: 'Toggle model thinking reasoning mode' }
+            { flag: '--think [true|false]', description: 'Toggle model thinking/reasoning mode (qwen, deepseek)' }
           ]
         }
       ]

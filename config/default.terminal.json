@@ -192,6 +192,124 @@
           "description": "Execute all steps in a multi-step workflow chain sequentially"
         }
       ]
+    },
+    "ollama": {
+      "id": "ollama",
+      "name": "Ollama Transport Driver",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["text-generation", "streaming", "chat", "model-enumeration", "thinking-mode"],
+      "commands": [
+        {
+          "command": "ollama status",
+          "description": "Ping local Ollama LLM provider REST API health"
+        },
+        {
+          "command": "ollama models",
+          "description": "List locally pulled Ollama models available for inference"
+        },
+        {
+          "command": "ollama run <model> <prompt>",
+          "description": "Send direct prompt turn to an Ollama model",
+          "options": [
+            { "flag": "--think [true|false]", "description": "Toggle model thinking/reasoning mode (qwen, deepseek)" }
+          ]
+        }
+      ]
+    },
+    "comfy": {
+      "id": "comfyui",
+      "name": "ComfyUI Transport Driver",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["workflow-execution", "media-generation", "image-synthesis"],
+      "commands": [
+        {
+          "command": "comfy status",
+          "description": "Check connectivity and health of local ComfyUI server"
+        },
+        {
+          "command": "comfy workflows",
+          "description": "List saved node workflow templates on local ComfyUI server"
+        },
+        {
+          "command": "comfy options <workflow>",
+          "description": "Inspect exposed input parameters and node structure for workflow template"
+        },
+        {
+          "command": "comfy prompt [options] <text>",
+          "description": "Submit media generation task to ComfyUI node graph pipeline",
+          "options": [
+            { "flag": "--neg \"<prompt>\"", "description": "Negative prompt string (unwanted features)" },
+            { "flag": "--steps <num>", "description": "Denoising sampler steps integer (e.g. 20)" },
+            { "flag": "--cfg <num>", "description": "Classifier-free guidance float (e.g. 7.5)" },
+            { "flag": "--width <num>", "description": "Output image width pixels (e.g. 512, 1024)" },
+            { "flag": "--height <num>", "description": "Output image height pixels (e.g. 512, 1024)" },
+            { "flag": "--seed <num>", "description": "Random seed integer" },
+            { "flag": "--sampler <name>", "description": "Sampler algorithm (euler, dpmpp_2m, k_euler_ancestral)" },
+            { "flag": "--ckpt <name>", "description": "Model checkpoint safetensors filename" }
+          ]
+        }
+      ]
+    },
+    "comfyui": {
+      "id": "comfyui",
+      "name": "ComfyUI Transport Driver",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["workflow-execution", "media-generation", "image-synthesis"],
+      "commands": [
+        {
+          "command": "comfy status",
+          "description": "Check connectivity and health of local ComfyUI server"
+        },
+        {
+          "command": "comfy workflows",
+          "description": "List saved node workflow templates on local ComfyUI server"
+        },
+        {
+          "command": "comfy options <workflow>",
+          "description": "Inspect exposed input parameters and node structure for workflow template"
+        },
+        {
+          "command": "comfy prompt [options] <text>",
+          "description": "Submit media generation task to ComfyUI node graph pipeline",
+          "options": [
+            { "flag": "--neg \"<prompt>\"", "description": "Negative prompt string (unwanted features)" },
+            { "flag": "--steps <num>", "description": "Denoising sampler steps integer (e.g. 20)" },
+            { "flag": "--cfg <num>", "description": "Classifier-free guidance float (e.g. 7.5)" },
+            { "flag": "--width <num>", "description": "Output image width pixels (e.g. 512, 1024)" },
+            { "flag": "--height <num>", "description": "Output image height pixels (e.g. 512, 1024)" },
+            { "flag": "--seed <num>", "description": "Random seed integer" },
+            { "flag": "--sampler <name>", "description": "Sampler algorithm (euler, dpmpp_2m, k_euler_ancestral)" },
+            { "flag": "--ckpt <name>", "description": "Model checkpoint safetensors filename" }
+          ]
+        }
+      ]
+    },
+    "copilot": {
+      "id": "copilot",
+      "name": "GitHub Copilot AI Service",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["text-generation", "chat", "code-synthesis", "models-list"],
+      "commands": [
+        {
+          "command": "copilot status",
+          "description": "Check GitHub Copilot REST API authorization and token status"
+        },
+        {
+          "command": "copilot models",
+          "description": "List available GitHub Copilot models (gpt-4o, claude-3.5-sonnet, o3-mini, etc.)"
+        },
+        {
+          "command": "copilot prompt <model> [options] <text>",
+          "description": "Send direct prompt turn to a GitHub Copilot model",
+          "options": [
+            { "flag": "-s, --system \"<text>\"", "description": "Set custom system directive prompt" }
+          ]
+        }
+      ]
     }
   }
 }
