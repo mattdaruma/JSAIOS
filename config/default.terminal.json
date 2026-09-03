@@ -280,6 +280,10 @@
           "description": "Check connectivity and health of local ComfyUI server"
         },
         {
+          "command": "comfy models",
+          "description": "List installed model checkpoints on local ComfyUI server"
+        },
+        {
           "command": "comfy workflows",
           "description": "List saved node workflow templates on local ComfyUI server"
         },
@@ -313,6 +317,10 @@
         {
           "command": "comfy status",
           "description": "Check connectivity and health of local ComfyUI server"
+        },
+        {
+          "command": "comfy models",
+          "description": "List installed model checkpoints on local ComfyUI server"
         },
         {
           "command": "comfy workflows",

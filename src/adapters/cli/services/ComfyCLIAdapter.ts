@@ -16,6 +16,15 @@ export async function handleComfyCLI(service: ComfyUIService, args: string[]): P
       : 'ComfyUI Service: UNREACHABLE (Is ComfyUI running on http://localhost:8188?)';
   }
 
+  if (sub === 'models' || sub === 'checkpoints' || sub === 'ckpts') {
+    const models = await service.getModels();
+    if (models.length === 0) return 'No installed model checkpoints reported by ComfyUI server (/object_info/CheckpointLoaderSimple).';
+    return [
+      `Available ComfyUI Checkpoints (${models.length}):`,
+      ...models.map(m => ` • ${m.name}`)
+    ].join('\n');
+  }
+
   if (sub === 'workflows' || sub === 'templates') {
     const workflows = await service.getWorkflows();
     if (workflows.length === 0) return 'No saved workflows reported by ComfyUI server (/userdata?dir=workflows/).';
@@ -73,5 +82,5 @@ export async function handleComfyCLI(service: ComfyUIService, args: string[]): P
     }
   }
 
-  return `Unknown ComfyUI command '${sub}'. Use 'comfy status', 'comfy workflows', 'comfy options <workflow>', or 'comfy prompt [options] <text>'.`;
+  return `Unknown ComfyUI command '${sub}'. Use 'comfy status', 'comfy models', 'comfy workflows', 'comfy options <workflow>', or 'comfy prompt [options] <text>'.`;
 }
