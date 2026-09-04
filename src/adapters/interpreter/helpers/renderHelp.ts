@@ -73,3 +73,43 @@ export function suggestFuzzyTarget(query: string, availableTargets: string[]): s
   lines.push("Type 'help' to view all top-level commands, engines, and active service drivers.");
   return lines.join('\n');
 }
+
+export function handleHelpCommand(args: string[], config: any, formatter: any): string {
+  const target = args[0]?.toLowerCase()?.trim();
+
+  if (!target) {
+    const lines: string[] = [
+      formatter.formatHeader('======================================================================='),
+      ` JSAIOS HoneyKernel Core Terminal Reference`,
+      formatter.formatHeader('======================================================================='),
+      ' Core System Commands:'
+    ];
+
+    for (const b of config.builtins || []) {
+      const padding = ' '.repeat(Math.max(2, 30 - b.command.length));
+      lines.push(`  ${formatter.formatCLICommand(b.command)}${padding}- ${b.description}`);
+    }
+
+    lines.push(formatter.formatHeader('\n======================================================================='));
+    lines.push(` 💡 Tip: Type 'help <target>' (e.g. 'help chat', 'help services', 'help ollama')`);
+    lines.push('        for detailed subcommands, arguments, and options.');
+    lines.push(formatter.formatHeader('======================================================================='));
+    return lines.join('\n');
+  }
+
+  if (config.descriptors?.[target]) {
+    return renderDescriptorHelp(config.descriptors[target]);
+  }
+
+  const builtin = (config.builtins || []).find((b: any) => b.command.toLowerCase().split(' ')[0] === target);
+  if (builtin) {
+    return renderCoreCommandHelp(builtin);
+  }
+
+  const available = [
+    ...(config.builtins || []).map((b: any) => b.command.split(' ')[0]),
+    ...Object.keys(config.descriptors || {})
+  ];
+
+  return suggestFuzzyTarget(target, available);
+}

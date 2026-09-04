@@ -98,6 +98,13 @@ export class HoneyKernel {
   }
 
   /**
+   * List all registered micro-services
+   */
+  public listServices(): IKernelService[] {
+    return this.registry.listServices();
+  }
+
+  /**
    * Get overall kernel status and metrics
    */
   public getStatus(): KernelStatus {

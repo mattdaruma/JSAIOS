@@ -54,6 +54,12 @@ export function parseChatCLIArgs(tokens: string[], providerId: string = 'ollama'
       result.model = tokens[++i];
     } else if (token === '--system' || token === '-s') {
       result.systemDirective = tokens[++i];
+    } else if (token === '--pack' || token === '--context-pack') {
+      const val = tokens[++i];
+      result.options.contextPackId = val && val.toLowerCase() !== 'none' && val.toLowerCase() !== 'null' ? val : undefined;
+    } else if (token === '--chain') {
+      const val = tokens[++i];
+      result.options.chainId = val && val.toLowerCase() !== 'none' && val.toLowerCase() !== 'null' ? val : undefined;
     } else if (token === '--temp' || token === '-t') {
       const parsedVal = parseOptionalFloat(tokens[++i]);
       if (parsedVal.present) result.options.temperature = parsedVal.val;

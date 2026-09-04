@@ -17,6 +17,9 @@ export interface ChatSessionOptions {
   maxTurns?: number;
   maxChars?: number;
   maxHistory?: number;
+  // Subsystem Association Options
+  contextPackId?: string;
+  chainId?: string;
   // OpenAI Standard Options
   temperature?: number;
   topP?: number;
@@ -39,6 +42,8 @@ export interface ChatSessionData {
   name: string;
   providerId: string;
   model: string;
+  contextPackId?: string;
+  chainId?: string;
   systemDirective?: string;
   messages: ChatMessage[];
   options: ChatSessionOptions;

@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Core Domain Engine: ChatEngine
- * Platform-agnostic multi-turn AI chat orchestration engine.
+ * Platform-agnostic multi-turn AI chat orchestration engine with optional Context Pack and Workflow Chain associations.
  */
 
 import { ChatSession } from './helpers/ChatSession';
@@ -9,18 +9,34 @@ import { sanitizeSessionId } from './helpers/sanitizeId';
 import type { ChatTurnParams, ChatSessionOptions, IChatSessionStorage } from './helpers/types';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { AIService } from '../../services/ai/AIService';
+import type { ContextEngine } from '../context/ContextEngine';
+import type { ChainEngine } from '../chain/ChainEngine';
 
 export class ChatEngine {
   private kernel: HoneyKernel;
   private storage?: IChatSessionStorage;
+  private contextEngine?: ContextEngine;
+  private chainEngine?: ChainEngine;
   private sessions: Map<string, ChatSession> = new Map();
   private activeSessionId?: string;
   private designatedDefaultSessionId?: string;
 
-  constructor(kernel: HoneyKernel, storage?: IChatSessionStorage) {
+  constructor(
+    kernel: HoneyKernel,
+    storage?: IChatSessionStorage,
+    contextEngine?: ContextEngine,
+    chainEngine?: ChainEngine
+  ) {
     this.kernel = kernel;
     this.storage = storage;
+    this.contextEngine = contextEngine;
+    this.chainEngine = chainEngine;
     this.initSessionsFromStorage();
+  }
+
+  public setDependencies(contextEngine?: ContextEngine, chainEngine?: ChainEngine): void {
+    if (contextEngine) this.contextEngine = contextEngine;
+    if (chainEngine) this.chainEngine = chainEngine;
   }
 
   public getStorage(): IChatSessionStorage | undefined {
@@ -100,37 +116,41 @@ export class ChatEngine {
 
     if (updates.providerId) session.providerId = updates.providerId;
     if (updates.model) session.model = updates.model;
-    if (updates.systemDirective !== undefined) session.setSystemDirective(updates.systemDirective);
-    if (updates.options) session.options = mergeChatOptions(session.options, updates.options);
+    if (updates.systemDirective) session.setSystemDirective(updates.systemDirective);
+    if (updates.options) session.updateOptions(updates.options);
 
     session.updatedAt = Date.now();
     this.persistSession(session);
     return session;
   }
 
-  public getActiveSession(): ChatSession | null {
-    if (!this.activeSessionId && this.sessions.size > 0) {
-      this.activeSessionId = this.designatedDefaultSessionId && this.sessions.has(this.designatedDefaultSessionId)
-        ? this.designatedDefaultSessionId
-        : Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt)[0].id;
+  public getActiveSession(): ChatSession | undefined {
+    if (this.activeSessionId && this.sessions.has(this.activeSessionId)) {
+      return this.sessions.get(this.activeSessionId);
     }
-    if (!this.activeSessionId) return null;
-    return this.sessions.get(this.activeSessionId) || null;
+    const all = Array.from(this.sessions.values());
+    if (all.length > 0) {
+      this.activeSessionId = all[0].id;
+      return all[0];
+    }
+    return undefined;
   }
 
   public setActiveSession(idOrName: string): boolean {
     const id = sanitizeSessionId(idOrName);
-    const session = this.sessions.get(id) || Array.from(this.sessions.values()).find((s) => s.name.toLowerCase() === idOrName.toLowerCase());
-
-    if (session) {
-      this.activeSessionId = session.id;
-      this.designatedDefaultSessionId = session.id;
-      session.updatedAt = Date.now();
-      this.persistSession(session);
+    if (this.sessions.has(id)) {
+      this.activeSessionId = id;
+      this.designatedDefaultSessionId = id;
       this.persistSettings();
       return true;
     }
     return false;
+  }
+
+  public getSessionHistory(idOrName: string): any[] | undefined {
+    const id = sanitizeSessionId(idOrName);
+    const session = this.sessions.get(id);
+    return session ? session.messages : undefined;
   }
 
   public deleteSession(idOrName: string): boolean {
@@ -164,14 +184,38 @@ export class ChatEngine {
     session.addMessage('user', params.userPrompt, params.images);
     this.persistSession(session);
 
+    const mergedOptions = mergeChatOptions(session.options, params.turnOptions);
+    const targetChainId = mergedOptions.chainId || session.chainId;
+
+    // Delegate to Workflow Chain Engine if a chain association exists
+    if (targetChainId && this.chainEngine) {
+      const chainSummary = await this.chainEngine.executeChain({
+        chainId: targetChainId,
+        sessionId: session.id,
+        userPrompt: params.userPrompt
+      });
+      const chainOutput = chainSummary.finalOutput || `[Chain '${targetChainId}' completed successfully]`;
+      session.addMessage('assistant', chainOutput);
+      this.persistSession(session);
+      return chainOutput;
+    }
+
     const providerId = session.providerId || 'ollama';
     const aiService = this.kernel.getService<AIService>(providerId);
     if (!aiService) throw new Error(`AI Service provider '${providerId}' is not registered or active in HoneyKernel.`);
 
-    const systemMsg = session.messages.find((m) => m.role === 'system');
-    const nonSystemMsgs = session.messages.filter((m) => m.role !== 'system');
-    const mergedOptions = mergeChatOptions(session.options, params.turnOptions);
+    let systemMsgContent = session.messages.find((m) => m.role === 'system')?.content;
+    const targetPackId = mergedOptions.contextPackId || session.contextPackId;
 
+    // Dynamically assemble Context Pack system prompt if associated
+    if (targetPackId && this.contextEngine) {
+      const assembled = this.contextEngine.assembleContext({ packId: targetPackId });
+      if (assembled.systemPrompt) {
+        systemMsgContent = assembled.systemPrompt;
+      }
+    }
+
+    const nonSystemMsgs = session.messages.filter((m) => m.role !== 'system');
     let turnHistory = nonSystemMsgs;
     const historyLimit = mergedOptions.maxHistory;
     if (historyLimit !== undefined && historyLimit !== null && historyLimit >= 0) {
@@ -185,7 +229,7 @@ export class ChatEngine {
     const req = buildTextGenRequest(
       session.model,
       conversationTurns,
-      systemMsg?.content,
+      systemMsgContent,
       mergedOptions,
       params.images
     );

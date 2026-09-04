@@ -8,6 +8,8 @@ import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import { ChatEngine } from '../../engines/chat/ChatEngine';
 import { FileSessionStorage } from '../storage/FileSessionStorage';
+import type { ContextEngine } from '../../engines/context/ContextEngine';
+import type { ChainEngine } from '../../engines/chain/ChainEngine';
 
 let globalChatEngine: ChatEngine | null = null;
 
@@ -15,7 +17,11 @@ export function resetChatEngineForTesting(engine?: ChatEngine | null): void {
   globalChatEngine = engine || null;
 }
 
-export function getOrCreateChatEngine(kernel: HoneyKernel): ChatEngine {
+export function getOrCreateChatEngine(
+  kernel: HoneyKernel,
+  contextEngine?: ContextEngine,
+  chainEngine?: ChainEngine
+): ChatEngine {
   if (!globalChatEngine) {
     let storageDir = 'chat-sessions';
     try {
@@ -33,7 +39,9 @@ export function getOrCreateChatEngine(kernel: HoneyKernel): ChatEngine {
       // Fallback
     }
     const storageDriver = new FileSessionStorage(storageDir);
-    globalChatEngine = new ChatEngine(kernel, storageDriver);
+    globalChatEngine = new ChatEngine(kernel, storageDriver, contextEngine, chainEngine);
+  } else {
+    globalChatEngine.setDependencies(contextEngine, chainEngine);
   }
   return globalChatEngine;
 }

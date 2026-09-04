@@ -11,73 +11,51 @@ export function getCompletions(
   config: TerminalManifestConfig,
   kernel: HoneyKernel
 ): [string[], string] {
-  const trimmed = line.trimStart();
+  const safeLine = line || '';
+  const trimmed = safeLine.trimStart();
   if (!trimmed) {
     const allTopLevel = [
-      ...config.builtins.map(b => b.command.split(' ')[0]),
+      ...(config.builtins || []).map(b => b.command.split(' ')[0]),
       ...Object.keys(config.descriptors || {})
     ];
-    return [Array.from(new Set(allTopLevel)), line];
+    return [Array.from(new Set(allTopLevel)), safeLine];
   }
 
   const parts = trimmed.split(/\s+/);
 
-  if (parts.length === 1 && !line.endsWith(' ')) {
+  if (parts.length === 1 && !safeLine.endsWith(' ')) {
     const query = parts[0].toLowerCase();
-    const candidates = new Set<string>();
-
-    for (const b of config.builtins) {
-      const cmdName = b.command.split(' ')[0];
-      if (cmdName.toLowerCase().startsWith(query)) candidates.add(cmdName);
-    }
-
-    for (const dKey of Object.keys(config.descriptors || {})) {
-      if (dKey.toLowerCase().startsWith(query)) candidates.add(dKey);
-    }
-
-    const activeServices = kernel.getStatus().activeServices;
-    for (const s of activeServices) {
-      if (s.id.toLowerCase().startsWith(query)) candidates.add(s.id);
-    }
-
-    return [Array.from(candidates), line];
+    const candidates = [
+      ...(config.builtins || []).map(b => b.command.split(' ')[0]),
+      ...Object.keys(config.descriptors || {})
+    ];
+    const matches = Array.from(new Set(candidates.filter(c => c.toLowerCase().startsWith(query))));
+    return [matches, safeLine];
   }
 
-  const mainCmd = parts[0].toLowerCase();
-  const subQuery = parts.slice(1).join(' ').toLowerCase();
+  const root = parts[0].toLowerCase();
 
-  if (mainCmd === 'help') {
-    const targets = new Set<string>();
-    for (const b of config.builtins) {
-      const name = b.command.split(' ')[0];
-      if (name !== 'help' && name.toLowerCase().startsWith(subQuery)) targets.add(`help ${name}`);
-    }
-    for (const dKey of Object.keys(config.descriptors || {})) {
-      if (dKey.toLowerCase().startsWith(subQuery)) targets.add(`help ${dKey}`);
-    }
-    const activeServices = kernel.getStatus().activeServices;
-    for (const s of activeServices) {
-      if (s.id.toLowerCase().startsWith(subQuery)) targets.add(`help ${s.id}`);
-    }
-    return [Array.from(targets), line];
+  if (root === 'help') {
+    const availableTargets = [
+      ...(config.builtins || []).map(b => b.command.split(' ')[0]),
+      ...Object.keys(config.descriptors || {})
+    ];
+    const subQuery = parts.slice(1).join(' ').toLowerCase();
+    const matches = Array.from(new Set(availableTargets.filter(t => t.toLowerCase().startsWith(subQuery))));
+    return [matches.map(m => `help ${m}`), safeLine];
   }
 
-  const descriptor = config.descriptors?.[mainCmd];
+  const descriptor = config.descriptors?.[root];
   if (descriptor && descriptor.commands) {
-    const subCandidates = new Set<string>();
-    for (const c of descriptor.commands) {
-      const subFull = c.command;
-      if (subFull.toLowerCase().startsWith(trimmed.toLowerCase())) {
-        const subTokens = subFull.split(/\s+/);
-        if (subTokens.length >= 2) {
-          subCandidates.add(`${subTokens[0]} ${subTokens[1]}`);
-        }
-      }
-    }
-    if (subCandidates.size > 0) {
-      return [Array.from(subCandidates), line];
-    }
+    const subQuery = parts.slice(1).join(' ').toLowerCase();
+    const subCmds = descriptor.commands.map(c => {
+      const tokens = c.command.split(' ');
+      return tokens[1] || '';
+    }).filter(Boolean);
+
+    const matches = Array.from(new Set(subCmds.filter(sc => sc.toLowerCase().startsWith(subQuery))));
+    return [matches.map(m => `${root} ${m}`), safeLine];
   }
 
-  return [[], line];
+  return [[], safeLine];
 }

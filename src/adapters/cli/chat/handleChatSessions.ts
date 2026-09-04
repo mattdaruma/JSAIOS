@@ -11,7 +11,10 @@ export function handleChatNewSession(engine: ChatEngine, args: string[]): string
   const parsed = parseChatCLIArgs(args);
   const name = parsed.cleanTextParts.join(' ').trim() || 'default';
   const session = engine.createSession(name, parsed.providerId || 'ollama', parsed.model || 'llama3', parsed.systemDirective, parsed.options);
-  return `Created new chat session '${session.name}' (ID: ${session.id}) using provider '${session.providerId}' (Model: ${session.model}).`;
+  let msg = `Created new chat session '${session.name}' (ID: ${session.id}) using provider '${session.providerId}' (Model: ${session.model}).`;
+  if (session.contextPackId) msg += ` [Context Pack: ${session.contextPackId}]`;
+  if (session.chainId) msg += ` [Chain: ${session.chainId}]`;
+  return msg;
 }
 
 export function handleChatListSessions(engine: ChatEngine): string {
@@ -23,7 +26,10 @@ export function handleChatListSessions(engine: ChatEngine): string {
     'Active JSAIOS Chat Sessions:',
     ...sessions.map((s) => {
       const turnCount = (s.messages || []).length;
-      return ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (Provider: ${s.providerId}, Model: ${s.model}, Turns: ${turnCount})${s.id === defaultId ? ' [DEFAULT]' : ''}`;
+      const packTag = s.contextPackId || s.options?.contextPackId ? ` Pack: ${s.contextPackId || s.options?.contextPackId}` : '';
+      const chainTag = s.chainId || s.options?.chainId ? ` Chain: ${s.chainId || s.options?.chainId}` : '';
+      const assoc = packTag || chainTag ? ` (${[packTag, chainTag].filter(Boolean).join(',')})` : '';
+      return ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (Provider: ${s.providerId}, Model: ${s.model}, Turns: ${turnCount})${assoc}${s.id === defaultId ? ' [DEFAULT]' : ''}`;
     })
   ].join('\n');
 }

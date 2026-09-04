@@ -1,24 +1,24 @@
 /**
- * JSAIOS - Adapter: CommandInterpreter
- * Data-Driven Generic Terminal & Server Command Interpreter.
- * Parses interactive shell and server REST command inputs and dispatches commands dynamically via HoneyKernel and declarative JSON manifests.
+ * JSAIOS - Single-purpose adapter: CommandInterpreter
+ * Parses CLI inputs into single-purpose command handlers and manages command routing.
  */
 
 import fs from 'fs';
 import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { ServiceDescriptor, CommandDoc } from '../../kernel/types';
+import { getTerminalFormatter } from '../../shell/terminal/helpers/getTerminalFormatter';
 import { handleChatCLI } from '../cli/chat/ChatCLIAdapter';
 import { handleOllamaCLI } from '../cli/services/OllamaCLIAdapter';
 import { handleComfyCLI } from '../cli/services/ComfyCLIAdapter';
 import { handleCopilotCLI } from '../cli/services/CopilotCLIAdapter';
-import { handleContextCommand } from '../../shell/terminal/commands/context/index';
-import { handleChainCommand } from '../../shell/terminal/commands/chain/index';
-import { handlePlayJingle } from '../../shell/terminal/commands/playJingle';
-import { renderDescriptorHelp, renderCoreCommandHelp, suggestFuzzyTarget } from './helpers/renderHelp';
-import { getCompletions as computeCompletions } from './helpers/getCompletions';
+import { handleContextCommand } from '../../shell/terminal/commands/context';
+import { handleChainCommand } from '../../shell/terminal/commands/chain';
+import { handleHelpCommand } from './helpers/renderHelp';
+import { getCompletions } from './helpers/getCompletions';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import { ChainEngine } from '../../engines/chain/ChainEngine';
+import { getOrCreateChatEngine } from '../factories/createChatEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
 import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
 import type { CopilotService } from '../../services/ai/copilot/CopilotService';
@@ -61,6 +61,8 @@ export class CommandInterpreter {
 
   constructor(private kernel: HoneyKernel, manifestPath?: string) {
     this.loadManifest(manifestPath);
+    const chatEngine = getOrCreateChatEngine(kernel, this.contextEngine, this.chainEngine);
+    this.chainEngine = new ChainEngine(kernel, chatEngine, this.contextEngine);
   }
 
   private loadManifest(customManifestPath?: string): void {
@@ -94,143 +96,84 @@ export class CommandInterpreter {
   }
 
   public getCompletions(line: string): [string[], string] {
-    return computeCompletions(line, this.config, this.kernel);
+    return getCompletions(line, this.config, this.kernel);
   }
 
   public async execute(
-    input: string,
-    onStreamChunk?: (chunkText: string) => void
+    commandLine: string,
+    onChunk?: (chunkText: string) => void
   ): Promise<string> {
-    const trimmed = input.trim();
-    if (!trimmed) return '';
+    const rawTokens = commandLine.trim().split(/\s+/).filter(Boolean);
+    if (rawTokens.length === 0) return '';
 
-    const args = trimmed.split(/\s+/);
-    const mainCommand = args[0].toLowerCase();
+    const rootCommand = rawTokens[0].toLowerCase();
+    const args = rawTokens.slice(1);
+    const formatter = getTerminalFormatter(this.config.defaultEnvironment);
 
-    switch (mainCommand) {
+    switch (rootCommand) {
       case 'help':
-        if (args[1]) return this.handleTargetHelp(args[1]);
-        return this.handleHelp();
-      case 'status':
-        return this.handleStatus();
-      case 'services':
-        if (args[1] === 'help') return this.handleTargetHelp('services');
-        return this.handleServices();
-      case 'context':
-        if (args[1] === 'help') return this.handleTargetHelp('context');
-        return handleContextCommand(args.slice(1), this.contextEngine);
-      case 'chain':
-        if (args[1] === 'help') return this.handleTargetHelp('chain');
-        return await handleChainCommand(args.slice(1), this.chainEngine);
-      case 'jingle':
-        return handlePlayJingle();
+        return handleHelpCommand(args, this.config, formatter);
+
       case 'clear':
         return '__CLEAR__';
+
+      case 'status': {
+        const status = this.kernel.getStatus();
+        const activeServices = status.activeServices || [];
+        return [
+          formatter.formatHeader(`=== JSAIOS HoneyKernel Status ===`),
+          `State              : ${status.booted ? 'ACTIVE' : 'STOPPED'}`,
+          `Uptime             : ${status.uptimeSeconds} seconds`,
+          `Registered Services: ${activeServices.length}`,
+          ...activeServices.map((s) => `  • ${s.id} (${s.name}): ${s.status}`)
+        ].join('\n');
+      }
+
+      case 'services': {
+        const services = this.kernel.listServices();
+        if (services.length === 0) return 'No micro-services currently registered.';
+
+        const lines = [formatter.formatHeader('=== Registered Micro-Service Drivers ===')];
+        for (const s of services) {
+          const desc = s.descriptor;
+          lines.push(` • [${s.id}] ${desc.name} (v${desc.version}) - Status: ${desc.status}`);
+          lines.push(`   Capabilities: ${desc.capabilities.join(', ')}`);
+        }
+        lines.push('');
+        lines.push("Type 'help services' or 'help <service_id>' (e.g. 'help ollama') for subcommands.");
+        return lines.join('\n');
+      }
+
+      case 'chat':
+        return await handleChatCLI(this.kernel, args, onChunk);
+
+      case 'context':
+        return handleContextCommand(args, this.contextEngine);
+
+      case 'chain':
+        return handleChainCommand(args, this.chainEngine);
+
+      case 'ollama': {
+        const service = this.kernel.getService<OllamaService>('ollama');
+        if (!service) return formatter.formatError("Error: Service driver 'ollama' is not registered.");
+        return handleOllamaCLI(service, args, onChunk);
+      }
+
+      case 'comfy':
+      case 'comfyui': {
+        const service = this.kernel.getService<ComfyUIService>('comfyui');
+        if (!service) return formatter.formatError("Error: Service driver 'comfyui' is not registered.");
+        return handleComfyCLI(service, args);
+      }
+
+      case 'copilot': {
+        const service = this.kernel.getService<CopilotService>('copilot');
+        if (!service) return formatter.formatError("Error: Service driver 'copilot' is not registered.");
+        return handleCopilotCLI(service, args, onChunk);
+      }
+
+      default:
+        return formatter.formatError(`Unknown command: '${rootCommand}'. Type "help" to view full command reference.`);
     }
-
-    if (mainCommand === 'chat') {
-      if (args[1] === 'help') return this.handleTargetHelp('chat');
-      return handleChatCLI(this.kernel, args.slice(1), onStreamChunk);
-    }
-
-    if (mainCommand === 'ollama') {
-      if (args[1] === 'help') return this.handleTargetHelp('ollama');
-      const srv = this.kernel.getService<OllamaService>('ollama');
-      if (srv) return handleOllamaCLI(srv, args.slice(1), onStreamChunk);
-    }
-
-    if (mainCommand === 'comfy' || mainCommand === 'comfyui') {
-      if (args[1] === 'help') return this.handleTargetHelp('comfyui');
-      const srv = this.kernel.getService<ComfyUIService>('comfyui');
-      if (srv) return handleComfyCLI(srv, args.slice(1));
-    }
-
-    if (mainCommand === 'copilot') {
-      if (args[1] === 'help') return this.handleTargetHelp('copilot');
-      const srv = this.kernel.getService<CopilotService>('copilot');
-      if (srv) return handleCopilotCLI(srv, args.slice(1), onStreamChunk);
-    }
-
-    return `Command not recognized: '${mainCommand}'. Type 'help' for available CLI commands.`;
-  }
-
-  public handleHelp(): string {
-    const lines: string[] = [
-      '=======================================================================',
-      ' JSAIOS HoneyKernel Core Terminal Reference',
-      '=======================================================================',
-      ' Core System Commands:'
-    ];
-
-    for (const b of this.config.builtins) {
-      const padding = ' '.repeat(Math.max(2, 35 - b.command.length));
-      lines.push(`  ${b.command}${padding}- ${b.description}`);
-    }
-
-    lines.push('\n=======================================================================');
-    lines.push(' 💡 Tip: Type \'help <target>\' (e.g. \'help chat\', \'help services\', \'help ollama\')');
-    lines.push('        for detailed subcommands, arguments, and options.');
-    lines.push('=======================================================================');
-    return lines.join('\n');
-  }
-
-  private handleTargetHelp(targetId: string): string {
-    const query = targetId.toLowerCase().trim();
-
-    if (this.config.descriptors?.[query]) {
-      return renderDescriptorHelp(this.config.descriptors[query]);
-    }
-
-    const builtin = this.config.builtins.find(b => b.command.toLowerCase().split(' ')[0] === query);
-    if (builtin) {
-      return renderCoreCommandHelp(builtin);
-    }
-
-    const activeServices = this.kernel.getStatus().activeServices;
-    const service = activeServices.find(
-      s => s.id.toLowerCase() === query || s.name.toLowerCase().includes(query) || (query === 'comfy' && s.id === 'comfyui')
-    );
-
-    if (service) {
-      return renderDescriptorHelp(service.descriptor || service);
-    }
-
-    const available = [
-      ...this.config.builtins.map(b => b.command.split(' ')[0]),
-      ...Object.keys(this.config.descriptors || {}),
-      ...activeServices.map(s => s.id)
-    ];
-
-    return suggestFuzzyTarget(query, available);
-  }
-
-  private handleStatus(): string {
-    const status = this.kernel.getStatus();
-    return [
-      '=== JSAIOS HoneyKernel Status ===',
-      `Booted State: ${status.booted ? 'ACTIVE' : 'OFFLINE'}`,
-      `Uptime: ${status.uptimeSeconds} seconds`,
-      `Active Services Count: ${status.activeServices.length}`,
-      ...status.activeServices.map(s => ` - [${s.status.toUpperCase()}] ${s.name} (${s.id} v${s.version})`)
-    ].join('\n');
-  }
-
-  private handleServices(): string {
-    const status = this.kernel.getStatus();
-    if (status.activeServices.length === 0) return 'No active service drivers registered in HoneyKernel.';
-
-    const lines: string[] = [
-      '=== Registered Micro-Service Drivers ==='
-    ];
-
-    for (const s of status.activeServices) {
-      lines.push(`  • ${s.id.padEnd(12)} : ${s.name} [${s.status.toUpperCase()}]`);
-      lines.push(`                  Capabilities: [${s.capabilities.join(', ')}]`);
-      lines.push(`                  Type 'help ${s.id}' for available subcommands & parameters.\n`);
-    }
-
-    return lines.join('\n');
   }
 }
-
-export { CommandInterpreter as TerminalInterpreter };

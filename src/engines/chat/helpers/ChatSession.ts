@@ -1,7 +1,7 @@
 /**
  * JSAIOS - Single-purpose class: ChatSession
- * Manages conversation message history log with sticky system context preservation.
- * Persistent session history is NEVER deleted or truncated on disk.
+ * Manages conversation message history log with sticky system context preservation
+ * and optional subsystem associations (Context Packs & Workflow Chains).
  */
 
 import type { ChatMessage, ChatRole, ChatSessionData, ChatSessionOptions } from './types';
@@ -11,6 +11,8 @@ export class ChatSession {
   public name: string;
   public providerId: string;
   public model: string;
+  public contextPackId?: string;
+  public chainId?: string;
   public messages: ChatMessage[] = [];
   public options: ChatSessionOptions;
   public createdAt: number;
@@ -28,6 +30,8 @@ export class ChatSession {
     this.name = name;
     this.providerId = providerId;
     this.model = model;
+    this.contextPackId = options.contextPackId;
+    this.chainId = options.chainId;
     this.options = options;
     this.createdAt = Date.now();
     this.updatedAt = Date.now();
@@ -46,6 +50,8 @@ export class ChatSession {
       undefined,
       data.options || {}
     );
+    session.contextPackId = data.contextPackId || data.options?.contextPackId;
+    session.chainId = data.chainId || data.options?.chainId;
     session.createdAt = data.createdAt || Date.now();
     session.updatedAt = data.updatedAt || Date.now();
     session.messages = Array.isArray(data.messages) ? data.messages : [];
@@ -75,6 +81,12 @@ export class ChatSession {
       ...this.options,
       ...newOptions
     };
+    if (newOptions.contextPackId !== undefined) {
+      this.contextPackId = newOptions.contextPackId;
+    }
+    if (newOptions.chainId !== undefined) {
+      this.chainId = newOptions.chainId;
+    }
     this.updatedAt = Date.now();
   }
 
@@ -103,6 +115,8 @@ export class ChatSession {
       name: this.name,
       providerId: this.providerId,
       model: this.model,
+      contextPackId: this.contextPackId,
+      chainId: this.chainId,
       messages: this.messages,
       options: this.options,
       createdAt: this.createdAt,

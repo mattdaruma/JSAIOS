@@ -36,3 +36,4 @@ help chat
 chat list
 help
 help context
+help chat

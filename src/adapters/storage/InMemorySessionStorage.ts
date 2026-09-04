@@ -10,8 +10,9 @@ export class InMemorySessionStorage implements IChatSessionStorage {
   private sessions = new Map<string, ChatSessionDTO>();
   private settings: ChatEngineSettings = {};
 
-  public saveSession(session: ChatSession): void {
-    this.sessions.set(session.id, session.toJSON());
+  public saveSession(session: any): void {
+    const dto = typeof session.toJSON === 'function' ? session.toJSON() : session;
+    this.sessions.set(session.id, dto);
   }
 
   public loadSessions(): ChatSession[] {

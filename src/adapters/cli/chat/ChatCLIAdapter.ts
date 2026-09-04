@@ -88,7 +88,7 @@ export async function handleChatCLI(
 
     default:
       return [
-        'Chat Engine Commands:',
+        'JSAIOS Chat Engine Commands:',
         '  • chat new <name> [-p provider] [-m model] - Create new session',
         '  • chat send [--temp N] [--image path] <text> - Send prompt to session',
         '  • chat list                                - List active sessions',

@@ -42,6 +42,8 @@ export function formatConfigReport(session: ChatSession): string {
     `=== Active Session Configuration: '${session.name}' (ID: ${session.id}) ===`,
     `Provider            : ${session.providerId}`,
     `Model               : ${session.model}`,
+    `Context Pack        : ${session.contextPackId || opts.contextPackId || 'None'}`,
+    `Workflow Chain      : ${session.chainId || opts.chainId || 'None'}`,
     `System Context      : ${sys ? `Present (${sys.content.length} chars) | View with "chat system"` : 'None'}`,
     '',
     '-- Standard Generation Options --',
