@@ -101,4 +101,43 @@ describe('JSAIOS ChainEngine Multi-Step Workflow Architecture', () => {
     expect(summary.stepResults[0].majorityVoteApplied).toBe(true);
     expect(summary.stepResults[0].sampledOutputs?.length).toBe(3);
   });
+
+  it('should pass step-specific providerId and model overrides to chatEngine.executeTurn', async () => {
+    const turnCalls: any[] = [];
+    const mockChatEngine: any = {
+      getSessionHistory: () => [],
+      executeTurn: async (params: any) => {
+        turnCalls.push(params);
+        return `Response from ${params.providerId || 'default'}`;
+      }
+    };
+
+    const engineWithMock = new ChainEngine(undefined, mockChatEngine, contextEngine, chainStorage);
+    engineWithMock.createChain('provider-chain', 'Provider Override Chain');
+    engineWithMock.addStepToChain('provider-chain', {
+      id: 'step-copilot',
+      name: 'Copilot Step',
+      providerId: 'copilot',
+      model: 'gpt-4o'
+    });
+    engineWithMock.addStepToChain('provider-chain', {
+      id: 'step-ollama',
+      name: 'Ollama Step',
+      providerId: 'ollama',
+      model: 'llama3'
+    });
+
+    const summary = await engineWithMock.executeChain({
+      chainId: 'provider-chain',
+      sessionId: 'test-session',
+      userPrompt: 'Run multi-provider'
+    });
+
+    expect(summary.success).toBe(true);
+    expect(turnCalls.length).toBe(2);
+    expect(turnCalls[0].providerId).toBe('copilot');
+    expect(turnCalls[0].model).toBe('gpt-4o');
+    expect(turnCalls[1].providerId).toBe('ollama');
+    expect(turnCalls[1].model).toBe('llama3');
+  });
 });

@@ -57,6 +57,8 @@ export interface ChatTurnParams {
   images?: string[];
   turnOptions?: Partial<ChatSessionOptions>;
   onChunk?: (chunk: string) => void;
+  providerId?: string;
+  model?: string;
 }
 
 export interface ChatEngineSettings {

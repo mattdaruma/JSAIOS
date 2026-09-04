@@ -1,14 +1,14 @@
 RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,MaxThreshold,IsOversized
-"src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",250,213,6,250,false
+"src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",246,210,6,250,false
+"src/engines/chain/ChainEngine.ts","ChainEngine.ts",".ts","TypeScript Logic",226,198,16,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",226,194,12,250,false
-"src/engines/chain/ChainEngine.ts","ChainEngine.ts",".ts","TypeScript Logic",217,190,16,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",183,161,5,250,false
 "src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",182,155,5,250,false
 "src/kernel/daemon/JSAIOSDaemon.ts","JSAIOSDaemon.ts",".ts","TypeScript Logic",177,150,7,250,false
 "src/shell/browser/helpers/BrowserLocalCommandDispatcher.ts","BrowserLocalCommandDispatcher.ts",".ts","TypeScript Logic",175,153,9,250,false
+"src/adapters/terminal/chain/chainCommands.ts","chainCommands.ts",".ts","TypeScript Logic",171,141,4,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",169,155,5,250,false
 "src/shell/browser/renderer/UIRenderer.tsx","UIRenderer.tsx",".tsx","React Component",152,141,7,250,false
-"src/adapters/terminal/chain/chainCommands.ts","chainCommands.ts",".ts","TypeScript Logic",150,123,4,250,false
 "src/shell/server/JSAIOSServerAdapter.ts","JSAIOSServerAdapter.ts",".ts","TypeScript Logic",146,127,8,250,false
 "src/shell/terminal/terminalShell.ts","terminalShell.ts",".ts","TypeScript Logic",143,116,6,250,false
 "src/services/ai/comfyui/ComfyUIService.ts","ComfyUIService.ts",".ts","TypeScript Logic",141,125,5,250,false
@@ -46,12 +46,12 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/components/Input.tsx","Input.tsx",".tsx","React Component",77,70,4,250,false
 "src/adapters/daemon/DaemonClientAdapter.ts","DaemonClientAdapter.ts",".ts","TypeScript Logic",76,64,5,250,false
 "src/adapters/terminal/context/promptCommands.ts","promptCommands.ts",".ts","TypeScript Logic",76,64,5,250,false
+"src/engines/chat/helpers/types.ts","types.ts",".ts","TypeScript Logic",76,68,6,250,false
 "src/shell/browser/components/TextBlock.tsx","TextBlock.tsx",".tsx","React Component",76,65,5,250,false
 "src/adapters/storage/FileSessionStorage.ts","FileSessionStorage.ts",".ts","TypeScript Logic",75,63,5,250,false
 "src/adapters/terminal/chat/chatDescriptor.ts","chatDescriptor.ts",".ts","TypeScript Logic",75,72,4,250,false
 "src/engines/chat/helpers/formatConfigReport.ts","formatConfigReport.ts",".ts","TypeScript Logic",75,67,4,250,false
 "src/services/ai/copilot/CopilotService.ts","CopilotService.ts",".ts","TypeScript Logic",75,65,4,250,false
-"src/engines/chat/helpers/types.ts","types.ts",".ts","TypeScript Logic",74,66,6,250,false
 "src/services/ai/comfyui/helpers/connectComfyWebSocket.ts","connectComfyWebSocket.ts",".ts","TypeScript Logic",73,60,6,250,false
 "src/adapters/terminal/services/CopilotTerminalAdapter.ts","CopilotTerminalAdapter.ts",".ts","TypeScript Logic",71,57,4,250,false
 "src/kernel/daemon/helpers/DaemonLogger.ts","DaemonLogger.ts",".ts","TypeScript Logic",71,58,5,250,false
@@ -74,9 +74,9 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/layouts/Layout.tsx","Layout.tsx",".tsx","React Component",55,49,4,250,false
 "src/bootloaders/terminalBootloader.ts","terminalBootloader.ts",".ts","TypeScript Logic",54,43,5,250,false
 "src/adapters/terminal/chat/handleChatSend.ts","handleChatSend.ts",".ts","TypeScript Logic",53,46,4,250,false
+"src/adapters/terminal/chain/ChainTerminalAdapter.ts","ChainTerminalAdapter.ts",".ts","TypeScript Logic",52,47,3,250,false
 "src/services/ai/copilot/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",52,44,5,250,false
 "src/adapters/terminal/services/OllamaTerminalAdapter.ts","OllamaTerminalAdapter.ts",".ts","TypeScript Logic",51,41,4,250,false
-"src/adapters/terminal/chain/ChainTerminalAdapter.ts","ChainTerminalAdapter.ts",".ts","TypeScript Logic",50,45,3,250,false
 "src/shell/browser/components/PaginationFooter.tsx","PaginationFooter.tsx",".tsx","React Component",50,43,4,250,false
 "src/adapters/factories/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",48,43,5,250,false
 "src/shell/terminal/helpers/printLogAbovePrompt.ts","printLogAbovePrompt.ts",".ts","TypeScript Logic",47,37,11,250,false

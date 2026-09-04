@@ -116,6 +116,9 @@ export class ChainEngine {
       let sampledOutputs: string[] | undefined;
       const majorityVoteApplied = !!step.enableMajorityVote;
 
+      const stepProviderId = step.providerId || chain.defaultProviderId;
+      const stepModel = step.model || chain.defaultModel;
+
       if (step.enableMajorityVote) {
         const sampleCount = step.sampleCount || 3;
         sampledOutputs = [];
@@ -127,7 +130,9 @@ export class ChainEngine {
             candidate = await this.chatEngine.executeTurn({
               sessionId,
               userPrompt: assembled.computedUserPrompt,
-              options: { temperature: step.temperature !== undefined ? step.temperature : 0.7 }
+              providerId: stepProviderId,
+              model: stepModel,
+              turnOptions: step.temperature !== undefined ? { temperature: step.temperature } : undefined
             });
           } else {
             candidate = `[Sample ${i + 1} for step '${step.name}': Output text]`;
@@ -150,7 +155,9 @@ export class ChainEngine {
           if (this.chatEngine && sessionId) {
             finalStepOutput = await this.chatEngine.executeTurn({
               sessionId,
-              userPrompt: criticPrompt
+              userPrompt: criticPrompt,
+              providerId: stepProviderId,
+              model: stepModel
             });
           } else {
             finalStepOutput = sampledOutputs[0]; // Fallback mock consensus
@@ -162,7 +169,9 @@ export class ChainEngine {
           finalStepOutput = await this.chatEngine.executeTurn({
             sessionId,
             userPrompt: assembled.computedUserPrompt,
-            options: step.temperature !== undefined ? { temperature: step.temperature } : undefined
+            providerId: stepProviderId,
+            model: stepModel,
+            turnOptions: step.temperature !== undefined ? { temperature: step.temperature } : undefined
           });
         } else {
           finalStepOutput = `[Step '${step.name}' Output for prompt: "${assembled.computedUserPrompt}"]`;

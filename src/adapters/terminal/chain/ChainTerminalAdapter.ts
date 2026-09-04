@@ -29,6 +29,8 @@ export const CHAIN_ENGINE_DESCRIPTOR: ServiceDescriptor = {
       command: 'chain add-step <chain_id> <step_id> [step_name]',
       description: 'Add a step to a workflow chain with context rules and majority voting',
       options: [
+        { flag: '-p, --provider <id>', description: 'Target AI provider for step (ollama, copilot, comfyui)' },
+        { flag: '-m, --model <name>', description: 'Target AI model for step' },
         { flag: '--vote <sample_count>', description: 'Enable Majority Voting self-consistency (e.g. --vote 3)' },
         { flag: '--pack <pack_id>', description: 'Attach Context Pack to step' },
         { flag: '--prompt <prompt_id>', description: 'Attach Prompt Template to step' },

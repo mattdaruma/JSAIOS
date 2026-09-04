@@ -34,6 +34,9 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
 
       for (const step of chain.steps) {
         lines.push(`  • [Step ID: ${step.id}] ${step.name}`);
+        if (step.providerId || step.model) {
+          lines.push(`    AI Target: Provider=${step.providerId || 'default'}, Model=${step.model || 'default'}`);
+        }
         if (step.enableMajorityVote) lines.push(`    Majority Voting: ENABLED (Samples: ${step.sampleCount || 3}, Strategy: ${step.voteStrategy || 'consensus-critic'})`);
         if (step.selectedPackIds?.length) lines.push(`    Context Packs: [${step.selectedPackIds.join(', ')}]`);
         if (step.selectedPromptIds?.length) lines.push(`    Prompt Templates: [${step.selectedPromptIds.join(', ')}]`);
@@ -66,7 +69,19 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
       const stepName = args[3] || stepId;
 
       if (!chainId || !stepId) {
-        return 'Usage: chain add-step <chain_id> <step_id> [step_name] [--vote <sample_count>] [--pack <pack_id>] [--prompt <prompt_id>] [--field <key>]';
+        return 'Usage: chain add-step <chain_id> <step_id> [step_name] [-p <provider>] [-m <model>] [--vote <sample_count>] [--pack <pack_id>] [--prompt <prompt_id>] [--field <key>]';
+      }
+
+      let providerId: string | undefined;
+      const providerIdx = args.indexOf('--provider') !== -1 ? args.indexOf('--provider') : args.indexOf('-p');
+      if (providerIdx !== -1 && args[providerIdx + 1] && !args[providerIdx + 1].startsWith('-')) {
+        providerId = args[providerIdx + 1];
+      }
+
+      let model: string | undefined;
+      const modelIdx = args.indexOf('--model') !== -1 ? args.indexOf('--model') : args.indexOf('-m');
+      if (modelIdx !== -1 && args[modelIdx + 1] && !args[modelIdx + 1].startsWith('-')) {
+        model = args[modelIdx + 1];
       }
 
       let enableMajorityVote: boolean | undefined;
@@ -97,6 +112,8 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
         id: stepId,
         name: stepName,
         enabled: true,
+        providerId,
+        model,
         enableMajorityVote,
         sampleCount,
         selectedPackIds,
@@ -106,13 +123,17 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
 
       if (!success) return `Workflow chain '${chainId}' not found. Create it first using 'chain create ${chainId}'.`;
 
-      return [
+      const stepSummaryLines = [
         `=== Step Added to Workflow Chain ===`,
         `Chain ID: ${chainId}`,
         `Step ID: ${stepId}`,
         `Step Name: ${stepName}`,
+        providerId ? `AI Provider: ${providerId}` : undefined,
+        model ? `Target Model: ${model}` : undefined,
         enableMajorityVote ? `Majority Voting: ENABLED (${sampleCount} samples)` : 'Majority Voting: Disabled'
-      ].join('\n');
+      ].filter(Boolean) as string[];
+
+      return stepSummaryLines.join('\n');
     }
 
     case 'run': {

@@ -39,13 +39,8 @@ export class ChatEngine {
     if (chainEngine) this.chainEngine = chainEngine;
   }
 
-  public getStorage(): IChatSessionStorage | undefined {
-    return this.storage;
-  }
-
-  public getDesignatedDefaultSessionId(): string | undefined {
-    return this.designatedDefaultSessionId;
-  }
+  public getStorage(): IChatSessionStorage | undefined { return this.storage; }
+  public getDesignatedDefaultSessionId(): string | undefined { return this.designatedDefaultSessionId; }
 
   private initSessionsFromStorage(): void {
     if (!this.storage) return;
@@ -200,7 +195,7 @@ export class ChatEngine {
       return chainOutput;
     }
 
-    const providerId = session.providerId || 'ollama';
+    const providerId = params.providerId || session.providerId || 'ollama';
     const aiService = this.kernel.getService<AIService>(providerId);
     if (!aiService) throw new Error(`AI Service provider '${providerId}' is not registered or active in HoneyKernel.`);
 
@@ -226,8 +221,9 @@ export class ChatEngine {
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
       .join('\n\n');
 
+    const targetModel = params.model || session.model;
     const req = buildTextGenRequest(
-      session.model,
+      targetModel,
       conversationTurns,
       systemMsgContent,
       mergedOptions,
