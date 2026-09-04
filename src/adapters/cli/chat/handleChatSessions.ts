@@ -16,12 +16,15 @@ export function handleChatNewSession(engine: ChatEngine, args: string[]): string
 
 export function handleChatListSessions(engine: ChatEngine): string {
   const sessions = engine.listSessions();
-  if (sessions.length === 0) return 'No active chat sessions found. Type "chat new <name>" to create one.';
+  if (!sessions || sessions.length === 0) return 'No active chat sessions found. Type "chat new <name>" to create one.';
   const active = engine.getActiveSession();
   const defaultId = engine.getDesignatedDefaultSessionId();
   return [
     'Active JSAIOS Chat Sessions:',
-    ...sessions.map((s) => ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (Provider: ${s.providerId}, Model: ${s.model}, Turns: ${s.messages.length})${s.id === defaultId ? ' [DEFAULT]' : ''}`)
+    ...sessions.map((s) => {
+      const turnCount = (s.messages || []).length;
+      return ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (Provider: ${s.providerId}, Model: ${s.model}, Turns: ${turnCount})${s.id === defaultId ? ' [DEFAULT]' : ''}`;
+    })
   ].join('\n');
 }
 
@@ -45,7 +48,7 @@ export function handleChatSystemPrompt(engine: ChatEngine, args: string[]): stri
   if (!active) return 'No active chat session. Create one with "chat new <name>".';
   const systemText = args.join(' ').trim();
   if (!systemText) {
-    const sys = active.messages.find((m) => m.role === 'system');
+    const sys = (active.messages || []).find((m) => m.role === 'system');
     if (!sys || !sys.content) {
       return `No sticky system prompt set for session '${active.name}'. Set one with: chat system "<prompt>"`;
     }

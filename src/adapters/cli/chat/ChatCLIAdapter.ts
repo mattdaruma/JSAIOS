@@ -1,11 +1,16 @@
 /**
  * JSAIOS - CLI Adapter: ChatCLIAdapter
- * Translates CLI subcommand arguments into ChatEngine operations.
+ * Translates CLI subcommand arguments into ChatEngine operations via single-purpose handlers.
  */
 
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
 import type { ServiceDescriptor } from '../../../kernel/types';
 import { getOrCreateChatEngine, resetChatEngineForTesting } from '../../factories/createChatEngine';
+import { handleChatSessions } from './handleChatSessions';
+import { handleChatHistory } from './handleChatHistory';
+import { handleChatSend } from './handleChatSend';
+import { handleChatConfig } from './handleChatConfig';
+import { handleChatStatus } from './handleChatStatus';
 
 export { resetChatEngineForTesting };
 
@@ -41,6 +46,14 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
     {
       command: 'chat history [session_id]',
       description: 'Display message history for a session'
+    },
+    {
+      command: 'chat status',
+      description: 'Display active session status and config'
+    },
+    {
+      command: 'chat config [options]',
+      description: 'View or update active session parameters'
     }
   ]
 };
@@ -54,80 +67,24 @@ export async function handleChatCLI(
   const subCmd = args[0]?.toLowerCase();
 
   switch (subCmd) {
-    case 'new': {
-      const name = args[1] || 'default-session';
-      const providerIdx = args.indexOf('-p') !== -1 ? args.indexOf('-p') : args.indexOf('--provider');
-      const modelIdx = args.indexOf('-m') !== -1 ? args.indexOf('-m') : args.indexOf('--model');
+    case 'new':
+    case 'list':
+    case 'switch':
+    case 'delete':
+    case 'system':
+      return handleChatSessions(engine, subCmd, args.slice(1));
 
-      const providerId = providerIdx !== -1 && args[providerIdx + 1] ? args[providerIdx + 1] : 'ollama';
-      const model = modelIdx !== -1 && args[modelIdx + 1] ? args[modelIdx + 1] : 'llama3';
+    case 'history':
+      return handleChatHistory(engine, args.slice(1));
 
-      const session = engine.createSession(name, providerId, model);
-      return `Created new session '${session.name}' (ID: ${session.id}) using provider '${providerId}/${model}'.`;
-    }
+    case 'send':
+      return handleChatSend(engine, args.slice(1), onChunk);
 
-    case 'list': {
-      const sessions = engine.listSessions();
-      if (sessions.length === 0) return 'No active chat sessions found.';
-      return [
-        'Active Chat Sessions:',
-        ...sessions.map((s) => ` • [${s.id}] ${s.name} (${s.providerId}/${s.model}) - ${s.turns.length} turns`)
-      ].join('\n');
-    }
+    case 'config':
+      return handleChatConfig(engine, args);
 
-    case 'history': {
-      const sessionId = args[1] || engine.getActiveSession()?.id;
-      if (!sessionId) return 'No active session. Specify a session ID or create one using "chat new <name>".';
-
-      const history = engine.getSessionHistory(sessionId);
-      if (!history || history.length === 0) return `Session '${sessionId}' has no turns yet.`;
-
-      return [
-        `=== Chat History for Session '${sessionId}' ===`,
-        ...history.map((t) => `[${t.role.toUpperCase()}]: ${t.content}`)
-      ].join('\n\n');
-    }
-
-    case 'send': {
-      const promptArgs = args.slice(1);
-      if (promptArgs.length === 0) return 'Usage: chat send [--temp <val>] [--image <path>] <prompt text>';
-
-      let tempOverride: number | undefined;
-      const tempIdx = promptArgs.indexOf('--temp');
-      if (tempIdx !== -1 && promptArgs[tempIdx + 1]) {
-        tempOverride = parseFloat(promptArgs[tempIdx + 1]);
-      }
-
-      let imagePath: string | undefined;
-      const imgIdx = promptArgs.indexOf('--image');
-      if (imgIdx !== -1 && promptArgs[imgIdx + 1]) {
-        imagePath = promptArgs[imgIdx + 1];
-      }
-
-      // Filter out flag arguments
-      const cleanPrompt = promptArgs
-        .filter((_, idx) => {
-          if (idx === tempIdx || idx === tempIdx + 1) return false;
-          if (idx === imgIdx || idx === imgIdx + 1) return false;
-          return true;
-        })
-        .join(' ');
-
-      if (!cleanPrompt) return 'Please provide prompt text to send.';
-
-      const activeSession = engine.getActiveSession();
-      const targetSessionId = activeSession ? activeSession.id : engine.createSession('default', 'ollama', 'llama3').id;
-
-      return await engine.executeTurn(
-        {
-          sessionId: targetSessionId,
-          userPrompt: cleanPrompt,
-          imagePath,
-          options: tempOverride !== undefined ? { temperature: tempOverride } : undefined
-        },
-        onChunk
-      );
-    }
+    case 'status':
+      return handleChatStatus(engine);
 
     default:
       return [
@@ -135,7 +92,9 @@ export async function handleChatCLI(
         '  • chat new <name> [-p provider] [-m model] - Create new session',
         '  • chat send [--temp N] [--image path] <text> - Send prompt to session',
         '  • chat list                                - List active sessions',
-        '  • chat history [session_id]                - Display turn history'
+        '  • chat history [session_id]                - Display turn history',
+        '  • chat status                              - Display session status & config',
+        '  • chat config [options]                    - Update session options'
       ].join('\n');
   }
 }
