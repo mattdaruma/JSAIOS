@@ -35,7 +35,7 @@ describe('Chat Session Associations with Context Packs and Workflow Chains', () 
     expect(listOutput).toContain('Chain: review-chain-1');
   });
 
-  it('should update session options mid-session via updateSessionConfig', () => {
+  it('should update and clear session context pack and chain options mid-session via updateSessionConfig', () => {
     const kernel = new HoneyKernel();
     const storage = new InMemorySessionStorage();
     const chatEngine = new ChatEngine(kernel, storage);
@@ -57,6 +57,16 @@ describe('Chat Session Associations with Context Packs and Workflow Chains', () 
     const statusOutput = handleChatStatus(chatEngine);
     expect(statusOutput).toContain('qa-pack');
     expect(statusOutput).toContain('qa-chain');
+
+    // Test clearing via --pack none --chain none
+    const clearParsed = parseChatCLIArgs(['chat', 'config', '--pack', 'none', '--chain', 'none']);
+    chatEngine.updateSessionConfig('dynamic-assoc', {
+      options: clearParsed.options
+    });
+
+    const cleared = chatEngine.getActiveSession();
+    expect(cleared?.contextPackId).toBeUndefined();
+    expect(cleared?.chainId).toBeUndefined();
   });
 
   it('should dynamically assemble Context Pack system prompt during turn execution', async () => {

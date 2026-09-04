@@ -56,10 +56,24 @@ export function parseChatCLIArgs(tokens: string[], providerId: string = 'ollama'
       result.systemDirective = tokens[++i];
     } else if (token === '--pack' || token === '--context-pack') {
       const val = tokens[++i];
-      result.options.contextPackId = val && val.toLowerCase() !== 'none' && val.toLowerCase() !== 'null' ? val : undefined;
+      const lower = (val || '').toLowerCase();
+      if (lower === 'none' || lower === 'null' || lower === 'off' || lower === 'clear') {
+        result.options.contextPackId = null as any;
+      } else if (val) {
+        result.options.contextPackId = val;
+      }
+    } else if (token === '--no-pack' || token === '--no-context-pack') {
+      result.options.contextPackId = null as any;
     } else if (token === '--chain') {
       const val = tokens[++i];
-      result.options.chainId = val && val.toLowerCase() !== 'none' && val.toLowerCase() !== 'null' ? val : undefined;
+      const lower = (val || '').toLowerCase();
+      if (lower === 'none' || lower === 'null' || lower === 'off' || lower === 'clear') {
+        result.options.chainId = null as any;
+      } else if (val) {
+        result.options.chainId = val;
+      }
+    } else if (token === '--no-chain') {
+      result.options.chainId = null as any;
     } else if (token === '--temp' || token === '-t') {
       const parsedVal = parseOptionalFloat(tokens[++i]);
       if (parsedVal.present) result.options.temperature = parsedVal.val;

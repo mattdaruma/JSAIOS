@@ -81,11 +81,13 @@ export class ChatSession {
       ...this.options,
       ...newOptions
     };
-    if (newOptions.contextPackId !== undefined) {
-      this.contextPackId = newOptions.contextPackId;
+    if ('contextPackId' in newOptions) {
+      this.contextPackId = newOptions.contextPackId || undefined;
+      this.options.contextPackId = this.contextPackId;
     }
-    if (newOptions.chainId !== undefined) {
-      this.chainId = newOptions.chainId;
+    if ('chainId' in newOptions) {
+      this.chainId = newOptions.chainId || undefined;
+      this.options.chainId = this.chainId;
     }
     this.updatedAt = Date.now();
   }

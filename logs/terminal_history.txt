@@ -40,3 +40,6 @@ help chat
 exit
 help
 help chat
+exit
+help
+exit

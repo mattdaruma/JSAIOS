@@ -120,7 +120,9 @@
           "description": "Create a new interactive chat session",
           "options": [
             { "flag": "-p, --provider <id>", "description": "AI provider ID (ollama, copilot, comfyui)" },
-            { "flag": "-m, --model <name>", "description": "Target model name (llama3, gpt-4o, etc.)" }
+            { "flag": "-m, --model <name>", "description": "Target model name (llama3, gpt-4o, etc.)" },
+            { "flag": "--pack <id>, --context-pack <id>", "description": "Associate Context Pack system prompt template" },
+            { "flag": "--chain <id>", "description": "Associate Multi-Step Workflow Chain" }
           ]
         },
         {
@@ -130,6 +132,16 @@
             { "flag": "-s, --session <id>", "description": "Target session ID" },
             { "flag": "--temp <number>", "description": "Temperature override (0.0 to 1.0)" },
             { "flag": "--image <path>", "description": "Attach image file for multimodal prompt" }
+          ]
+        },
+        {
+          "command": "chat config [options]",
+          "description": "View or update active chat session settings mid-session",
+          "options": [
+            { "flag": "-p, --provider <id>", "description": "Switch AI provider" },
+            { "flag": "-m, --model <name>", "description": "Switch model for active session" },
+            { "flag": "--pack <id>, --context-pack <id>", "description": "Update or set associated Context Pack (use 'none' to remove)" },
+            { "flag": "--chain <id>", "description": "Update or set associated Workflow Chain (use 'none' to remove)" }
           ]
         },
         {

@@ -19,6 +19,8 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
       options: [
         { flag: '--provider <name>, -p', description: 'Set AI provider (e.g. ollama, copilot)' },
         { flag: '--model <name>, -m', description: 'Set model for session (e.g. gpt-4o, llama3)' },
+        { flag: '--pack <id>, --context-pack <id>', description: 'Associate Context Pack system prompt directive template' },
+        { flag: '--chain <id>', description: 'Associate Multi-Step Workflow Chain' },
         { flag: '--system "<prompt>", -s', description: 'Set sticky system directive prompt' },
         { flag: '--temp <num>, -t', description: 'Set generation temperature float 0.0-2.0 (e.g. 0.7)' },
         { flag: '--top-p <num>', description: 'Set nucleus sampling top_p float 0.0-1.0 (e.g. 0.9)' },
@@ -35,10 +37,12 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
     },
     {
       command: 'chat config [options]',
-      description: 'Alter active session settings (provider, model, temperature, thinking, etc.) mid-session',
+      description: 'Alter active session settings (provider, model, pack, chain, temperature, thinking, etc.) mid-session',
       options: [
         { flag: '--provider <name>, -p', description: 'Switch AI provider (e.g. ollama, copilot)' },
         { flag: '--model <name>, -m', description: 'Switch model for active session' },
+        { flag: '--pack <id>, --context-pack <id>', description: 'Update or set associated Context Pack (use "none" to remove)' },
+        { flag: '--chain <id>', description: 'Update or set associated Workflow Chain (use "none" to remove)' },
         { flag: '--system "<prompt>", -s', description: 'Update sticky system directive' },
         { flag: '--temp <num>, -t', description: 'Update generation temperature float 0.0-2.0 (e.g. 0.7)' },
         { flag: '--top-p <num>', description: 'Update top_p float probability 0.0-1.0 (e.g. 0.9)' },

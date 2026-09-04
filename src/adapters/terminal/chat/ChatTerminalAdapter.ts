@@ -89,12 +89,12 @@ export async function handleChatTerminal(
     default:
       return [
         'JSAIOS Chat Engine Commands:',
-        '  • chat new <name> [-p provider] [-m model] - Create new session',
+        '  • chat new <name> [-p provider] [-m model] [--pack pack_id] [--chain chain_id] - Create new session',
         '  • chat send [--temp N] [--image path] <text> - Send prompt to session',
         '  • chat list                                - List active sessions',
         '  • chat history [session_id]                - Display turn history',
         '  • chat status                              - Display session status & config',
-        '  • chat config [options]                    - Update session options'
+        '  • chat config [--pack id] [--chain id] ... - Update active session settings'
       ].join('\n');
   }
 }
