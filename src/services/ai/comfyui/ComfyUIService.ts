@@ -25,7 +25,7 @@ export class ComfyUIService implements AIService {
   private baseUrl: string;
   private enableWebSocket: boolean;
   private wsController: ComfyWebSocketController | null = null;
-  private onLogCallback?: (msg: string) => void;
+  private onLogCallback?: (msg: string, isProgress?: boolean) => void;
 
   constructor(
     configOrBaseUrl: string | ComfyUIServiceConfig = 'http://localhost:8188',
@@ -40,7 +40,7 @@ export class ComfyUIService implements AIService {
     }
   }
 
-  public setLogHandler(handler?: (msg: string) => void): void {
+  public setLogHandler(handler?: (msg: string, isProgress?: boolean) => void): void {
     this.onLogCallback = handler;
   }
 
@@ -90,8 +90,8 @@ export class ComfyUIService implements AIService {
       this.wsController = connectComfyWebSocket(
         this.baseUrl,
         undefined,
-        (msg) => {
-          if (this.onLogCallback) this.onLogCallback(msg);
+        (msg, isProgress) => {
+          if (this.onLogCallback) this.onLogCallback(msg, isProgress);
           else console.log(msg);
         }
       );

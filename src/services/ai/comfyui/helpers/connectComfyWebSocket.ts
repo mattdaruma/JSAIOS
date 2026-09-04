@@ -12,7 +12,7 @@ export interface ComfyWebSocketController {
 export function connectComfyWebSocket(
   baseUrl: string,
   onEvent?: (eventType: string, data: any) => void,
-  onLog?: (formattedMessage: string) => void
+  onLog?: (formattedMessage: string, isProgressUpdate?: boolean) => void
 ): ComfyWebSocketController | null {
   try {
     const clientId = `jsaios_${Math.random().toString(36).substring(2, 9)}`;
@@ -23,8 +23,8 @@ export function connectComfyWebSocket(
 
     const ws = new WebSocketImpl(wsUrl);
 
-    const emitLog = (msg: string) => {
-      if (onLog) onLog(msg);
+    const emitLog = (msg: string, isProgress = false) => {
+      if (onLog) onLog(msg, isProgress);
       else console.log(msg);
     };
 
@@ -41,14 +41,14 @@ export function connectComfyWebSocket(
         const { type, data } = msg;
 
         if (type === 'execution_start') {
-          emitLog(`[ComfyUI] 🚀 Execution started for Task ID: ${data?.prompt_id}`);
+          emitLog(`[ComfyUI] 🚀 Execution started for Task ID: ${data?.prompt_id}`, false);
         } else if (type === 'progress' && data?.value !== undefined && data?.max !== undefined) {
           const percent = Math.round((data.value / data.max) * 100);
-          emitLog(`[ComfyUI] ⏳ Progress: ${percent}% (${data.value}/${data.max} steps)`);
+          emitLog(`[ComfyUI] ⏳ Progress: ${percent}% (${data.value}/${data.max} steps)`, true);
         } else if (type === 'execution_success') {
-          emitLog(`[ComfyUI] ✅ Task completed successfully! Task ID: ${data?.prompt_id}`);
+          emitLog(`[ComfyUI] ✅ Task completed successfully! Task ID: ${data?.prompt_id}`, false);
         } else if (type === 'execution_error') {
-          emitLog(`[ComfyUI] ❌ Execution error in Task ID: ${data?.prompt_id}: ${data?.exception_message || 'Unknown error'}`);
+          emitLog(`[ComfyUI] ❌ Execution error in Task ID: ${data?.prompt_id}: ${data?.exception_message || 'Unknown error'}`, false);
         }
 
         if (onEvent) onEvent(type, data);

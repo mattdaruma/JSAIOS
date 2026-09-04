@@ -45,7 +45,7 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
 
   const comfyService = kernel.getService<ComfyUIService>('comfyui');
   if (comfyService && typeof comfyService.setLogHandler === 'function') {
-    comfyService.setLogHandler((msg) => printLogAbovePrompt(msg));
+    comfyService.setLogHandler((msg, isProgress) => printLogAbovePrompt(msg, isProgress));
   }
 
   console.log(`${formatter.formatHeader('=======================================================================')}`);

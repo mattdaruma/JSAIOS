@@ -1,31 +1,46 @@
 /**
  * JSAIOS - Single-purpose helper: printLogAbovePrompt
- * Safely renders background logs/WebSocket events ABOVE the active terminal input prompt line,
- * completely preserving the active prompt line and any user-typed draft characters at the bottom.
+ * Safely renders background logs and real-time progress updates ABOVE the active terminal input prompt line.
+ * In-place progress updates replace the previous progress line without appending new lines.
+ * Completely preserves the active prompt line and any user-typed draft characters at the bottom.
  */
 
 import type readline from 'readline';
 
 let activeRLRef: readline.Interface | null = null;
+let lastWasProgressLine = false;
 
 export function setActiveReadlineInterface(rl: readline.Interface | null): void {
   activeRLRef = rl;
+  lastWasProgressLine = false;
 }
 
-export function printLogAbovePrompt(message: string): void {
+export function printLogAbovePrompt(message: string, isProgressUpdate = false): void {
   if (activeRLRef) {
     try {
-      // 1. Clear active prompt line from screen (erase line & move cursor to column 0)
-      (activeRLRef as any).output?.write('\x1b[2K\r');
+      const output = (activeRLRef as any).output;
+      if (output && typeof output.write === 'function') {
+        // 1. Clear active prompt line at the bottom
+        output.write('\x1b[2K\r');
 
-      // 2. Output background log line
-      console.log(message);
+        // 2. If replacing previous progress line, move cursor UP 1 line and erase it
+        if (isProgressUpdate && lastWasProgressLine) {
+          output.write('\x1b[1A\x1b[2K\r');
+        }
 
-      // 3. Redraw prompt line at bottom, preserving any user-typed input text
-      activeRLRef.prompt(true);
-      return;
+        // 3. Write background message line
+        output.write(`${message}\n`);
+
+        // 4. Update tracking state
+        lastWasProgressLine = isProgressUpdate;
+
+        // 5. Redraw prompt line at bottom, preserving any user-typed input text
+        activeRLRef.prompt(true);
+        return;
+      }
     } catch {}
   }
 
   console.log(message);
+  lastWasProgressLine = isProgressUpdate;
 }

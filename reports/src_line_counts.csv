@@ -78,6 +78,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/components/PaginationFooter.tsx","PaginationFooter.tsx",".tsx","React Component",50,43,4,250,false
 "src/adapters/cli/services/OllamaCLIAdapter.ts","OllamaCLIAdapter.ts",".ts","TypeScript Logic",49,40,4,250,false
 "src/shell/terminal/commands/chain/index.ts","index.ts",".ts","TypeScript Logic",48,44,3,250,false
+"src/shell/terminal/helpers/printLogAbovePrompt.ts","printLogAbovePrompt.ts",".ts","TypeScript Logic",47,37,11,250,false
 "src/services/ai/comfyui/helpers/getNodeInfo.ts","getNodeInfo.ts",".ts","TypeScript Logic",46,39,4,250,false
 "src/shell/browser/components/CodeEditor.tsx","CodeEditor.tsx",".tsx","React Component",45,40,4,250,false
 "src/adapters/storage/InMemoryContextStorage.ts","InMemoryContextStorage.ts",".ts","TypeScript Logic",44,33,4,250,false
@@ -106,7 +107,6 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/components/SidePanel.tsx","SidePanel.tsx",".tsx","React Component",34,29,4,250,false
 "src/shell/browser/components/Badge.tsx","Badge.tsx",".tsx","React Component",33,28,4,250,false
 "src/services/ai/comfyui/helpers/getModels.ts","getModels.ts",".ts","TypeScript Logic",32,25,4,250,false
-"src/shell/terminal/helpers/printLogAbovePrompt.ts","printLogAbovePrompt.ts",".ts","TypeScript Logic",32,24,8,250,false
 "src/services/ai/comfyui/helpers/resolveGraphRoot.ts","resolveGraphRoot.ts",".ts","TypeScript Logic",31,25,4,250,false
 "src/services/ai/ServiceFactory.ts","ServiceFactory.ts",".ts","TypeScript Logic",29,22,4,250,false
 "src/shell/browser/components/Typography.tsx","Typography.tsx",".tsx","React Component",29,25,4,250,false
