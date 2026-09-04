@@ -3,8 +3,8 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",248,212,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",226,194,12,250,false
 "src/adapters/terminal/chain/chainCommands.ts","chainCommands.ts",".ts","TypeScript Logic",221,185,6,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",188,160,5,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",183,161,5,250,false
-"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",182,155,5,250,false
 "src/kernel/daemon/JSAIOSDaemon.ts","JSAIOSDaemon.ts",".ts","TypeScript Logic",177,150,7,250,false
 "src/shell/browser/helpers/BrowserLocalCommandDispatcher.ts","BrowserLocalCommandDispatcher.ts",".ts","TypeScript Logic",175,153,9,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",169,155,5,250,false

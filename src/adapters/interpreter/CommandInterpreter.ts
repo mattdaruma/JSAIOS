@@ -14,6 +14,7 @@ import { handleComfyTerminal } from '../terminal/services/ComfyTerminalAdapter';
 import { handleCopilotTerminal } from '../terminal/services/CopilotTerminalAdapter';
 import { handleContextTerminal } from '../terminal/context/ContextTerminalAdapter';
 import { handleChainTerminal } from '../terminal/chain/ChainTerminalAdapter';
+import { handlePlayJingle } from '../terminal/audio/AudioPlayerAdapter';
 import { handleHelpCommand } from './helpers/renderHelp';
 import { getCompletions } from './helpers/getCompletions';
 import { ContextEngine } from '../../engines/context/ContextEngine';
@@ -54,6 +55,7 @@ export class CommandInterpreter {
       { command: 'chat', description: "JSAIOS Interactive Chat Engine (Use 'chat help' or 'help chat')" },
       { command: 'context', description: "Context Management Engine (Use 'context help' or 'help context')" },
       { command: 'chain', description: "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')" },
+      { command: 'jingle', description: 'Play system startup audio sample jingle' },
       { command: 'clear', description: 'Clear terminal output screen' },
       { command: 'exit', description: 'Quit terminal shell' }
     ]
@@ -171,6 +173,10 @@ export class CommandInterpreter {
         if (!service) return formatter.formatError("Error: Service driver 'copilot' is not registered.");
         return handleCopilotTerminal(service, args, onChunk);
       }
+
+      case 'jingle':
+      case 'audio':
+        return handlePlayJingle();
 
       default:
         return formatter.formatError(`Unknown command: '${rootCommand}'. Type "help" to view full command reference.`);

@@ -85,6 +85,10 @@
       "description": "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')"
     },
     {
+      "command": "jingle",
+      "description": "Play system startup audio sample jingle"
+    },
+    {
       "command": "clear",
       "description": "Clear terminal output screen"
     },

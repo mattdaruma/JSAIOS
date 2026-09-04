@@ -85,5 +85,8 @@ describe('JSAIOS HoneyKernel Core & Service Registry', () => {
 
     const optionsOutput = await interpreter.execute('comfy options test_workflow');
     expect(optionsOutput).toContain('test_workflow');
+
+    const jingleOutput = await interpreter.execute('jingle');
+    expect(jingleOutput).toBe('');
   });
 });
