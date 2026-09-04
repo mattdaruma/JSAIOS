@@ -3,7 +3,7 @@
  * Executes dry-run context assembly with variable interpolation and token estimation.
  */
 
-import type { ContextEngine } from '../../../../engines/context/ContextEngine';
+import type { ContextEngine } from '../../../engines/context/ContextEngine';
 
 export function handleContextAssemble(contextEngine: ContextEngine, args: string[]): string {
   let templateId = 'code-reviewer';

@@ -1,13 +1,13 @@
 /**
- * JSAIOS - Single-purpose class: WinCLIFormatter
+ * JSAIOS - Single-purpose class: WinTerminalFormatter
  * Windows CMD / Terminal ANSI color and syntax formatting driver.
  * Encapsulates Windows-specific color schemes: Dim Gray for thinking, Bright Yellow for USER, Bright Cyan for ASSISTANT.
  */
 
 import type { ITerminalFormatter } from './ITerminalFormatter';
-import { ANSI } from '../helpers/cliColors';
+import { ANSI } from '../helpers/terminalColors';
 
-export class WinCLIFormatter implements ITerminalFormatter {
+export class WinTerminalFormatter implements ITerminalFormatter {
   public formatPrompt(rawPrompt: string = 'jsaios@honeykernel:~$ '): string {
     if (rawPrompt.includes('\x1b[')) return rawPrompt;
 
@@ -84,3 +84,5 @@ export class WinCLIFormatter implements ITerminalFormatter {
     return `${ANSI.brightRed}${errorText}${ANSI.reset}`;
   }
 }
+
+export const WinCLIFormatter = WinTerminalFormatter;

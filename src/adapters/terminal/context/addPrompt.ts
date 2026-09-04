@@ -1,10 +1,10 @@
 /**
- * JSAIOS - Single-purpose helper: addPrompt CLI Handler
+ * JSAIOS - Single-purpose helper: addPrompt Terminal Handler
  * Handles 'context add-prompt <pack_id> <prompt_id> --template "..." [--field key --value val]' command.
  */
 
-import type { ContextEngine } from '../../../../engines/context/ContextEngine';
-import type { CustomFieldCondition } from '../../../../engines/context/helpers/types';
+import type { ContextEngine } from '../../../engines/context/ContextEngine';
+import type { CustomFieldCondition } from '../../../engines/context/helpers/types';
 
 export function handleAddPrompt(args: string[], contextEngine: ContextEngine): string {
   const packId = args[0];

@@ -4,7 +4,7 @@
  */
 
 import type { ITerminalFormatter } from './ITerminalFormatter';
-import { ANSI } from '../helpers/cliColors';
+import { ANSI } from '../helpers/terminalColors';
 
 export class WinPowerShellFormatter implements ITerminalFormatter {
   public formatPrompt(rawPrompt: string = 'jsaios@honeykernel:~$ '): string {

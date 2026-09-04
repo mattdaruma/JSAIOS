@@ -8,7 +8,7 @@
   "defaultEnvironment": "win-cmd",
   "promptPrefix": "jsaios@honeykernel:~$ ",
   "environments": {
-    "win-cmd": "WinCLIFormatter",
+    "win-cmd": "WinTerminalFormatter",
     "win-powershell": "WinPowerShellFormatter",
     "posix-bash": "POSIXBashFormatter",
     "plain": "PlainTerminalFormatter"

@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Single-purpose helper: chatDescriptor
- * ServiceDescriptor definition for JSAIOS Chat Engine CLI commands & options.
+ * ServiceDescriptor definition for JSAIOS Chat Engine Terminal commands & options.
  */
 
 import type { ServiceDescriptor } from '../../../kernel/types';

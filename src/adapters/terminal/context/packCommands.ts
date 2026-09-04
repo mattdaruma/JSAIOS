@@ -1,10 +1,10 @@
 /**
- * JSAIOS - Single-purpose helper: packCommands CLI Handler
+ * JSAIOS - Single-purpose helper: packCommands Terminal Handler
  * Handles 'context pack list', 'context pack show <id>', 'context pack create <id>', and 'context pack add-prompt <pack_id> <prompt_id>'.
  */
 
-import type { ContextEngine } from '../../../../engines/context/ContextEngine';
-import type { ContextMergeStrategy, CustomFieldCondition } from '../../../../engines/context/helpers/types';
+import type { ContextEngine } from '../../../engines/context/ContextEngine';
+import type { ContextMergeStrategy, CustomFieldCondition } from '../../../engines/context/helpers/types';
 
 export function handlePackCommands(args: string[], contextEngine: ContextEngine): string {
   const action = args[0]?.toLowerCase();

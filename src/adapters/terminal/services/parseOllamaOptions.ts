@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Single-purpose helper: parseOllamaOptions
- * Parses CLI option flags for Ollama prompt commands.
+ * Parses Terminal option flags for Ollama prompt commands.
  */
 
 import type { TextGenerationRequest } from '../../../services/ai/AIService';

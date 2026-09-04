@@ -3,7 +3,7 @@
  * Lists all registered system prompt templates.
  */
 
-import type { ContextEngine } from '../../../../engines/context/ContextEngine';
+import type { ContextEngine } from '../../../engines/context/ContextEngine';
 
 export function handleContextList(contextEngine: ContextEngine): string {
   const defaultTemplates = [

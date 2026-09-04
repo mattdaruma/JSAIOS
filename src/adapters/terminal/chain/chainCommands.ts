@@ -1,9 +1,9 @@
 /**
- * JSAIOS - Single-purpose helper: chainCommands CLI Handler
+ * JSAIOS - Single-purpose helper: chainCommands Terminal Handler
  * Handles 'chain list', 'chain show <id>', 'chain create <id>', 'chain add-step <chain_id> <step_id>', and 'chain run <chain_id>'.
  */
 
-import type { ChainEngine } from '../../../../engines/chain/ChainEngine';
+import type { ChainEngine } from '../../../engines/chain/ChainEngine';
 
 export async function handleChainCommands(args: string[], chainEngine: ChainEngine): Promise<string> {
   const action = args[0]?.toLowerCase();

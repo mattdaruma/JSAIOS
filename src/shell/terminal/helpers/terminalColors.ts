@@ -1,5 +1,5 @@
 /**
- * JSAIOS - Single-purpose helper: cliColors
+ * JSAIOS - Single-purpose helper: terminalColors
  * Platform-agnostic ANSI terminal color and syntax styling utilities.
  */
 
@@ -62,6 +62,8 @@ export function highlightCLISyntax(line: string): string {
     }
   );
 }
+
+export const highlightTerminalSyntax = highlightCLISyntax;
 
 /**
  * Highlight status header blocks and key-value metadata cleanly

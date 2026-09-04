@@ -1,12 +1,12 @@
 /**
- * JSAIOS - Single-purpose CLI handler: handleOllamaCLI
- * Handles subcommands and option flag parsing for OllamaService CLI invocations.
+ * JSAIOS - Single-purpose Terminal handler: handleOllamaTerminal
+ * Handles subcommands and option flag parsing for OllamaService Terminal invocations.
  */
 
 import type { OllamaService } from '../../../services/ai/ollama/OllamaService';
 import { parseOllamaOptions } from './parseOllamaOptions';
 
-export async function handleOllamaCLI(
+export async function handleOllamaTerminal(
   service: OllamaService,
   args: string[],
   onStreamChunk?: (chunk: string) => void
@@ -46,3 +46,5 @@ export async function handleOllamaCLI(
 
   return `Unknown Ollama command '${sub}'. Use 'ollama status', 'ollama models', or 'ollama prompt <model> [options] <text>'.`;
 }
+
+export const handleOllamaCLI = handleOllamaTerminal;

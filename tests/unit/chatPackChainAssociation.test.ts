@@ -4,8 +4,8 @@ import { ChatEngine } from '../../src/engines/chat/ChatEngine';
 import { ContextEngine } from '../../src/engines/context/ContextEngine';
 import { ChainEngine } from '../../src/engines/chain/ChainEngine';
 import { InMemorySessionStorage } from '../../src/adapters/storage/InMemorySessionStorage';
-import { handleChatSessions } from '../../src/adapters/cli/chat/handleChatSessions';
-import { handleChatStatus } from '../../src/adapters/cli/chat/handleChatStatus';
+import { handleChatSessions } from '../../src/adapters/terminal/chat/handleChatSessions';
+import { handleChatStatus } from '../../src/adapters/terminal/chat/handleChatStatus';
 import { parseChatCLIArgs } from '../../src/engines/chat/helpers/chatOptions';
 
 describe('Chat Session Associations with Context Packs and Workflow Chains', () => {

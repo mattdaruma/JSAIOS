@@ -1,5 +1,5 @@
 /**
- * JSAIOS - Pure System Terminal CLI Shell
+ * JSAIOS - Pure System Terminal Shell
  * Listens to process.stdin and outputs to process.stdout.
  * Features data-driven Tab autocompletion, Down-arrow draft clear with Up-arrow recovery, persistent history, and graceful shutdown.
  */
@@ -34,7 +34,7 @@ function appendTerminalHistory(commandLine: string): void {
   } catch {}
 }
 
-export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, manifestPath?: string): void {
+export function startTerminalShell(kernel: HoneyKernel, customPrompt?: string, manifestPath?: string): void {
   console.clear();
 
   const interpreter = new CommandInterpreter(kernel, manifestPath);
@@ -87,7 +87,7 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
 
     setActiveReadlineInterface(null);
     process.stdin.removeListener('keypress', keypressHandler);
-    console.log(`\n${formatter.formatError(`[CLI Shell] Intercepted signal '${signalName}'. Triggering graceful shutdown...`)}`);
+    console.log(`\n${formatter.formatError(`[Terminal Shell] Intercepted signal '${signalName}'. Triggering graceful shutdown...`)}`);
     await kernel.shutdown();
     rl.close();
     process.exit(0);
@@ -135,4 +135,8 @@ export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, man
 
     rl.prompt();
   });
+}
+
+export function startCLITerminal(kernel: HoneyKernel, customPrompt?: string, manifestPath?: string): void {
+  return startTerminalShell(kernel, customPrompt, manifestPath);
 }

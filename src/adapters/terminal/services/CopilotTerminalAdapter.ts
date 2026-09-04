@@ -1,12 +1,12 @@
 /**
- * JSAIOS - Single-purpose CLI handler: handleCopilotCLI
- * Handles subcommands and option flag parsing for CopilotService CLI invocations.
+ * JSAIOS - Single-purpose Terminal handler: handleCopilotTerminal
+ * Handles subcommands and option flag parsing for CopilotService Terminal invocations.
  */
 
 import type { CopilotService } from '../../../services/ai/copilot/CopilotService';
 import type { TextGenerationRequest } from '../../../services/ai/AIService';
 
-export async function handleCopilotCLI(
+export async function handleCopilotTerminal(
   service: CopilotService,
   args: string[],
   onStreamChunk?: (chunk: string) => void
@@ -66,3 +66,5 @@ export async function handleCopilotCLI(
 
   return `Unknown Copilot command '${sub}'. Use 'copilot status', 'copilot models', or 'copilot prompt <model> <text>'.`;
 }
+
+export const handleCopilotCLI = handleCopilotTerminal;

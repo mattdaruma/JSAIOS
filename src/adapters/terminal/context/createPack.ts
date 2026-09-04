@@ -1,10 +1,10 @@
 /**
- * JSAIOS - Single-purpose helper: createPack CLI Handler
+ * JSAIOS - Single-purpose helper: createPack Terminal Handler
  * Handles 'context create <pack_id> <name> [--merge single|multi]' command.
  */
 
-import type { ContextEngine } from '../../../../engines/context/ContextEngine';
-import type { ContextMergeStrategy } from '../../../../engines/context/helpers/types';
+import type { ContextEngine } from '../../../engines/context/ContextEngine';
+import type { ContextMergeStrategy } from '../../../engines/context/helpers/types';
 
 export function handleCreatePack(args: string[], contextEngine: ContextEngine): string {
   const packId = args[0];

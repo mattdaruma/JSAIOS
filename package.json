@@ -5,8 +5,8 @@
   "type": "module",
   "main": "src/bootloaders/serverBootloader.ts",
   "scripts": {
-    "start": "tsx src/bootloaders/cliBootloader.ts --config config/default.terminal.json",
-    "start:cli": "tsx src/bootloaders/cliBootloader.ts --config config/default.terminal.json",
+    "start": "tsx src/bootloaders/terminalBootloader.ts --config config/default.terminal.json",
+    "start:terminal": "tsx src/bootloaders/terminalBootloader.ts --config config/default.terminal.json",
     "start:server": "tsx src/bootloaders/serverBootloader.ts --config config/default.server.json",
     "start:daemon": "tsx src/bootloaders/daemonBootloader.ts --config config/default.daemon.json",
     "dev:browser": "vite --config src/shell/browser/vite.config.ts",

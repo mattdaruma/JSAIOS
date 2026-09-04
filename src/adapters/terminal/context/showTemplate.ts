@@ -3,7 +3,7 @@
  * Displays full text and default variables for a prompt template.
  */
 
-import type { ContextEngine } from '../../../../engines/context/ContextEngine';
+import type { ContextEngine } from '../../../engines/context/ContextEngine';
 
 export function handleContextShow(contextEngine: ContextEngine, templateId: string): string {
   if (!templateId) {

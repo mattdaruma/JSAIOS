@@ -6,9 +6,9 @@
 
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
 import type { ChatEngine } from '../../../engines/chat/ChatEngine';
-import { handleOllamaCLI } from '../../../adapters/cli/services/OllamaCLIAdapter';
-import { handleComfyCLI } from '../../../adapters/cli/services/ComfyCLIAdapter';
-import { handleCopilotCLI } from '../../../adapters/cli/services/CopilotCLIAdapter';
+import { handleOllamaTerminal as handleOllamaCLI } from '../../../adapters/terminal/services/OllamaTerminalAdapter';
+import { handleComfyTerminal as handleComfyCLI } from '../../../adapters/terminal/services/ComfyTerminalAdapter';
+import { handleCopilotTerminal as handleCopilotCLI } from '../../../adapters/terminal/services/CopilotTerminalAdapter';
 import type { OllamaService } from '../../../services/ai/ollama/OllamaService';
 import type { ComfyUIService } from '../../../services/ai/comfyui/ComfyUIService';
 import type { CopilotService } from '../../../services/ai/copilot/CopilotService';

@@ -1,9 +1,9 @@
 /**
- * JSAIOS - Context Management Engine CLI Command Router & Service Descriptor
+ * JSAIOS - Context Management Engine Terminal Adapter & Service Descriptor
  */
 
-import type { ContextEngine } from '../../../../engines/context/ContextEngine';
-import type { ServiceDescriptor } from '../../../../kernel/types';
+import type { ContextEngine } from '../../../engines/context/ContextEngine';
+import type { ServiceDescriptor } from '../../../kernel/types';
 import { handlePromptCommands } from './promptCommands';
 import { handlePackCommands } from './packCommands';
 import { handleContextAssemble } from './assembleContext';
@@ -65,7 +65,7 @@ export const CONTEXT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   ]
 };
 
-export function handleContextCommand(args: string[], contextEngine: ContextEngine): string {
+export function handleContextTerminal(args: string[], contextEngine: ContextEngine): string {
   const subCommand = args[0]?.toLowerCase();
 
   switch (subCommand) {
@@ -98,3 +98,5 @@ export function handleContextCommand(args: string[], contextEngine: ContextEngin
       ].join('\n');
   }
 }
+
+export const handleContextCommand = handleContextTerminal;

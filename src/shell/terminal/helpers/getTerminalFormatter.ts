@@ -4,7 +4,7 @@
  */
 
 import type { ITerminalFormatter } from '../formatters/ITerminalFormatter';
-import { WinCLIFormatter } from '../formatters/WinCLIFormatter';
+import { WinTerminalFormatter } from '../formatters/WinTerminalFormatter';
 import { WinPowerShellFormatter } from '../formatters/WinPowerShellFormatter';
 import { POSIXBashFormatter } from '../formatters/POSIXBashFormatter';
 import { PlainTerminalFormatter } from '../formatters/PlainTerminalFormatter';
@@ -26,7 +26,7 @@ export function getTerminalFormatter(environmentKey?: string): ITerminalFormatte
   }
 
   if (env === 'win-cmd' || env === 'cmd') {
-    return new WinCLIFormatter();
+    return new WinTerminalFormatter();
   }
 
   // Auto-detection fallback based on OS platform and shell environment variables
@@ -34,7 +34,7 @@ export function getTerminalFormatter(environmentKey?: string): ITerminalFormatte
     if (process.env.PSModulePath || process.env.POWERSHELL_DISTRIBUTION_CHANNEL) {
       return new WinPowerShellFormatter();
     }
-    return new WinCLIFormatter();
+    return new WinTerminalFormatter();
   } else if (process.platform === 'linux' || process.platform === 'darwin') {
     return new POSIXBashFormatter();
   }

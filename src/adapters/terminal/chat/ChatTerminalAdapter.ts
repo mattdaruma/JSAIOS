@@ -1,6 +1,6 @@
 /**
- * JSAIOS - CLI Adapter: ChatCLIAdapter
- * Translates CLI subcommand arguments into ChatEngine operations via single-purpose handlers.
+ * JSAIOS - Terminal Adapter: ChatTerminalAdapter
+ * Translates Terminal subcommand arguments into ChatEngine operations via single-purpose handlers.
  */
 
 import type { HoneyKernel } from '../../../kernel/HoneyKernel';
@@ -58,7 +58,7 @@ export const CHAT_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   ]
 };
 
-export async function handleChatCLI(
+export async function handleChatTerminal(
   kernel: HoneyKernel,
   args: string[],
   onChunk?: (chunkText: string) => void
@@ -98,3 +98,5 @@ export async function handleChatCLI(
       ].join('\n');
   }
 }
+
+export const handleChatCLI = handleChatTerminal;

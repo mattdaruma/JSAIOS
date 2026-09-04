@@ -1,6 +1,6 @@
 /**
- * JSAIOS - Single-purpose adapter: CommandInterpreter
- * Parses CLI inputs into single-purpose command handlers and manages command routing.
+ * JSAIOS - Single-purpose adapter: CommandInterpreter (TerminalInterpreter)
+ * Parses Terminal inputs into single-purpose command handlers and manages command routing.
  */
 
 import fs from 'fs';
@@ -8,12 +8,12 @@ import path from 'path';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { ServiceDescriptor, CommandDoc } from '../../kernel/types';
 import { getTerminalFormatter } from '../../shell/terminal/helpers/getTerminalFormatter';
-import { handleChatCLI } from '../cli/chat/ChatCLIAdapter';
-import { handleOllamaCLI } from '../cli/services/OllamaCLIAdapter';
-import { handleComfyCLI } from '../cli/services/ComfyCLIAdapter';
-import { handleCopilotCLI } from '../cli/services/CopilotCLIAdapter';
-import { handleContextCommand } from '../../shell/terminal/commands/context';
-import { handleChainCommand } from '../../shell/terminal/commands/chain';
+import { handleChatTerminal } from '../terminal/chat/ChatTerminalAdapter';
+import { handleOllamaTerminal } from '../terminal/services/OllamaTerminalAdapter';
+import { handleComfyTerminal } from '../terminal/services/ComfyTerminalAdapter';
+import { handleCopilotTerminal } from '../terminal/services/CopilotTerminalAdapter';
+import { handleContextTerminal } from '../terminal/context/ContextTerminalAdapter';
+import { handleChainTerminal } from '../terminal/chain/ChainTerminalAdapter';
 import { handleHelpCommand } from './helpers/renderHelp';
 import { getCompletions } from './helpers/getCompletions';
 import { ContextEngine } from '../../engines/context/ContextEngine';
@@ -42,7 +42,7 @@ export class CommandInterpreter {
     defaultEnvironment: 'win-cmd',
     promptPrefix: 'jsaios@honeykernel:~$ ',
     environments: {
-      'win-cmd': 'WinCLIFormatter',
+      'win-cmd': 'WinTerminalFormatter',
       'win-powershell': 'WinPowerShellFormatter',
       'posix-bash': 'POSIXBashFormatter',
       'plain': 'PlainTerminalFormatter'
@@ -145,31 +145,31 @@ export class CommandInterpreter {
       }
 
       case 'chat':
-        return await handleChatCLI(this.kernel, args, onChunk);
+        return await handleChatTerminal(this.kernel, args, onChunk);
 
       case 'context':
-        return handleContextCommand(args, this.contextEngine);
+        return handleContextTerminal(args, this.contextEngine);
 
       case 'chain':
-        return handleChainCommand(args, this.chainEngine);
+        return handleChainTerminal(args, this.chainEngine);
 
       case 'ollama': {
         const service = this.kernel.getService<OllamaService>('ollama');
         if (!service) return formatter.formatError("Error: Service driver 'ollama' is not registered.");
-        return handleOllamaCLI(service, args, onChunk);
+        return handleOllamaTerminal(service, args, onChunk);
       }
 
       case 'comfy':
       case 'comfyui': {
         const service = this.kernel.getService<ComfyUIService>('comfyui');
         if (!service) return formatter.formatError("Error: Service driver 'comfyui' is not registered.");
-        return handleComfyCLI(service, args);
+        return handleComfyTerminal(service, args);
       }
 
       case 'copilot': {
         const service = this.kernel.getService<CopilotService>('copilot');
         if (!service) return formatter.formatError("Error: Service driver 'copilot' is not registered.");
-        return handleCopilotCLI(service, args, onChunk);
+        return handleCopilotTerminal(service, args, onChunk);
       }
 
       default:
@@ -177,3 +177,5 @@ export class CommandInterpreter {
     }
   }
 }
+
+export const TerminalInterpreter = CommandInterpreter;

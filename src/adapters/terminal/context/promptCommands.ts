@@ -1,10 +1,10 @@
 /**
- * JSAIOS - Single-purpose helper: promptCommands CLI Handler
+ * JSAIOS - Single-purpose helper: promptCommands Terminal Handler
  * Handles 'context prompt list', 'context prompt show <id>', and 'context prompt create <id> --template "..."'.
  * 100% data-driven: contains zero hardcoded prompt strings.
  */
 
-import type { ContextEngine } from '../../../../engines/context/ContextEngine';
+import type { ContextEngine } from '../../../engines/context/ContextEngine';
 
 export function handlePromptCommands(args: string[], contextEngine: ContextEngine): string {
   const action = args[0]?.toLowerCase();

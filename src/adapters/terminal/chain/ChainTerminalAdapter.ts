@@ -1,9 +1,9 @@
 /**
- * JSAIOS - Chain Engine CLI Router & Service Descriptor
+ * JSAIOS - Chain Engine Terminal Adapter & Service Descriptor
  */
 
-import type { ChainEngine } from '../../../../engines/chain/ChainEngine';
-import type { ServiceDescriptor } from '../../../../kernel/types';
+import type { ChainEngine } from '../../../engines/chain/ChainEngine';
+import type { ServiceDescriptor } from '../../../kernel/types';
 import { handleChainCommands } from './chainCommands';
 
 export const CHAIN_ENGINE_DESCRIPTOR: ServiceDescriptor = {
@@ -42,6 +42,8 @@ export const CHAIN_ENGINE_DESCRIPTOR: ServiceDescriptor = {
   ]
 };
 
-export async function handleChainCommand(args: string[], chainEngine: ChainEngine): Promise<string> {
+export async function handleChainTerminal(args: string[], chainEngine: ChainEngine): Promise<string> {
   return await handleChainCommands(args, chainEngine);
 }
+
+export const handleChainCommand = handleChainTerminal;

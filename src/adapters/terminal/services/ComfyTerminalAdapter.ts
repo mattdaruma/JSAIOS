@@ -1,12 +1,12 @@
 /**
- * JSAIOS - Single-purpose CLI handler: handleComfyCLI
- * Handles subcommands and option flag parsing for ComfyUIService CLI invocations.
+ * JSAIOS - Single-purpose Terminal handler: handleComfyTerminal
+ * Handles subcommands and option flag parsing for ComfyUIService Terminal invocations.
  */
 
 import type { ComfyUIService } from '../../../services/ai/comfyui/ComfyUIService';
 import { parseComfyOptions } from './parseComfyOptions';
 
-export async function handleComfyCLI(service: ComfyUIService, args: string[]): Promise<string> {
+export async function handleComfyTerminal(service: ComfyUIService, args: string[]): Promise<string> {
   const sub = (args[0] || '').toLowerCase();
 
   if (sub === 'status' || !sub) {
@@ -72,9 +72,9 @@ export async function handleComfyCLI(service: ComfyUIService, args: string[]): P
     }
 
     lines.push('\n=======================================================================');
-    lines.push(` 💡 How to Pass Options via CLI:`);
+    lines.push(` 💡 How to Pass Options via Terminal:`);
     lines.push(`    Use '--<option_name> <value>' for unique parameters, or '--node<id>.<option_name> <value>' for specific nodes.`);
-    lines.push(`\n 🚀 Example CLI Command:`);
+    lines.push(`\n 🚀 Example Command:`);
     lines.push(`    comfy prompt "${result.workflowId}" ${exampleFlags.join(' ')}`);
     lines.push('=======================================================================');
 
@@ -97,3 +97,5 @@ export async function handleComfyCLI(service: ComfyUIService, args: string[]): P
 
   return `Unknown ComfyUI command '${sub}'. Use 'comfy status', 'comfy models', 'comfy workflows', 'comfy options <workflow>', or 'comfy prompt [options] <text>'.`;
 }
+
+export const handleComfyCLI = handleComfyTerminal;

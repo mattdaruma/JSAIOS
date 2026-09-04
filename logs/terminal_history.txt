@@ -37,3 +37,6 @@ chat list
 help
 help context
 help chat
+exit
+help
+help chat

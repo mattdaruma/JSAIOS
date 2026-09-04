@@ -1,6 +1,6 @@
 /**
  * JSAIOS - Single-purpose helper: parseComfyOptions
- * Parses CLI option flags for ComfyUI media generation prompt commands.
+ * Parses Terminal option flags for ComfyUI media generation prompt commands.
  * Supports standard flags (--width, --steps, --ckpt) and dynamic node-qualified flags (--node2.text, --node3.clip, --ckpt_name).
  */
 
