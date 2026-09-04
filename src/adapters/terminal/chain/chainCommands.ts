@@ -37,6 +37,9 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
         if (step.providerId || step.model) {
           lines.push(`    AI Target: Provider=${step.providerId || 'default'}, Model=${step.model || 'default'}`);
         }
+        if (step.options && Object.keys(step.options).length > 0) {
+          lines.push(`    Step Options: ${JSON.stringify(step.options)}`);
+        }
         if (step.enableMajorityVote) lines.push(`    Majority Voting: ENABLED (Samples: ${step.sampleCount || 3}, Strategy: ${step.voteStrategy || 'consensus-critic'})`);
         if (step.selectedPackIds?.length) lines.push(`    Context Packs: [${step.selectedPackIds.join(', ')}]`);
         if (step.selectedPromptIds?.length) lines.push(`    Prompt Templates: [${step.selectedPromptIds.join(', ')}]`);
@@ -69,7 +72,7 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
       const stepName = args[3] || stepId;
 
       if (!chainId || !stepId) {
-        return 'Usage: chain add-step <chain_id> <step_id> [step_name] [-p <provider>] [-m <model>] [--vote <sample_count>] [--pack <pack_id>] [--prompt <prompt_id>] [--field <key>]';
+        return 'Usage: chain add-step <chain_id> <step_id> [step_name] [-p <provider>] [-m <model>] [--temp <val>] [--think [true|false]] [--max-tokens <N>] [--num-ctx <N>] [--options \'<json>\'] [--options-file <path>] [--vote <sample_count>] [--pack <pack_id>] [--prompt <prompt_id>] [--field <key>]';
       }
 
       let providerId: string | undefined;
@@ -82,6 +85,48 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
       const modelIdx = args.indexOf('--model') !== -1 ? args.indexOf('--model') : args.indexOf('-m');
       if (modelIdx !== -1 && args[modelIdx + 1] && !args[modelIdx + 1].startsWith('-')) {
         model = args[modelIdx + 1];
+      }
+
+      let stepOptions: Record<string, any> = {};
+      const optionsIdx = args.indexOf('--options');
+      if (optionsIdx !== -1 && args[optionsIdx + 1]) {
+        try {
+          stepOptions = { ...stepOptions, ...JSON.parse(args[optionsIdx + 1]) };
+        } catch {
+          // Fallback
+        }
+      }
+
+      const optionsFileIdx = args.indexOf('--options-file');
+      if (optionsFileIdx !== -1 && args[optionsFileIdx + 1]) {
+        try {
+          const fs = require('fs');
+          const content = fs.readFileSync(args[optionsFileIdx + 1], 'utf8');
+          stepOptions = { ...stepOptions, ...JSON.parse(content) };
+        } catch {
+          // Fallback
+        }
+      }
+
+      const tempIdx = args.indexOf('--temp') !== -1 ? args.indexOf('--temp') : args.indexOf('-t');
+      if (tempIdx !== -1 && args[tempIdx + 1] && !isNaN(parseFloat(args[tempIdx + 1]))) {
+        stepOptions.temperature = parseFloat(args[tempIdx + 1]);
+      }
+
+      const thinkIdx = args.indexOf('--think');
+      if (thinkIdx !== -1) {
+        const val = args[thinkIdx + 1];
+        stepOptions.ollamaThink = val !== 'false';
+      }
+
+      const maxTokensIdx = args.indexOf('--max-tokens');
+      if (maxTokensIdx !== -1 && args[maxTokensIdx + 1] && !isNaN(parseInt(args[maxTokensIdx + 1]))) {
+        stepOptions.maxTokens = parseInt(args[maxTokensIdx + 1]);
+      }
+
+      const numCtxIdx = args.indexOf('--num-ctx');
+      if (numCtxIdx !== -1 && args[numCtxIdx + 1] && !isNaN(parseInt(args[numCtxIdx + 1]))) {
+        stepOptions.ollamaNumCtx = parseInt(args[numCtxIdx + 1]);
       }
 
       let enableMajorityVote: boolean | undefined;
@@ -108,12 +153,16 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
       const fieldIdx = args.indexOf('--field');
       if (fieldIdx !== -1 && args[fieldIdx + 1]) selectedUserFieldIds = [args[fieldIdx + 1]];
 
+      const hasOptions = Object.keys(stepOptions).length > 0;
       const success = chainEngine.addStepToChain(chainId, {
         id: stepId,
         name: stepName,
         enabled: true,
         providerId,
         model,
+        options: hasOptions ? stepOptions : undefined,
+        temperature: stepOptions.temperature,
+        enableThinking: stepOptions.ollamaThink,
         enableMajorityVote,
         sampleCount,
         selectedPackIds,
@@ -130,6 +179,7 @@ export async function handleChainCommands(args: string[], chainEngine: ChainEngi
         `Step Name: ${stepName}`,
         providerId ? `AI Provider: ${providerId}` : undefined,
         model ? `Target Model: ${model}` : undefined,
+        hasOptions ? `Step Options: ${JSON.stringify(stepOptions)}` : undefined,
         enableMajorityVote ? `Majority Voting: ENABLED (${sampleCount} samples)` : 'Majority Voting: Disabled'
       ].filter(Boolean) as string[];
 

@@ -40,8 +40,8 @@ export interface ChatSessionOptions {
 export interface ChatSessionData {
   id: string;
   name: string;
-  providerId: string;
-  model: string;
+  providerId?: string;
+  model?: string;
   contextPackId?: string;
   chainId?: string;
   systemDirective?: string;

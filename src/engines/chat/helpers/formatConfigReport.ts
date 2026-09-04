@@ -27,7 +27,7 @@ export const CHAT_OPTION_DEFAULTS = {
 export function formatConfigReport(session: ChatSession): string {
   const sys = session.messages.find((m) => m.role === 'system');
   const opts = session.options;
-  const isOllama = session.providerId.toLowerCase() === 'ollama';
+  const isOllama = (session.providerId || '').toLowerCase() === 'ollama';
 
   const fmtOpt = (key: keyof typeof CHAT_OPTION_DEFAULTS, val: any) => {
     if (val !== undefined && val !== null) {
@@ -40,8 +40,8 @@ export function formatConfigReport(session: ChatSession): string {
 
   const lines: string[] = [
     `=== Active Session Configuration: '${session.name}' (ID: ${session.id}) ===`,
-    `Provider            : ${session.providerId}`,
-    `Model               : ${session.model}`,
+    `Provider            : ${session.providerId || 'None (Chain Mode / Unconfigured)'}`,
+    `Model               : ${session.model || 'None (Chain Mode / Unconfigured)'}`,
     `Context Pack        : ${session.contextPackId || opts.contextPackId || 'None'}`,
     `Workflow Chain      : ${session.chainId || opts.chainId || 'None'}`,
     `System Context      : ${sys ? `Present (${sys.content.length} chars) | View with "chat system"` : 'None'}`,

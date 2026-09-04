@@ -65,15 +65,8 @@ export class ChatEngine {
     }
   }
 
-  private persistSession(session: ChatSession): void {
-    if (this.storage) this.storage.saveSession(session.toJSON());
-  }
-
-  private persistSettings(): void {
-    if (this.storage?.saveSettings) {
-      this.storage.saveSettings({ defaultSessionId: this.designatedDefaultSessionId });
-    }
-  }
+  private persistSession(session: ChatSession): void { if (this.storage) this.storage.saveSession(session.toJSON()); }
+  private persistSettings(): void { if (this.storage?.saveSettings) this.storage.saveSettings({ defaultSessionId: this.designatedDefaultSessionId }); }
 
   public createSession(
     name: string,
@@ -83,7 +76,10 @@ export class ChatEngine {
     options?: ChatSessionOptions
   ): ChatSession {
     const id = sanitizeSessionId(name);
-    const session = new ChatSession(id, name, providerId, model, systemDirective, options);
+    const isUnconfigured = providerId === 'none' || providerId === 'null';
+    const targetProviderId = options?.chainId || isUnconfigured ? undefined : providerId;
+    const targetModel = options?.chainId || isUnconfigured ? undefined : model;
+    const session = new ChatSession(id, name, targetProviderId, targetModel, systemDirective, options);
     this.sessions.set(session.id, session);
     this.activeSessionId = session.id;
 
@@ -109,10 +105,18 @@ export class ChatEngine {
     const session = this.sessions.get(id);
     if (!session) throw new Error(`Session '${idOrName}' not found.`);
 
-    if (updates.providerId) session.providerId = updates.providerId;
-    if (updates.model) session.model = updates.model;
-    if (updates.systemDirective) session.setSystemDirective(updates.systemDirective);
     if (updates.options) session.updateOptions(updates.options);
+    if (updates.providerId) {
+      session.providerId = updates.providerId;
+      session.chainId = undefined;
+      if (session.options) session.options.chainId = undefined;
+    }
+    if (updates.model) {
+      session.model = updates.model;
+      session.chainId = undefined;
+      if (session.options) session.options.chainId = undefined;
+    }
+    if (updates.systemDirective) session.setSystemDirective(updates.systemDirective);
 
     session.updatedAt = Date.now();
     this.persistSession(session);
@@ -142,11 +146,7 @@ export class ChatEngine {
     return false;
   }
 
-  public getSessionHistory(idOrName: string): any[] | undefined {
-    const id = sanitizeSessionId(idOrName);
-    const session = this.sessions.get(id);
-    return session ? session.messages : undefined;
-  }
+  public getSessionHistory(idOrName: string): any[] | undefined { return this.sessions.get(sanitizeSessionId(idOrName))?.messages; }
 
   public deleteSession(idOrName: string): boolean {
     const id = sanitizeSessionId(idOrName);
@@ -168,9 +168,7 @@ export class ChatEngine {
     return false;
   }
 
-  public listSessions(): ChatSession[] {
-    return Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt);
-  }
+  public listSessions(): ChatSession[] { return Array.from(this.sessions.values()).sort((a, b) => b.updatedAt - a.updatedAt); }
 
   public async executeTurn(params: ChatTurnParams): Promise<string> {
     const session = this.sessions.get(params.sessionId) || this.getActiveSession();
@@ -195,7 +193,11 @@ export class ChatEngine {
       return chainOutput;
     }
 
-    const providerId = params.providerId || session.providerId || 'ollama';
+    const providerId = params.providerId || session.providerId;
+    if (!providerId) {
+      throw new Error(`Chat session '${session.id}' is unconfigured. Specify a provider/model ('chat config -p <provider> -m <model>') or link a chain ('chat config --chain <id>').`);
+    }
+
     const aiService = this.kernel.getService<AIService>(providerId);
     if (!aiService) throw new Error(`AI Service provider '${providerId}' is not registered or active in HoneyKernel.`);
 
@@ -221,7 +223,7 @@ export class ChatEngine {
       .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
       .join('\n\n');
 
-    const targetModel = params.model || session.model;
+    const targetModel = params.model || session.model || 'llama3';
     const req = buildTextGenRequest(
       targetModel,
       conversationTurns,

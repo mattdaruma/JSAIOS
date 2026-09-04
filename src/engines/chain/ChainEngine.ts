@@ -8,6 +8,9 @@
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { ChatEngine } from '../chat/ChatEngine';
 import type { ContextEngine } from '../context/ContextEngine';
+import type { AIService } from '../../services/ai/AIService';
+import type { ChatSessionOptions } from '../chat/helpers/types';
+import { buildTextGenRequest } from '../chat/helpers/chatOptions';
 import type {
   ChainDefinition,
   ChainStep,
@@ -35,13 +38,8 @@ export class ChainEngine {
     }
   }
 
-  public getChain(id: string): ChainDefinition | undefined {
-    return this.chains.get(id);
-  }
-
-  public listChains(): ChainDefinition[] {
-    return Array.from(this.chains.values());
-  }
+  public getChain(id: string): ChainDefinition | undefined { return this.chains.get(id); }
+  public listChains(): ChainDefinition[] { return Array.from(this.chains.values()); }
 
   public createChain(id: string, name: string, description?: string): ChainDefinition {
     const chain: ChainDefinition = {
@@ -64,6 +62,37 @@ export class ChainEngine {
       this.storageAdapter.saveChain(chain).catch(() => {});
     }
     return true;
+  }
+
+  private async executeStepTurn(
+    sessionId: string | undefined,
+    userPrompt: string,
+    stepProviderId?: string,
+    stepModel?: string,
+    systemPrompt?: string,
+    turnOptions?: Partial<ChatSessionOptions>
+  ): Promise<string> {
+    if (this.chatEngine && sessionId) {
+      return await this.chatEngine.executeTurn({
+        sessionId,
+        userPrompt,
+        providerId: stepProviderId,
+        model: stepModel,
+        turnOptions
+      });
+    }
+
+    const providerId = stepProviderId || 'ollama';
+    const model = stepModel || 'llama3';
+    const aiService = this.kernel ? this.kernel.getService<AIService>(providerId) : undefined;
+
+    if (aiService) {
+      const req = buildTextGenRequest(model, userPrompt, systemPrompt, turnOptions || {});
+      const res = await aiService.generateText(req);
+      return res.text;
+    }
+
+    return `[Step Output for prompt: "${userPrompt}"]`;
   }
 
   public async executeChain(
@@ -118,6 +147,11 @@ export class ChainEngine {
 
       const stepProviderId = step.providerId || chain.defaultProviderId;
       const stepModel = step.model || chain.defaultModel;
+      const stepTurnOptions: Partial<ChatSessionOptions> = {
+        ...step.options,
+        ...(step.temperature !== undefined ? { temperature: step.temperature } : {}),
+        ...(step.enableThinking !== undefined ? { ollamaThink: step.enableThinking } : {})
+      };
 
       if (step.enableMajorityVote) {
         const sampleCount = step.sampleCount || 3;
@@ -125,18 +159,14 @@ export class ChainEngine {
 
         // Sequential sampling to keep VRAM usage flat
         for (let i = 0; i < sampleCount; i++) {
-          let candidate = '';
-          if (this.chatEngine && sessionId) {
-            candidate = await this.chatEngine.executeTurn({
-              sessionId,
-              userPrompt: assembled.computedUserPrompt,
-              providerId: stepProviderId,
-              model: stepModel,
-              turnOptions: step.temperature !== undefined ? { temperature: step.temperature } : undefined
-            });
-          } else {
-            candidate = `[Sample ${i + 1} for step '${step.name}': Output text]`;
-          }
+          const candidate = await this.executeStepTurn(
+            sessionId,
+            assembled.computedUserPrompt,
+            stepProviderId,
+            stepModel,
+            stepSystemPrompt,
+            stepTurnOptions
+          );
           sampledOutputs.push(candidate);
         }
 
@@ -152,30 +182,25 @@ export class ChainEngine {
           const candidateList = sampledOutputs.map((s, idx) => `[Candidate ${idx + 1}]:\n${s}`).join('\n\n');
           const criticPrompt = `Compare these ${sampleCount} candidate responses to the prompt and synthesize/select the single consensus answer:\n\n${candidateList}`;
 
-          if (this.chatEngine && sessionId) {
-            finalStepOutput = await this.chatEngine.executeTurn({
-              sessionId,
-              userPrompt: criticPrompt,
-              providerId: stepProviderId,
-              model: stepModel
-            });
-          } else {
-            finalStepOutput = sampledOutputs[0]; // Fallback mock consensus
-          }
+          finalStepOutput = await this.executeStepTurn(
+            sessionId,
+            criticPrompt,
+            stepProviderId,
+            stepModel,
+            stepSystemPrompt,
+            stepTurnOptions
+          );
         }
       } else {
         // Standard single execution pass
-        if (this.chatEngine && sessionId) {
-          finalStepOutput = await this.chatEngine.executeTurn({
-            sessionId,
-            userPrompt: assembled.computedUserPrompt,
-            providerId: stepProviderId,
-            model: stepModel,
-            turnOptions: step.temperature !== undefined ? { temperature: step.temperature } : undefined
-          });
-        } else {
-          finalStepOutput = `[Step '${step.name}' Output for prompt: "${assembled.computedUserPrompt}"]`;
-        }
+        finalStepOutput = await this.executeStepTurn(
+          sessionId,
+          assembled.computedUserPrompt,
+          stepProviderId,
+          stepModel,
+          stepSystemPrompt,
+          stepTurnOptions
+        );
       }
 
       // Attempt parsing JSON output if responseJsonSchema or structured response enabled
@@ -216,10 +241,7 @@ export class ChainEngine {
 
   public async loadChainsFromStorage(): Promise<void> {
     if (this.storageAdapter) {
-      const loaded = await this.storageAdapter.listChains();
-      for (const chain of loaded) {
-        this.chains.set(chain.id, chain);
-      }
+      for (const chain of await this.storageAdapter.listChains()) this.chains.set(chain.id, chain);
     }
   }
 }

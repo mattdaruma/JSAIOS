@@ -140,4 +140,42 @@ describe('JSAIOS ChainEngine Multi-Step Workflow Architecture', () => {
     expect(turnCalls[1].providerId).toBe('ollama');
     expect(turnCalls[1].model).toBe('llama3');
   });
+
+  it('should execute real AI service turn standalone without a chat session', async () => {
+    let capturedReq: any;
+    const mockKernel: any = {
+      getService: (id: string) => {
+        if (id === 'ollama') {
+          return {
+            generateText: async (req: any) => {
+              capturedReq = req;
+              return { text: 'Standalone Ollama Response' };
+            }
+          };
+        }
+        return undefined;
+      }
+    };
+
+    const standaloneEngine = new ChainEngine(mockKernel, undefined, contextEngine, chainStorage);
+    standaloneEngine.createChain('standalone-chain', 'Standalone Pipeline');
+    standaloneEngine.addStepToChain('standalone-chain', {
+      id: 'step-auto',
+      name: 'Auto Step',
+      providerId: 'ollama',
+      model: 'qwen2.5',
+      options: { ollamaThink: true, maxTokens: 1024 }
+    });
+
+    const summary = await standaloneEngine.executeChain({
+      chainId: 'standalone-chain',
+      userPrompt: 'Direct standalone run'
+    });
+
+    expect(summary.success).toBe(true);
+    expect(summary.finalOutput).toBe('Standalone Ollama Response');
+    expect(capturedReq.model).toBe('qwen2.5');
+    expect(capturedReq.think).toBe(true);
+    expect(capturedReq.maxTokens).toBe(1024);
+  });
 });

@@ -10,11 +10,29 @@ import type { ChatEngine } from '../../../engines/chat/ChatEngine';
 export function handleChatNewSession(engine: ChatEngine, args: string[]): string {
   const parsed = parseChatCLIArgs(args);
   const name = parsed.cleanTextParts.join(' ').trim() || 'default';
-  const session = engine.createSession(name, parsed.providerId || 'ollama', parsed.model || 'llama3', parsed.systemDirective, parsed.options);
-  let msg = `Created new chat session '${session.name}' (ID: ${session.id}) using provider '${session.providerId}' (Model: ${session.model}).`;
-  if (session.contextPackId) msg += ` [Context Pack: ${session.contextPackId}]`;
-  if (session.chainId) msg += ` [Chain: ${session.chainId}]`;
-  return msg;
+
+  const hasProviderOrModel = Boolean(parsed.providerId || parsed.model);
+  const hasChain = Boolean(parsed.options.chainId && parsed.options.chainId !== (null as any));
+
+  if (hasProviderOrModel && hasChain) {
+    return 'Error: A chat session must either target a direct AI provider/model OR be associated with a workflow chain, not both.';
+  }
+
+  const session = engine.createSession(
+    name,
+    hasChain ? undefined : parsed.providerId,
+    hasChain ? undefined : parsed.model,
+    parsed.systemDirective,
+    parsed.options
+  );
+
+  if (session.mode === 'chain') {
+    return `Created new chain-driven chat session '${session.name}' (ID: ${session.id}, Chain: ${session.chainId}).`;
+  }
+  if (session.mode === 'provider') {
+    return `Created new chat session '${session.name}' (ID: ${session.id}) using provider '${session.providerId}' (Model: ${session.model}).`;
+  }
+  return `Created new unconfigured chat session '${session.name}' (ID: ${session.id}). Set a provider ('chat config -p <provider> -m <model>') or link a chain ('chat config --chain <id>').`;
 }
 
 export function handleChatListSessions(engine: ChatEngine): string {
@@ -27,9 +45,13 @@ export function handleChatListSessions(engine: ChatEngine): string {
     ...sessions.map((s) => {
       const turnCount = (s.messages || []).length;
       const packTag = s.contextPackId || s.options?.contextPackId ? ` Pack: ${s.contextPackId || s.options?.contextPackId}` : '';
-      const chainTag = s.chainId || s.options?.chainId ? ` Chain: ${s.chainId || s.options?.chainId}` : '';
-      const assoc = packTag || chainTag ? ` (${[packTag, chainTag].filter(Boolean).join(',')})` : '';
-      return ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (Provider: ${s.providerId}, Model: ${s.model}, Turns: ${turnCount})${assoc}${s.id === defaultId ? ' [DEFAULT]' : ''}`;
+      let targetDesc = 'Unconfigured';
+      if (s.mode === 'chain') {
+        targetDesc = `Chain: ${s.chainId}`;
+      } else if (s.mode === 'provider') {
+        targetDesc = `Provider: ${s.providerId}, Model: ${s.model}`;
+      }
+      return ` ${s.id === active?.id ? '*' : ' '} [${s.id}] '${s.name}' (${targetDesc}, Turns: ${turnCount})${packTag ? ` (${packTag.trim()})` : ''}${s.id === defaultId ? ' [DEFAULT]' : ''}`;
     })
   ].join('\n');
 }

@@ -5,6 +5,7 @@
 
 import type { CustomFields } from '../../../kernel/types';
 import type { MediaContextItem } from '../../context/helpers/types';
+import type { ChatSessionOptions } from '../../chat/helpers/types';
 
 export interface ChainStep {
   id: string;
@@ -45,6 +46,7 @@ export interface ChainStep {
   enableStructuredResponse?: boolean;
   enableThinking?: boolean;
   temperature?: number;
+  options?: Partial<ChatSessionOptions>;
 }
 
 export interface ChainDefinition {

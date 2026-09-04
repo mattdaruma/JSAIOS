@@ -31,6 +31,12 @@ export const CHAIN_ENGINE_DESCRIPTOR: ServiceDescriptor = {
       options: [
         { flag: '-p, --provider <id>', description: 'Target AI provider for step (ollama, copilot, comfyui)' },
         { flag: '-m, --model <name>', description: 'Target AI model for step' },
+        { flag: '-t, --temp <float>', description: 'Step temperature float (0.0 to 2.0)' },
+        { flag: '--think [true|false]', description: 'Toggle model reasoning mode for step' },
+        { flag: '--max-tokens <int>', description: 'Completion token limit for step' },
+        { flag: '--num-ctx <int>', description: 'Context window token limit for step' },
+        { flag: '--options \'<json>\'', description: 'Inline JSON string with custom ChatSessionOptions' },
+        { flag: '--options-file <path>', description: 'Path to JSON file containing ChatSessionOptions' },
         { flag: '--vote <sample_count>', description: 'Enable Majority Voting self-consistency (e.g. --vote 3)' },
         { flag: '--pack <pack_id>', description: 'Attach Context Pack to step' },
         { flag: '--prompt <prompt_id>', description: 'Attach Prompt Template to step' },

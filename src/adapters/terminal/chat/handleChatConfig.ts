@@ -31,11 +31,25 @@ export function handleChatConfig(engine: ChatEngine, args: string[]): string {
     return formatConfigReport(active);
   }
 
+  const hasProviderOrModel = Boolean(parsed.providerId || parsed.model);
+  const hasChain = Boolean(parsed.options.chainId && parsed.options.chainId !== (null as any));
+
+  if (hasProviderOrModel && hasChain) {
+    return formatter.formatError('Error: A chat session must either target a direct AI provider/model OR be associated with a workflow chain, not both.');
+  }
+
   const updated = engine.updateSessionConfig(active.id, {
     providerId: parsed.providerId,
     model: parsed.model,
     systemDirective: parsed.systemDirective,
     options: parsed.options
   });
-  return `Updated settings for active chat session '${updated.name}' (Provider: ${updated.providerId}, Model: ${updated.model}).`;
+
+  if (updated.mode === 'chain') {
+    return `Updated settings for active chat session '${updated.name}' (Chain: ${updated.chainId}).`;
+  }
+  if (updated.mode === 'provider') {
+    return `Updated settings for active chat session '${updated.name}' (Provider: ${updated.providerId}, Model: ${updated.model}).`;
+  }
+  return `Updated settings for active chat session '${updated.name}' (Unconfigured).`;
 }

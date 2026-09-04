@@ -109,4 +109,37 @@ describe('Chat Session Associations with Context Packs and Workflow Chains', () 
 
     expect(capturedRequestSystemPrompt).toBe('You are a senior security auditor.');
   });
+
+  it('should enforce strict mode mutual exclusivity between direct provider/model and chain association', () => {
+    const kernel = new HoneyKernel();
+    const storage = new InMemorySessionStorage();
+    const chatEngine = new ChatEngine(kernel, storage);
+
+    // Reject creating session with both provider and chain
+    const errorRes = handleChatSessions(chatEngine, 'new', ['invalid-session', '-p', 'copilot', '-m', 'gpt-4o', '--chain', 'mychain']);
+    expect(errorRes).toContain('Error: A chat session must either target a direct AI provider/model OR be associated with a workflow chain, not both.');
+
+    // Setting chain clears prior provider and model
+    const session = chatEngine.createSession('mode-switch-session', 'ollama', 'llama3');
+    expect(session.mode).toBe('provider');
+    expect(session.providerId).toBe('ollama');
+
+    chatEngine.updateSessionConfig('mode-switch-session', {
+      options: { chainId: 'mychain' }
+    });
+    expect(session.mode).toBe('chain');
+    expect(session.chainId).toBe('mychain');
+    expect(session.providerId).toBeUndefined();
+    expect(session.model).toBeUndefined();
+
+    // Setting provider clears prior chainId
+    chatEngine.updateSessionConfig('mode-switch-session', {
+      providerId: 'copilot',
+      model: 'gpt-4o'
+    });
+    expect(session.mode).toBe('provider');
+    expect(session.providerId).toBe('copilot');
+    expect(session.model).toBe('gpt-4o');
+    expect(session.chainId).toBeUndefined();
+  });
 });

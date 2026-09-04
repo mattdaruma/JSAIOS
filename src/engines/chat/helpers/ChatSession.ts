@@ -9,8 +9,8 @@ import type { ChatMessage, ChatRole, ChatSessionData, ChatSessionOptions } from 
 export class ChatSession {
   public readonly id: string;
   public name: string;
-  public providerId: string;
-  public model: string;
+  public providerId?: string;
+  public model?: string;
   public contextPackId?: string;
   public chainId?: string;
   public messages: ChatMessage[] = [];
@@ -21,8 +21,8 @@ export class ChatSession {
   constructor(
     id: string,
     name: string,
-    providerId: string = 'ollama',
-    model: string = 'llama3',
+    providerId?: string,
+    model?: string,
     systemDirective?: string,
     options: ChatSessionOptions = {}
   ) {
@@ -41,12 +41,18 @@ export class ChatSession {
     }
   }
 
+  public get mode(): 'provider' | 'chain' | 'unconfigured' {
+    if (this.chainId) return 'chain';
+    if (this.providerId && this.model) return 'provider';
+    return 'unconfigured';
+  }
+
   public static fromJSON(data: ChatSessionData): ChatSession {
     const session = new ChatSession(
       data.id,
       data.name || data.id,
-      data.providerId || 'ollama',
-      data.model || 'llama3',
+      data.providerId,
+      data.model,
       undefined,
       data.options || {}
     );
@@ -88,6 +94,10 @@ export class ChatSession {
     if ('chainId' in newOptions) {
       this.chainId = newOptions.chainId || undefined;
       this.options.chainId = this.chainId;
+      if (this.chainId) {
+        this.providerId = undefined;
+        this.model = undefined;
+      }
     }
     this.updatedAt = Date.now();
   }
