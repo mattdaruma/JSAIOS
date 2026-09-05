@@ -17,6 +17,7 @@ import { handleChainTerminal } from '../terminal/chain/ChainTerminalAdapter';
 import { handlePlayJingle } from '../terminal/audio/AudioPlayerAdapter';
 import { handleHelpCommand } from './helpers/renderHelp';
 import { getCompletions } from './helpers/getCompletions';
+import { tokenizeCommandLine } from './helpers/tokenizeCommandLine';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import { ChainEngine } from '../../engines/chain/ChainEngine';
 import { getOrCreateChatEngine } from '../factories/createChatEngine';
@@ -105,7 +106,7 @@ export class CommandInterpreter {
     commandLine: string,
     onChunk?: (chunkText: string) => void
   ): Promise<string> {
-    const rawTokens = commandLine.trim().split(/\s+/).filter(Boolean);
+    const rawTokens = tokenizeCommandLine(commandLine);
     if (rawTokens.length === 0) return '';
 
     const rootCommand = rawTokens[0].toLowerCase();
