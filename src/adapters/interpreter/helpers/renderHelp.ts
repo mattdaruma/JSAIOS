@@ -32,9 +32,10 @@ export function renderDescriptorHelp(descriptor: ServiceDescriptor): string {
 
   if (descriptor.examples && descriptor.examples.length > 0) {
     lines.push('');
-    lines.push(' Examples:');
+    lines.push(' Examples & Formatting Guide:');
     for (const ex of descriptor.examples) {
-      lines.push(`   ${ex}`);
+      const indented = ex.split('\n').map((l) => `   ${l}`).join('\n');
+      lines.push(indented);
     }
   }
 

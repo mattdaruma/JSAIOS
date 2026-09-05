@@ -246,9 +246,10 @@
         }
       ],
       "examples": [
-        "Valid JSON Schema Types: string, number, integer, boolean, null, object, array",
-        "Single Quote Wrapper: structure create code_eval \"Code Evaluator\" --schema '{\"type\":\"object\",\"properties\":{\"summary\":{\"type\":\"string\"},\"score\":{\"type\":\"number\"}},\"required\":[\"summary\"]}'",
-        "Escaped Quote Wrapper: structure create score_out \"Score Output\" --schema \"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"score\\\":{\\\"type\\\":\\\"number\\\"}}}\""
+        "Valid JSON Schema Types: string, number, integer, boolean, null, object, array\n",
+        "Target JSON Schema Object Structure:\n  {\n    \"type\": \"object\",\n    \"properties\": {\n      \"summary\": { \"type\": \"string\" },\n      \"score\": { \"type\": \"number\" },\n      \"actionItems\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }\n    },\n    \"required\": [\"summary\", \"score\"]\n  }\n",
+        "CLI Single Quote Wrapper:\n  structure create code_eval \"Code Evaluator\" --schema '{\"type\":\"object\",\"properties\":{\"summary\":{\"type\":\"string\"},\"score\":{\"type\":\"number\"}},\"required\":[\"summary\"]}'\n",
+        "CLI Escaped Quote Wrapper:\n  structure create score_out \"Score Output\" --schema \"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"score\\\":{\\\"type\\\":\\\"number\\\"}}}\""
       ]
     },
     "chain": {
