@@ -13,6 +13,7 @@ import { handleOllamaTerminal } from '../terminal/services/OllamaTerminalAdapter
 import { handleComfyTerminal } from '../terminal/services/ComfyTerminalAdapter';
 import { handleCopilotTerminal } from '../terminal/services/CopilotTerminalAdapter';
 import { handleContextTerminal } from '../terminal/context/ContextTerminalAdapter';
+import { handleStructureCommands } from '../terminal/structure/structureCommands';
 import { handleChainTerminal } from '../terminal/chain/ChainTerminalAdapter';
 import { handlePlayJingle } from '../terminal/audio/AudioPlayerAdapter';
 import { handleHelpCommand } from './helpers/renderHelp';
@@ -55,6 +56,7 @@ export class CommandInterpreter {
       { command: 'services', description: 'List registered service drivers & driver help instructions' },
       { command: 'chat', description: "JSAIOS Interactive Chat Engine (Use 'chat help' or 'help chat')" },
       { command: 'context', description: "Context Management Engine (Use 'context help' or 'help context')" },
+      { command: 'structure', description: "Prompt & Response Structure Engine (Use 'structure help' or 'help structure')" },
       { command: 'chain', description: "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')" },
       { command: 'jingle', description: 'Play system startup audio sample jingle' },
       { command: 'clear', description: 'Clear terminal output screen' },
@@ -152,6 +154,9 @@ export class CommandInterpreter {
 
       case 'context':
         return handleContextTerminal(args, this.contextEngine);
+
+      case 'structure':
+        return handleStructureCommands(args, this.contextEngine);
 
       case 'chain':
         return handleChainTerminal(args, this.chainEngine);

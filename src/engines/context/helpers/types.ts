@@ -75,12 +75,21 @@ export interface ConditionalRule {
   injectedItems: ContextItem[];
 }
 
+export interface PromptResponseStructure {
+  id: string;
+  name: string;
+  description?: string;
+  defaultVariables?: CustomFields;
+  outputSchema?: Record<string, any>;
+}
+
 export interface AssembledContext {
   systemPrompt: string;
   contextItems: ContextItem[];
   mediaItems: MediaContextItem[];
   estimatedTokens: number;
   customFields?: CustomFields;
+  outputSchema?: Record<string, any>;
 }
 
 export interface IContextTemplateStorage {
@@ -93,4 +102,9 @@ export interface IContextTemplateStorage {
   savePack?(pack: ContextPack): Promise<void>;
   listPacks?(): Promise<ContextPack[]>;
   deletePack?(id: string): Promise<boolean>;
+
+  loadStructure?(id: string): Promise<PromptResponseStructure | null>;
+  saveStructure?(structure: PromptResponseStructure): Promise<void>;
+  listStructures?(): Promise<PromptResponseStructure[]>;
+  deleteStructure?(id: string): Promise<boolean>;
 }

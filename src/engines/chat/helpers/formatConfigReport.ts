@@ -43,6 +43,7 @@ export function formatConfigReport(session: ChatSession): string {
     `Provider            : ${session.providerId || 'None (Chain Mode / Unconfigured)'}`,
     `Model               : ${session.model || 'None (Chain Mode / Unconfigured)'}`,
     `Context Pack        : ${session.contextPackId || opts.contextPackId || 'None'}`,
+    `Structure           : ${session.structureId || opts.structureId || 'None'}`,
     `Workflow Chain      : ${session.chainId || opts.chainId || 'None'}`,
     `System Context      : ${sys ? `Present (${sys.content.length} chars) | View with "chat system"` : 'None'}`,
     '',

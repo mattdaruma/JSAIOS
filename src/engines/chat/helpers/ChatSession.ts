@@ -13,6 +13,7 @@ export class ChatSession {
   public model?: string;
   public contextPackId?: string;
   public chainId?: string;
+  public structureId?: string;
   public messages: ChatMessage[] = [];
   public options: ChatSessionOptions;
   public createdAt: number;
@@ -32,6 +33,7 @@ export class ChatSession {
     this.model = model;
     this.contextPackId = options.contextPackId;
     this.chainId = options.chainId;
+    this.structureId = options.structureId;
     this.options = options;
     this.createdAt = Date.now();
     this.updatedAt = Date.now();
@@ -58,6 +60,7 @@ export class ChatSession {
     );
     session.contextPackId = data.contextPackId || data.options?.contextPackId;
     session.chainId = data.chainId || data.options?.chainId;
+    session.structureId = data.structureId || data.options?.structureId;
     session.createdAt = data.createdAt || Date.now();
     session.updatedAt = data.updatedAt || Date.now();
     session.messages = Array.isArray(data.messages) ? data.messages : [];
@@ -90,6 +93,10 @@ export class ChatSession {
     if ('contextPackId' in newOptions) {
       this.contextPackId = newOptions.contextPackId || undefined;
       this.options.contextPackId = this.contextPackId;
+    }
+    if ('structureId' in newOptions) {
+      this.structureId = newOptions.structureId || undefined;
+      this.options.structureId = this.structureId;
     }
     if ('chainId' in newOptions) {
       this.chainId = newOptions.chainId || undefined;
@@ -129,6 +136,7 @@ export class ChatSession {
       model: this.model,
       contextPackId: this.contextPackId,
       chainId: this.chainId,
+      structureId: this.structureId,
       messages: this.messages,
       options: this.options,
       createdAt: this.createdAt,

@@ -64,6 +64,16 @@ export function parseChatCLIArgs(tokens: string[], providerId: string = 'ollama'
       }
     } else if (token === '--no-pack' || token === '--no-context-pack') {
       result.options.contextPackId = null as any;
+    } else if (token === '--structure') {
+      const val = tokens[++i];
+      const lower = (val || '').toLowerCase();
+      if (lower === 'none' || lower === 'null' || lower === 'off' || lower === 'clear') {
+        result.options.structureId = null as any;
+      } else if (val) {
+        result.options.structureId = val;
+      }
+    } else if (token === '--no-structure') {
+      result.options.structureId = null as any;
     } else if (token === '--chain') {
       const val = tokens[++i];
       const lower = (val || '').toLowerCase();

@@ -7,25 +7,22 @@
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { CustomFields } from '../../kernel/types';
 import type {
-  ContextItem,
-  SystemDirectiveTemplate,
-  MediaContextItem,
-  ConditionalRule,
-  AssembledContext,
-  IContextTemplateStorage,
-  ContextPack,
-  ContextPackItem,
-  ContextMergeStrategy
+  ContextItem, SystemDirectiveTemplate, MediaContextItem, ConditionalRule,
+  AssembledContext, IContextTemplateStorage, ContextPack, ContextPackItem,
+  ContextMergeStrategy, PromptResponseStructure
 } from './helpers/types';
 import type { ITokenizerService } from '../../services/tokenizer/ITokenizerService';
 import { HeuristicTokenizerService } from '../../services/tokenizer/HeuristicTokenizerService';
 import { interpolateTemplate } from './helpers/ContextTemplate';
 import { evaluateConditionalRules, evaluateCustomFieldCondition, type EvaluationState } from './helpers/ConditionEvaluator';
 import { pruneContextItems } from './helpers/TokenWindowPruner';
+import { StructureManager } from './helpers/StructureManager';
+import { ContextPackManager } from './helpers/ContextPackManager';
 
 export class ContextEngine {
   private templates: Map<string, SystemDirectiveTemplate> = new Map();
-  private packs: Map<string, ContextPack> = new Map();
+  private packManager: ContextPackManager;
+  private structureManager: StructureManager;
   private conditionalRules: ConditionalRule[] = [];
   private activeContextItems: Map<string, ContextItem> = new Map();
   private tokenizer: ITokenizerService;
@@ -36,6 +33,8 @@ export class ContextEngine {
     tokenizerAdapter?: ITokenizerService
   ) {
     this.tokenizer = tokenizerAdapter || new HeuristicTokenizerService();
+    this.packManager = new ContextPackManager(storageAdapter);
+    this.structureManager = new StructureManager(storageAdapter);
   }
 
   public registerTemplate(template: SystemDirectiveTemplate): void {
@@ -51,41 +50,49 @@ export class ContextEngine {
   }
 
   public registerPack(pack: ContextPack): void {
-    this.packs.set(pack.id, pack);
+    this.packManager.registerPack(pack);
   }
 
   public getPack(id: string): ContextPack | undefined {
-    return this.packs.get(id);
+    return this.packManager.getPack(id);
   }
 
   public listPacks(): ContextPack[] {
-    return Array.from(this.packs.values());
+    return this.packManager.listPacks();
   }
 
   public createPack(id: string, name: string, mergeStrategy: ContextMergeStrategy = 'single-system-prompt', defaultCustomFields: CustomFields = {}): ContextPack {
-    const pack: ContextPack = {
-      id,
-      name,
-      mergeStrategy,
-      items: [],
-      defaultCustomFields
-    };
-    this.registerPack(pack);
-    if (this.storageAdapter && this.storageAdapter.savePack) {
-      this.storageAdapter.savePack(pack).catch(() => {});
-    }
-    return pack;
+    return this.packManager.createPack(id, name, mergeStrategy, defaultCustomFields);
   }
 
   public addPromptToPack(packId: string, item: ContextPackItem): boolean {
-    const pack = this.packs.get(packId);
-    if (!pack) return false;
-    pack.items = pack.items.filter((i) => i.id !== item.id);
-    pack.items.push(item);
-    if (this.storageAdapter && this.storageAdapter.savePack) {
-      this.storageAdapter.savePack(pack).catch(() => {});
-    }
-    return true;
+    return this.packManager.addPromptToPack(packId, item);
+  }
+
+  public registerStructure(structure: PromptResponseStructure): void {
+    this.structureManager.registerStructure(structure);
+  }
+
+  public getStructure(id: string): PromptResponseStructure | undefined {
+    return this.structureManager.getStructure(id);
+  }
+
+  public listStructures(): PromptResponseStructure[] {
+    return this.structureManager.listStructures();
+  }
+
+  public createStructure(
+    id: string,
+    name: string,
+    outputSchema?: Record<string, any>,
+    defaultVariables: CustomFields = {},
+    description?: string
+  ): PromptResponseStructure {
+    return this.structureManager.createStructure(id, name, outputSchema, defaultVariables, description);
+  }
+
+  public deleteStructure(id: string): boolean {
+    return this.structureManager.deleteStructure(id);
   }
 
   public registerConditionalRule(rule: ConditionalRule): void {
@@ -107,6 +114,7 @@ export class ContextEngine {
   public assembleContext(options: {
     templateId?: string;
     packId?: string;
+    structureId?: string;
     variables?: CustomFields;
     customFields?: CustomFields;
     evaluationState?: EvaluationState;
@@ -115,13 +123,25 @@ export class ContextEngine {
     const {
       templateId,
       packId,
+      structureId,
       variables = {},
       customFields = {},
       evaluationState = {},
       maxTokenBudget = 4096
     } = options;
 
-    const mergedCustomFields: CustomFields = { ...variables, ...customFields };
+    let mergedCustomFields: CustomFields = { ...variables, ...customFields };
+    let outputSchema: Record<string, any> | undefined;
+
+    // Process Structure Defaults & Output Schema
+    if (structureId) {
+      const struct = this.structureManager.getStructure(structureId);
+      if (struct) {
+        mergedCustomFields = { ...struct.defaultVariables, ...mergedCustomFields };
+        outputSchema = struct.outputSchema;
+      }
+    }
+
     const contextItemsToAssemble: ContextItem[] = Array.from(this.activeContextItems.values());
     const promptParts: string[] = [];
 
@@ -135,7 +155,7 @@ export class ContextEngine {
 
     // 2. Context Pack Set Processing
     if (packId) {
-      const pack = this.packs.get(packId);
+      const pack = this.packManager.getPack(packId);
       if (pack) {
         const packFields = { ...pack.defaultCustomFields, ...mergedCustomFields };
 
@@ -197,7 +217,8 @@ export class ContextEngine {
       contextItems: prunedItems,
       mediaItems,
       estimatedTokens: totalTokens,
-      customFields: mergedCustomFields
+      customFields: mergedCustomFields,
+      outputSchema
     };
   }
 
@@ -214,12 +235,8 @@ export class ContextEngine {
       for (const tmpl of stored) {
         this.templates.set(tmpl.id, tmpl);
       }
-      if (this.storageAdapter.listPacks) {
-        const storedPacks = await this.storageAdapter.listPacks();
-        for (const pack of storedPacks) {
-          this.packs.set(pack.id, pack);
-        }
-      }
+      await this.packManager.loadFromStorage();
+      await this.structureManager.loadFromStorage();
     }
   }
 }

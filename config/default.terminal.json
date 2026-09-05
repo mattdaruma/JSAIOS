@@ -81,6 +81,10 @@
       "description": "Context Management Engine (Use 'context help' or 'help context')"
     },
     {
+      "command": "structure",
+      "description": "Prompt & Response Structure Engine (Use 'structure help' or 'help structure')"
+    },
+    {
       "command": "chain",
       "description": "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')"
     },
@@ -211,6 +215,34 @@
           "options": [
             { "flag": "--field key=val", "description": "Pass custom field variable" }
           ]
+        }
+      ]
+    },
+    "structure": {
+      "id": "structure",
+      "name": "Prompt & Response Structure Engine",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["variable-defaults", "json-output-schema", "session-binding"],
+      "commands": [
+        {
+          "command": "structure list",
+          "description": "List registered prompt/response structure assets"
+        },
+        {
+          "command": "structure show <id>",
+          "description": "Display structure details, default variables, and JSON schema"
+        },
+        {
+          "command": "structure create <id> <name>",
+          "description": "Create a new structure asset",
+          "options": [
+            { "flag": "--schema \"<json_str>\"", "description": "Pass inline JSON schema string" }
+          ]
+        },
+        {
+          "command": "structure delete <id>",
+          "description": "Delete a structure asset"
         }
       ]
     },

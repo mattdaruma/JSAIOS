@@ -5,20 +5,26 @@
 
 import fs from 'fs';
 import path from 'path';
-import type { ContextPack, IContextTemplateStorage, SystemDirectiveTemplate } from '../../engines/context/helpers/types';
+import type { ContextPack, IContextTemplateStorage, PromptResponseStructure, SystemDirectiveTemplate } from '../../engines/context/helpers/types';
 
 export class FileContextStorage implements IContextTemplateStorage {
   private baseDir: string;
   private packsDir: string;
+  private structuresDir: string;
 
   constructor(customDir?: string) {
     this.baseDir = customDir || path.resolve(process.cwd(), 'storage', 'templates');
     this.packsDir = path.join(this.baseDir, 'packs');
+    this.structuresDir = path.resolve(process.cwd(), 'storage', 'structures');
+
     if (!fs.existsSync(this.baseDir)) {
       fs.mkdirSync(this.baseDir, { recursive: true });
     }
     if (!fs.existsSync(this.packsDir)) {
       fs.mkdirSync(this.packsDir, { recursive: true });
+    }
+    if (!fs.existsSync(this.structuresDir)) {
+      fs.mkdirSync(this.structuresDir, { recursive: true });
     }
   }
 
@@ -110,6 +116,55 @@ export class FileContextStorage implements IContextTemplateStorage {
   public async deletePack(id: string): Promise<boolean> {
     try {
       const filePath = path.join(this.packsDir, `${id}.json`);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        return true;
+      }
+    } catch {
+      // Fail false
+    }
+    return false;
+  }
+
+  public async loadStructure(id: string): Promise<PromptResponseStructure | null> {
+    try {
+      const filePath = path.join(this.structuresDir, `${id}.json`);
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        return JSON.parse(raw) as PromptResponseStructure;
+      }
+    } catch {
+      // Fallback null
+    }
+    return null;
+  }
+
+  public async saveStructure(structure: PromptResponseStructure): Promise<void> {
+    const filePath = path.join(this.structuresDir, `${structure.id}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(structure, null, 2), 'utf-8');
+  }
+
+  public async listStructures(): Promise<PromptResponseStructure[]> {
+    const structures: PromptResponseStructure[] = [];
+    try {
+      if (fs.existsSync(this.structuresDir)) {
+        const files = fs.readdirSync(this.structuresDir);
+        for (const file of files) {
+          if (file.endsWith('.json')) {
+            const raw = fs.readFileSync(path.join(this.structuresDir, file), 'utf-8');
+            structures.push(JSON.parse(raw));
+          }
+        }
+      }
+    } catch {
+      // Return empty array on error
+    }
+    return structures;
+  }
+
+  public async deleteStructure(id: string): Promise<boolean> {
+    try {
+      const filePath = path.join(this.structuresDir, `${id}.json`);
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
         return true;
