@@ -17,6 +17,7 @@ import { handleStructureCommands } from '../terminal/structure/structureCommands
 import { handleBatchCommands } from '../terminal/batch/batchCommands';
 import { handleChainTerminal } from '../terminal/chain/ChainTerminalAdapter';
 import { handleMcpCommands } from '../terminal/mcp/mcpCommands';
+import { handleDatabaseCommands } from '../terminal/database/databaseCommands';
 import { handlePlayJingle } from '../terminal/audio/AudioPlayerAdapter';
 import { handleHelpCommand } from './helpers/renderHelp';
 import { getCompletions } from './helpers/getCompletions';
@@ -24,6 +25,7 @@ import { tokenizeCommandLine } from './helpers/tokenizeCommandLine';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import { ChainEngine } from '../../engines/chain/ChainEngine';
 import { BatchEngine } from '../../engines/batch/BatchEngine';
+import { DatabaseEngine } from '../../engines/database/DatabaseEngine';
 import { McpClientAdapter } from '../mcp/McpClientAdapter';
 import { BatchSourceRegistry } from '../batch/BatchSourceRegistry';
 import { FileBatchStorage } from '../storage/FileBatchStorage';
@@ -46,7 +48,8 @@ export class CommandInterpreter {
   private contextEngine: ContextEngine = new ContextEngine();
   private chainEngine: ChainEngine = new ChainEngine(undefined, undefined, this.contextEngine);
   private mcpClient: McpClientAdapter = new McpClientAdapter();
-  private batchEngine: BatchEngine = new BatchEngine(undefined, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient));
+  private dbEngine: DatabaseEngine = new DatabaseEngine();
+  private batchEngine: BatchEngine = new BatchEngine(undefined, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient, this.dbEngine));
 
   private config: TerminalManifestConfig = {
     version: '1.0.0',
@@ -67,6 +70,7 @@ export class CommandInterpreter {
       { command: 'structure', description: "Prompt & Response Structure Engine (Use 'structure help' or 'help structure')" },
       { command: 'batch', description: "Map-Reduce Batch File Processing Engine (Use 'batch help' or 'help batch')" },
       { command: 'chain', description: "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')" },
+      { command: 'db', description: "Database Engine & State Management (Use 'db help' or 'help db')" },
       { command: 'jingle', description: 'Play system startup audio sample jingle' },
       { command: 'clear', description: 'Clear terminal output screen' },
       { command: 'exit', description: 'Quit terminal shell' }
@@ -77,7 +81,7 @@ export class CommandInterpreter {
     this.loadManifest(manifestPath);
     const chatEngine = getOrCreateChatEngine(kernel, this.contextEngine, this.chainEngine);
     this.chainEngine = new ChainEngine(kernel, chatEngine, this.contextEngine);
-    this.batchEngine = new BatchEngine(kernel, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient));
+    this.batchEngine = new BatchEngine(kernel, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient, this.dbEngine));
     this.batchEngine.loadJobsFromStorage().catch(() => {});
   }
 
@@ -177,6 +181,10 @@ export class CommandInterpreter {
 
       case 'mcp':
         return await handleMcpCommands(args, this.mcpClient);
+
+      case 'db':
+      case 'database':
+        return await handleDatabaseCommands(args, this.dbEngine);
 
       case 'ollama': {
         const service = this.kernel.getService<OllamaService>('ollama');

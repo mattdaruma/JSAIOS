@@ -97,6 +97,10 @@
       "description": "Model Context Protocol Engine & Gateway (Use 'mcp help' or 'help mcp')"
     },
     {
+      "command": "db",
+      "description": "Database Engine & State Management (Use 'db help' or 'help db')"
+    },
+    {
       "command": "jingle",
       "description": "Play system startup audio sample jingle"
     },

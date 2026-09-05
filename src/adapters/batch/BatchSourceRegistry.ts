@@ -11,12 +11,14 @@ import { GitLabBatchSource } from './sources/GitLabBatchSource';
 import { ConfluenceBatchSource } from './sources/ConfluenceBatchSource';
 import { JiraBatchSource } from './sources/JiraBatchSource';
 import { McpBatchSource } from './sources/McpBatchSource';
+import { DatabaseBatchSource } from './sources/DatabaseBatchSource';
 import type { McpClientAdapter } from '../mcp/McpClientAdapter';
+import type { DatabaseEngine } from '../../engines/database/DatabaseEngine';
 
 export class BatchSourceRegistry {
   private adapters: Map<string, IBatchSourceAdapter> = new Map();
 
-  constructor(mcpClient?: McpClientAdapter) {
+  constructor(mcpClient?: McpClientAdapter, dbEngine?: DatabaseEngine) {
     this.registerAdapter(new LocalFileBatchSource());
     this.registerAdapter(new HttpBatchSource());
     this.registerAdapter(new GitHubBatchSource());
@@ -24,6 +26,7 @@ export class BatchSourceRegistry {
     this.registerAdapter(new ConfluenceBatchSource());
     this.registerAdapter(new JiraBatchSource());
     this.registerAdapter(new McpBatchSource(mcpClient));
+    this.registerAdapter(new DatabaseBatchSource(dbEngine));
   }
 
   public registerAdapter(adapter: IBatchSourceAdapter): void {

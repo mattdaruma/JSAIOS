@@ -3,7 +3,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",248,212,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",243,204,13,250,false
 "src/adapters/terminal/chain/chainCommands.ts","chainCommands.ts",".ts","TypeScript Logic",221,185,6,250,false
-"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",211,180,5,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",219,187,5,250,false
 "src/engines/batch/BatchEngine.ts","BatchEngine.ts",".ts","TypeScript Logic",196,170,7,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",183,161,5,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",179,165,5,250,false
@@ -35,7 +35,9 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/batch/sources/HttpBatchSource.ts","HttpBatchSource.ts",".ts","TypeScript Logic",97,85,9,250,false
 "src/engines/chain/helpers/types.ts","types.ts",".ts","TypeScript Logic",96,82,10,250,false
 "src/adapters/storage/FileBatchStorage.ts","FileBatchStorage.ts",".ts","TypeScript Logic",95,84,7,250,false
+"src/adapters/terminal/database/databaseCommands.ts","databaseCommands.ts",".ts","TypeScript Logic",94,82,4,250,false
 "src/shell/browser/hooks/useSearchableList.ts","useSearchableList.ts",".ts","TypeScript Logic",94,81,8,250,false
+"src/adapters/database/SqliteDatabaseAdapter.ts","SqliteDatabaseAdapter.ts",".ts","TypeScript Logic",93,80,4,250,false
 "src/adapters/terminal/batch/batchCommands.ts","batchCommands.ts",".ts","TypeScript Logic",93,77,4,250,false
 "src/adapters/batch/sources/GitHubBatchSource.ts","GitHubBatchSource.ts",".ts","TypeScript Logic",92,74,6,250,false
 "src/adapters/terminal/services/parseComfyOptions.ts","parseComfyOptions.ts",".ts","TypeScript Logic",90,82,5,250,false
@@ -70,11 +72,14 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/kernel/daemon/helpers/DaemonLogger.ts","DaemonLogger.ts",".ts","TypeScript Logic",71,58,5,250,false
 "src/adapters/storage/FileChainStorage.ts","FileChainStorage.ts",".ts","TypeScript Logic",70,59,5,250,false
 "src/engines/context/helpers/ConditionEvaluator.ts","ConditionEvaluator.ts",".ts","TypeScript Logic",70,57,4,250,false
+"src/adapters/database/HttpDatabaseAdapter.ts","HttpDatabaseAdapter.ts",".ts","TypeScript Logic",69,56,5,250,false
 "src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",67,56,7,250,false
 "src/kernel/EventBus.ts","EventBus.ts",".ts","TypeScript Logic",67,57,14,250,false
+"src/adapters/batch/BatchSourceRegistry.ts","BatchSourceRegistry.ts",".ts","TypeScript Logic",66,56,5,250,false
 "src/engines/context/helpers/ContextPackManager.ts","ContextPackManager.ts",".ts","TypeScript Logic",66,56,4,250,false
 "src/engines/context/helpers/StructureManager.ts","StructureManager.ts",".ts","TypeScript Logic",64,54,4,250,false
-"src/adapters/batch/BatchSourceRegistry.ts","BatchSourceRegistry.ts",".ts","TypeScript Logic",63,53,5,250,false
+"src/engines/database/DatabaseEngine.ts","DatabaseEngine.ts",".ts","TypeScript Logic",64,53,5,250,false
+"src/adapters/batch/sources/DatabaseBatchSource.ts","DatabaseBatchSource.ts",".ts","TypeScript Logic",62,49,4,250,false
 "src/adapters/batch/sources/McpBatchSource.ts","McpBatchSource.ts",".ts","TypeScript Logic",62,50,4,250,false
 "src/adapters/interpreter/helpers/getCompletions.ts","getCompletions.ts",".ts","TypeScript Logic",62,52,4,250,false
 "src/adapters/interpreter/helpers/tokenizeCommandLine.ts","tokenizeCommandLine.ts",".ts","TypeScript Logic",62,50,4,250,false
@@ -113,6 +118,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/batch/helpers/RollingAccumulator.ts","RollingAccumulator.ts",".ts","TypeScript Logic",43,35,4,250,false
 "src/shell/browser/components/Button.tsx","Button.tsx",".tsx","React Component",43,37,4,250,false
 "src/shell/browser/components/Modal.tsx","Modal.tsx",".tsx","React Component",43,38,4,250,false
+"src/adapters/database/types.ts","types.ts",".ts","TypeScript Logic",42,36,4,250,false
 "src/services/ai/comfyui/helpers/listWorkflows.ts","listWorkflows.ts",".ts","TypeScript Logic",42,36,5,250,false
 "src/adapters/terminal/chat/handleChatStatus.ts","handleChatStatus.ts",".ts","TypeScript Logic",41,33,4,250,false
 "src/shell/terminal/helpers/handleDraftHistory.ts","handleDraftHistory.ts",".ts","TypeScript Logic",41,30,7,250,false
