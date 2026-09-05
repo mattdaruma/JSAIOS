@@ -27,12 +27,17 @@ export function handleStructureCommands(args: string[], contextEngine: ContextEn
       const struct = contextEngine.getStructure(id);
       if (!struct) return `Structure '${id}' not found. Use 'structure list' to view registered structures.`;
 
+      const schemaStr = struct.outputSchema
+        ? JSON.stringify(struct.outputSchema, null, 2).split('\n').map((l) => `  ${l}`).join('\n')
+        : '  None';
+
       return [
         `=== Structure Reference '${struct.id}' ===`,
-        `Name: ${struct.name}`,
-        `Description: ${struct.description || 'None'}`,
-        `Default Variables: ${JSON.stringify(struct.defaultVariables || {})}`,
-        `Output Schema: ${struct.outputSchema ? JSON.stringify(struct.outputSchema, null, 2) : 'None'}`
+        `Name               : ${struct.name}`,
+        `Description        : ${struct.description || 'None'}`,
+        `Default Variables  : ${JSON.stringify(struct.defaultVariables || {})}`,
+        `Output Schema      :`,
+        schemaStr
       ].join('\n');
     }
 
@@ -56,8 +61,8 @@ export function handleStructureCommands(args: string[], contextEngine: ContextEn
 
       return [
         `=== Structure Created ===`,
-        `Structure ID: ${struct.id}`,
-        `Name: ${struct.name}`,
+        `Structure ID     : ${struct.id}`,
+        `Name             : ${struct.name}`,
         `Schema Configured: ${Boolean(struct.outputSchema)}`
       ].join('\n');
     }
@@ -81,12 +86,27 @@ export function handleStructureCommands(args: string[], contextEngine: ContextEn
         '  • structure create <id> <name> [--schema <json>]- Create a new structure asset',
         '  • structure delete <id>                        - Delete a structure asset',
         '',
-        'JSON Schema Formatting (--schema):',
-        '  Pass valid JSON strings wrapped in quotes. Enclose property names in escaped or double quotes.',
-        '  Example 1 (Single quote wrapper):',
-        '    structure create code_eval "Code Evaluator" --schema \'{"type":"object","properties":{"summary":{"type":"string"}},"required":["summary"]}\'',
-        '  Example 2 (Escaped quote wrapper):',
-        '    structure create score_out "Score Output" --schema "{\\"type\\":\\"object\\",\\"properties\\":{\\"score\\":{\\"type\\":\\"number\\"}}}"',
+        'Valid JSON Schema Types:',
+        '  • Primitives : string, number, integer, boolean, null',
+        '  • Complex    : object (properties, required), array (items)',
+        '',
+        'Schema Object Formatting Example (--schema):',
+        '  Formatted Schema Target Structure:',
+        '    {',
+        '      "type": "object",',
+        '      "properties": {',
+        '        "summary": { "type": "string" },',
+        '        "score": { "type": "number" },',
+        '        "actionItems": { "type": "array", "items": { "type": "string" } }',
+        '      },',
+        '      "required": ["summary", "score"]',
+        '    }',
+        '',
+        '  CLI Invocations:',
+        '    Single Quote Wrapper:',
+        '      structure create code_eval "Code Evaluator" --schema \'{"type":"object","properties":{"summary":{"type":"string"},"score":{"type":"number"}},"required":["summary"]}\'',
+        '    Escaped Quote Wrapper:',
+        '      structure create score_out "Score Output" --schema "{\\"type\\":\\"object\\",\\"properties\\":{\\"score\\":{\\"type\\":\\"number\\"}}}"',
         '',
         'Session Binding:',
         '  chat edit <session_id> --structure <structure_id>'

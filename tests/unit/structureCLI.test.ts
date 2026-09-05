@@ -31,7 +31,7 @@ describe('Prompt & Response Structure Infrastructure', () => {
       ['create', 'json_eval', 'JSON Evaluator', '--schema', '{"type":"object"}'],
       engine
     );
-    expect(createOut).toContain('Structure ID: json_eval');
+    expect(createOut).toContain('json_eval');
     expect(createOut).toContain('Schema Configured: true');
 
     const listOut = handleStructureCommands(['list'], engine);

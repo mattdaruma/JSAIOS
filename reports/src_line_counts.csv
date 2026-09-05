@@ -21,6 +21,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/terminal/context/packCommands.ts","packCommands.ts",".ts","TypeScript Logic",124,100,4,250,false
 "src/kernel/types.ts","types.ts",".ts","TypeScript Logic",122,104,4,250,false
 "src/services/ai/comfyui/helpers/applyWorkflowOverrides.ts","applyWorkflowOverrides.ts",".ts","TypeScript Logic",122,104,10,250,false
+"src/adapters/terminal/structure/structureCommands.ts","structureCommands.ts",".ts","TypeScript Logic",116,100,4,250,false
 "src/services/ai/ollama/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",113,95,7,250,false
 "src/shell/browser/components/BrowserApp.tsx","BrowserApp.tsx",".tsx","React Component",113,101,5,250,false
 "src/engines/context/helpers/types.ts","types.ts",".ts","TypeScript Logic",111,95,4,250,false
@@ -29,7 +30,6 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/terminal/chat/ChatTerminalAdapter.ts","ChatTerminalAdapter.ts",".ts","TypeScript Logic",103,91,4,250,false
 "src/adapters/terminal/context/ContextTerminalAdapter.ts","ContextTerminalAdapter.ts",".ts","TypeScript Logic",103,92,3,250,false
 "src/adapters/terminal/services/ComfyTerminalAdapter.ts","ComfyTerminalAdapter.ts",".ts","TypeScript Logic",102,82,4,250,false
-"src/adapters/terminal/structure/structureCommands.ts","structureCommands.ts",".ts","TypeScript Logic",96,81,4,250,false
 "src/engines/chain/helpers/types.ts","types.ts",".ts","TypeScript Logic",96,82,10,250,false
 "src/shell/browser/hooks/useSearchableList.ts","useSearchableList.ts",".ts","TypeScript Logic",94,81,8,250,false
 "src/adapters/terminal/services/parseComfyOptions.ts","parseComfyOptions.ts",".ts","TypeScript Logic",90,82,5,250,false

@@ -246,8 +246,9 @@
         }
       ],
       "examples": [
-        "structure create code_eval \"Code Evaluator\" --schema '{\"type\":\"object\",\"properties\":{\"summary\":{\"type\":\"string\"}}}'",
-        "structure create score_out \"Score Output\" --schema \"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"score\\\":{\\\"type\\\":\\\"number\\\"}}}\""
+        "Valid JSON Schema Types: string, number, integer, boolean, null, object, array",
+        "Single Quote Wrapper: structure create code_eval \"Code Evaluator\" --schema '{\"type\":\"object\",\"properties\":{\"summary\":{\"type\":\"string\"},\"score\":{\"type\":\"number\"}},\"required\":[\"summary\"]}'",
+        "Escaped Quote Wrapper: structure create score_out \"Score Output\" --schema \"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"score\\\":{\\\"type\\\":\\\"number\\\"}}}\""
       ]
     },
     "chain": {
