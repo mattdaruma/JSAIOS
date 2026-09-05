@@ -7,6 +7,9 @@ import type { BatchItem, IBatchSourceAdapter } from '../../engines/batch/helpers
 import { LocalFileBatchSource } from './sources/LocalFileBatchSource';
 import { HttpBatchSource } from './sources/HttpBatchSource';
 import { GitHubBatchSource } from './sources/GitHubBatchSource';
+import { GitLabBatchSource } from './sources/GitLabBatchSource';
+import { ConfluenceBatchSource } from './sources/ConfluenceBatchSource';
+import { JiraBatchSource } from './sources/JiraBatchSource';
 
 export class BatchSourceRegistry {
   private adapters: Map<string, IBatchSourceAdapter> = new Map();
@@ -15,6 +18,9 @@ export class BatchSourceRegistry {
     this.registerAdapter(new LocalFileBatchSource());
     this.registerAdapter(new HttpBatchSource());
     this.registerAdapter(new GitHubBatchSource());
+    this.registerAdapter(new GitLabBatchSource());
+    this.registerAdapter(new ConfluenceBatchSource());
+    this.registerAdapter(new JiraBatchSource());
   }
 
   public registerAdapter(adapter: IBatchSourceAdapter): void {

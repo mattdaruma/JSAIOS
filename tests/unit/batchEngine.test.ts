@@ -152,4 +152,86 @@ describe('BatchEngine Map-Reduce Infrastructure', () => {
       global.fetch = originalFetch;
     }
   });
+
+  it('should fetch GitLab repository items via GitLabBatchSource', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = (async (url: string) => {
+      if (url.includes('/repository/tree')) {
+        return {
+          ok: true,
+          json: async () => ([
+            { type: 'blob', path: 'src/app.ts' }
+          ])
+        } as any;
+      }
+      return {
+        ok: true,
+        text: async () => 'console.log("gitlab code");'
+      } as any;
+    }) as any;
+
+    try {
+      const storage = new FileBatchStorage(path.join(testDir, 'jobs'));
+      const engine = new BatchEngine(undefined, storage);
+      engine.createJob('gitlab_job', 'GitLab Job', 'gitlab://12345/main', undefined, ['ts']);
+
+      const report = await engine.executeBatchJob('gitlab_job');
+      expect(report).toContain('GitLab Job');
+      expect(report).toContain('Target Files    : 1');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it('should fetch Confluence space pages via ConfluenceBatchSource', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = (async () => {
+      return {
+        ok: true,
+        json: async () => ({
+          results: [
+            { id: '101', title: 'Architecture Specs', body: { storage: { value: '<p>Hexagonal design rules</p>' } } }
+          ]
+        })
+      } as any;
+    }) as any;
+
+    try {
+      const storage = new FileBatchStorage(path.join(testDir, 'jobs'));
+      const engine = new BatchEngine(undefined, storage);
+      engine.createJob('conf_job', 'Confluence Job', 'confluence://DEV', undefined, undefined, 'ollama', 'llama3', 'confluence');
+
+      const report = await engine.executeBatchJob('conf_job');
+      expect(report).toContain('Confluence Job');
+      expect(report).toContain('Target Files    : 1');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it('should fetch Jira issue descriptions via JiraBatchSource', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = (async () => {
+      return {
+        ok: true,
+        json: async () => ({
+          issues: [
+            { id: '201', key: 'PROJ-42', fields: { summary: 'Fix database connection pool leak', description: 'Connection pool runs out under high load' } }
+          ]
+        })
+      } as any;
+    }) as any;
+
+    try {
+      const storage = new FileBatchStorage(path.join(testDir, 'jobs'));
+      const engine = new BatchEngine(undefined, storage);
+      engine.createJob('jira_job', 'Jira Job', 'jira://project=PROJ', undefined, undefined, 'ollama', 'llama3', 'jira');
+
+      const report = await engine.executeBatchJob('jira_job');
+      expect(report).toContain('Jira Job');
+      expect(report).toContain('Target Files    : 1');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
 });

@@ -23,7 +23,7 @@ export function handleBatchCommands(args: string[], batchEngine: BatchEngine): s
       const name = args[2] || id;
       const dir = args[3] || './src';
 
-      if (!id) return 'Usage: batch create <id> <name> <target> [--source <type>] [--pattern <regex>] [--ext <ts,js>]';
+      if (!id) return 'Usage: batch create <id> <name> <target> [--source local|http|github|gitlab|confluence|jira] [--pattern <regex>] [--ext <ts,js>]';
 
       let patternFilter: string | undefined;
       const patternIdx = args.indexOf('--pattern');

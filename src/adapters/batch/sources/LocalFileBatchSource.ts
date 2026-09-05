@@ -12,7 +12,7 @@ export class LocalFileBatchSource implements IBatchSourceAdapter {
 
   public canHandle(target: string): boolean {
     if (!target) return false;
-    if (target.startsWith('http://') || target.startsWith('https://') || target.startsWith('github://')) {
+    if (target.includes('://') && !target.startsWith('file://')) {
       return false;
     }
     return true;
