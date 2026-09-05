@@ -71,13 +71,25 @@ export function handleStructureCommands(args: string[], contextEngine: ContextEn
       return `Structure '${id}' deleted successfully.`;
     }
 
+    case 'help':
     default:
       return [
-        'Structure Commands:',
+        '=== Structure Engine Reference & Formatting Guide ===',
+        'Commands:',
         '  • structure list                               - List registered prompt/response structures',
         '  • structure show <id>                          - Inspect structure schema and variables',
         '  • structure create <id> <name> [--schema <json>]- Create a new structure asset',
-        '  • structure delete <id>                        - Delete a structure asset'
+        '  • structure delete <id>                        - Delete a structure asset',
+        '',
+        'JSON Schema Formatting (--schema):',
+        '  Pass valid JSON strings wrapped in quotes. Enclose property names in escaped or double quotes.',
+        '  Example 1 (Single quote wrapper):',
+        '    structure create code_eval "Code Evaluator" --schema \'{"type":"object","properties":{"summary":{"type":"string"}},"required":["summary"]}\'',
+        '  Example 2 (Escaped quote wrapper):',
+        '    structure create score_out "Score Output" --schema "{\\"type\\":\\"object\\",\\"properties\\":{\\"score\\":{\\"type\\":\\"number\\"}}}"',
+        '',
+        'Session Binding:',
+        '  chat edit <session_id> --structure <structure_id>'
       ].join('\n');
   }
 }

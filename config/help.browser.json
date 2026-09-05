@@ -79,6 +79,15 @@
               "tags": ["chat", "chat-engine", "sessions", "sticky-context"]
             },
             {
+              "id": "engine-structure",
+              "title": "Prompt & Response Structure Engine",
+              "category": "engines",
+              "badge": "Engine",
+              "description": "Standalone Prompt & Response Structure assets managing custom field variable defaults and JSON output schema enforcement. Structures bind directly to interactive chat sessions or workflow chain steps.",
+              "codeSnippet": "structure create code_eval \"Code Evaluator\" --schema '{\"type\":\"object\",\"properties\":{\"summary\":{\"type\":\"string\"}}}'\nchat edit <session_id> --structure code_eval",
+              "tags": ["structure", "json-schema", "variable-defaults", "session-binding"]
+            },
+            {
               "id": "driver-ollama",
               "title": "Ollama Service Transport Driver",
               "category": "services",

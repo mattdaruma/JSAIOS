@@ -29,6 +29,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/terminal/chat/ChatTerminalAdapter.ts","ChatTerminalAdapter.ts",".ts","TypeScript Logic",103,91,4,250,false
 "src/adapters/terminal/context/ContextTerminalAdapter.ts","ContextTerminalAdapter.ts",".ts","TypeScript Logic",103,92,3,250,false
 "src/adapters/terminal/services/ComfyTerminalAdapter.ts","ComfyTerminalAdapter.ts",".ts","TypeScript Logic",102,82,4,250,false
+"src/adapters/terminal/structure/structureCommands.ts","structureCommands.ts",".ts","TypeScript Logic",96,81,4,250,false
 "src/engines/chain/helpers/types.ts","types.ts",".ts","TypeScript Logic",96,82,10,250,false
 "src/shell/browser/hooks/useSearchableList.ts","useSearchableList.ts",".ts","TypeScript Logic",94,81,8,250,false
 "src/adapters/terminal/services/parseComfyOptions.ts","parseComfyOptions.ts",".ts","TypeScript Logic",90,82,5,250,false
@@ -38,7 +39,6 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/server/helpers/serverActionDispatcher.ts","serverActionDispatcher.ts",".ts","TypeScript Logic",88,77,7,250,false
 "src/shell/terminal/formatters/POSIXBashFormatter.ts","POSIXBashFormatter.ts",".ts","TypeScript Logic",85,70,4,250,false
 "src/shell/terminal/formatters/WinPowerShellFormatter.ts","WinPowerShellFormatter.ts",".ts","TypeScript Logic",85,70,4,250,false
-"src/adapters/terminal/structure/structureCommands.ts","structureCommands.ts",".ts","TypeScript Logic",84,69,4,250,false
 "src/services/ai/comfyui/helpers/buildWorkflow.ts","buildWorkflow.ts",".ts","TypeScript Logic",84,79,4,250,false
 "src/services/ai/copilot/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",84,73,5,250,false
 "src/services/ai/ollama/OllamaService.ts","OllamaService.ts",".ts","TypeScript Logic",82,72,4,250,false
