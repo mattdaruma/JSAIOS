@@ -12,8 +12,10 @@ dist/
 ./scratch
 scratch/
 tests/tmpdir/
-chat-sessions/
-./chat-sessions
+# User Data & Runtime Storage
+/storage/
+/logs/
+/chat-sessions/
 
 # Log files
 *.log

@@ -11,7 +11,7 @@ export class FileChainStorage implements IChainStorage {
   private targetDir: string;
 
   constructor(customDir?: string) {
-    this.targetDir = customDir || path.join(process.cwd(), 'config', 'chains');
+    this.targetDir = customDir || path.join(process.cwd(), 'storage', 'chains');
     this.ensureDirectory();
   }
 

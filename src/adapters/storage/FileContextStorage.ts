@@ -12,7 +12,7 @@ export class FileContextStorage implements IContextTemplateStorage {
   private packsDir: string;
 
   constructor(customDir?: string) {
-    this.baseDir = customDir || path.resolve(process.cwd(), 'config', 'templates');
+    this.baseDir = customDir || path.resolve(process.cwd(), 'storage', 'templates');
     this.packsDir = path.join(this.baseDir, 'packs');
     if (!fs.existsSync(this.baseDir)) {
       fs.mkdirSync(this.baseDir, { recursive: true });

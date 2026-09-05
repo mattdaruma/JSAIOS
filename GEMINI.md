@@ -64,3 +64,7 @@ ALWAYS inspect and follow [ARCHITECTURE.md](file:///c:/Users/jerry/JSAIOS/ARCHIT
 ### 9. Pragmatic, Zero-Flattery Peer Review Policy
 - **Strict Rule**: Maintain a direct, objective, and pragmatic engineering tone. Zero flattery, zero filler praise ("brilliant", "genius", "great idea"), and zero cheerleader commentary.
 - **Critical & Realistic Evaluation**: Act as a strict, pragmatic senior staff architect. Always evaluate proposed features against over-engineering risks, local hardware limitations, maintenance burden, readability for other developers, and standard industry conventions before endorsing implementation.
+
+### 10. Protection of User Data in Protected `storage/` Directory
+- **Strict Rule**: ALL user-created and runtime data (chat sessions, prompt templates, context packs, user-defined workflow chains, usage logs, terminal history) MUST be stored inside the top-level `storage/` parent directory (e.g. `storage/chat-sessions/`, `storage/templates/`, `storage/chains/`, `storage/logs/`).
+- **Strict Git Exclusion**: The entire `storage/` parent directory MUST be protected by `.gitignore` so that user data, prompt templates, chat sessions, logs, and private histories are NEVER committed to the git repository.

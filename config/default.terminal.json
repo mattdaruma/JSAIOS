@@ -41,7 +41,7 @@
     {
       "id": "chat",
       "type": "chat",
-      "storageDir": "chat-sessions",
+      "storageDir": "storage/chat-sessions",
       "enabled": true
     }
   ],

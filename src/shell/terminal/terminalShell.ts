@@ -14,7 +14,7 @@ import { handleDraftClearOnDown } from './helpers/handleDraftHistory';
 import { setActiveReadlineInterface, printLogAbovePrompt } from './helpers/printLogAbovePrompt';
 import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
 
-const HISTORY_FILE = path.join(process.cwd(), 'logs', 'terminal_history.txt');
+const HISTORY_FILE = path.join(process.cwd(), 'storage', 'logs', 'terminal_history.txt');
 
 function loadTerminalHistory(): string[] {
   try {

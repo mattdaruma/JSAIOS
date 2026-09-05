@@ -17,7 +17,7 @@
     "ipcGateway": true,
     "logging": {
       "level": "info",
-      "logFile": "logs/jsaiosd.log",
+      "logFile": "storage/logs/jsaiosd.log",
       "logToConsole": true
     },
     "cors": {
@@ -31,7 +31,7 @@
     {
       "id": "chat",
       "type": "chat",
-      "storageDir": "chat-sessions",
+      "storageDir": "storage/chat-sessions",
       "enabled": true
     }
   ],

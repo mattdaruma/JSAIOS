@@ -23,7 +23,7 @@ export function getOrCreateChatEngine(
   chainEngine?: ChainEngine
 ): ChatEngine {
   if (!globalChatEngine) {
-    let storageDir = 'chat-sessions';
+    let storageDir = path.join('storage', 'chat-sessions');
     try {
       const configPath = path.join(process.cwd(), 'config', 'default.daemon.json');
       if (fs.existsSync(configPath)) {

@@ -12,7 +12,7 @@ export class FileSessionStorage implements IChatSessionStorage {
   private targetDir: string;
   private settingsFile: string;
 
-  constructor(targetDir: string = 'chat-sessions') {
+  constructor(targetDir: string = path.join('storage', 'chat-sessions')) {
     this.targetDir = path.resolve(process.cwd(), targetDir);
     this.settingsFile = path.join(this.targetDir, '_settings.json');
     this.ensureDirectory();
