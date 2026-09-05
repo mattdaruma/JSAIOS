@@ -2,8 +2,8 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chain/ChainEngine.ts","ChainEngine.ts",".ts","TypeScript Logic",248,217,16,250,false
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",248,212,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",243,204,13,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",225,192,5,250,false
 "src/adapters/terminal/chain/chainCommands.ts","chainCommands.ts",".ts","TypeScript Logic",221,185,6,250,false
-"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",219,187,5,250,false
 "src/engines/batch/BatchEngine.ts","BatchEngine.ts",".ts","TypeScript Logic",196,170,7,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",183,161,5,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",179,165,5,250,false
@@ -26,6 +26,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/services/ai/ollama/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",113,95,7,250,false
 "src/shell/browser/components/BrowserApp.tsx","BrowserApp.tsx",".tsx","React Component",113,101,5,250,false
 "src/engines/context/helpers/types.ts","types.ts",".ts","TypeScript Logic",111,95,4,250,false
+"src/services/cloud/aws/AwsService.ts","AwsService.ts",".ts","TypeScript Logic",108,95,5,250,false
 "src/adapters/terminal/chat/handleChatSessions.ts","handleChatSessions.ts",".ts","TypeScript Logic",105,93,4,250,false
 "src/engines/chain/helpers/StepContextAssembler.ts","StepContextAssembler.ts",".ts","TypeScript Logic",104,89,9,250,false
 "src/adapters/terminal/chat/ChatTerminalAdapter.ts","ChatTerminalAdapter.ts",".ts","TypeScript Logic",103,91,4,250,false
@@ -56,7 +57,10 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/browser/components/SearchableDataContainer.tsx","SearchableDataContainer.tsx",".tsx","React Component",82,74,4,250,false
 "src/adapters/batch/sources/JiraBatchSource.ts","JiraBatchSource.ts",".ts","TypeScript Logic",79,62,5,250,false
 "src/adapters/mcp/McpClientAdapter.ts","McpClientAdapter.ts",".ts","TypeScript Logic",79,63,4,250,false
+"src/adapters/batch/sources/AwsBatchSource.ts","AwsBatchSource.ts",".ts","TypeScript Logic",78,68,4,250,false
+"src/adapters/terminal/services/AwsTerminalAdapter.ts","AwsTerminalAdapter.ts",".ts","TypeScript Logic",78,69,4,250,false
 "src/engines/chat/helpers/types.ts","types.ts",".ts","TypeScript Logic",78,70,6,250,false
+"src/services/cloud/aws/helpers/sigv4Signer.ts","sigv4Signer.ts",".ts","TypeScript Logic",77,63,4,250,false
 "src/shell/browser/components/Input.tsx","Input.tsx",".tsx","React Component",77,70,4,250,false
 "src/adapters/daemon/DaemonClientAdapter.ts","DaemonClientAdapter.ts",".ts","TypeScript Logic",76,64,5,250,false
 "src/adapters/terminal/context/promptCommands.ts","promptCommands.ts",".ts","TypeScript Logic",76,64,5,250,false
@@ -72,10 +76,10 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/kernel/daemon/helpers/DaemonLogger.ts","DaemonLogger.ts",".ts","TypeScript Logic",71,58,5,250,false
 "src/adapters/storage/FileChainStorage.ts","FileChainStorage.ts",".ts","TypeScript Logic",70,59,5,250,false
 "src/engines/context/helpers/ConditionEvaluator.ts","ConditionEvaluator.ts",".ts","TypeScript Logic",70,57,4,250,false
+"src/adapters/batch/BatchSourceRegistry.ts","BatchSourceRegistry.ts",".ts","TypeScript Logic",69,59,5,250,false
 "src/adapters/database/HttpDatabaseAdapter.ts","HttpDatabaseAdapter.ts",".ts","TypeScript Logic",69,56,5,250,false
 "src/bootloaders/serverBootloader.ts","serverBootloader.ts",".ts","TypeScript Logic",67,56,7,250,false
 "src/kernel/EventBus.ts","EventBus.ts",".ts","TypeScript Logic",67,57,14,250,false
-"src/adapters/batch/BatchSourceRegistry.ts","BatchSourceRegistry.ts",".ts","TypeScript Logic",66,56,5,250,false
 "src/engines/context/helpers/ContextPackManager.ts","ContextPackManager.ts",".ts","TypeScript Logic",66,56,4,250,false
 "src/engines/context/helpers/StructureManager.ts","StructureManager.ts",".ts","TypeScript Logic",64,54,4,250,false
 "src/engines/database/DatabaseEngine.ts","DatabaseEngine.ts",".ts","TypeScript Logic",64,53,5,250,false
@@ -129,6 +133,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/context/helpers/TokenWindowPruner.ts","TokenWindowPruner.ts",".ts","TypeScript Logic",38,31,6,250,false
 "src/kernel/loadSecrets.ts","loadSecrets.ts",".ts","TypeScript Logic",38,32,4,250,false
 "src/kernel/ManifestLoader.ts","ManifestLoader.ts",".ts","TypeScript Logic",38,33,5,250,false
+"src/services/cloud/aws/types.ts","types.ts",".ts","TypeScript Logic",38,31,4,250,false
 "src/adapters/terminal/context/createPack.ts","createPack.ts",".ts","TypeScript Logic",36,29,4,250,false
 "src/services/tokenizer/HeuristicTokenizerService.ts","HeuristicTokenizerService.ts",".ts","TypeScript Logic",35,27,4,250,false
 "src/shell/browser/components/DatePicker.tsx","DatePicker.tsx",".tsx","React Component",35,31,4,250,false

@@ -101,6 +101,10 @@
       "description": "Database Engine & State Management (Use 'db help' or 'help db')"
     },
     {
+      "command": "aws",
+      "description": "AWS Cloud Service Driver & IAM Capability Discovery (Use 'aws help' or 'help aws')"
+    },
+    {
       "command": "jingle",
       "description": "Play system startup audio sample jingle"
     },

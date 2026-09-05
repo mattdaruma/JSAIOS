@@ -18,6 +18,7 @@ import { handleBatchCommands } from '../terminal/batch/batchCommands';
 import { handleChainTerminal } from '../terminal/chain/ChainTerminalAdapter';
 import { handleMcpCommands } from '../terminal/mcp/mcpCommands';
 import { handleDatabaseCommands } from '../terminal/database/databaseCommands';
+import { handleAwsTerminal } from '../terminal/services/AwsTerminalAdapter';
 import { handlePlayJingle } from '../terminal/audio/AudioPlayerAdapter';
 import { handleHelpCommand } from './helpers/renderHelp';
 import { getCompletions } from './helpers/getCompletions';
@@ -27,6 +28,7 @@ import { ChainEngine } from '../../engines/chain/ChainEngine';
 import { BatchEngine } from '../../engines/batch/BatchEngine';
 import { DatabaseEngine } from '../../engines/database/DatabaseEngine';
 import { McpClientAdapter } from '../mcp/McpClientAdapter';
+import { AwsService } from '../../services/cloud/aws/AwsService';
 import { BatchSourceRegistry } from '../batch/BatchSourceRegistry';
 import { FileBatchStorage } from '../storage/FileBatchStorage';
 import { getOrCreateChatEngine } from '../factories/createChatEngine';
@@ -49,7 +51,8 @@ export class CommandInterpreter {
   private chainEngine: ChainEngine = new ChainEngine(undefined, undefined, this.contextEngine);
   private mcpClient: McpClientAdapter = new McpClientAdapter();
   private dbEngine: DatabaseEngine = new DatabaseEngine();
-  private batchEngine: BatchEngine = new BatchEngine(undefined, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient, this.dbEngine));
+  private awsService: AwsService = new AwsService();
+  private batchEngine: BatchEngine = new BatchEngine(undefined, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient, this.dbEngine, this.awsService));
 
   private config: TerminalManifestConfig = {
     version: '1.0.0',
@@ -81,7 +84,7 @@ export class CommandInterpreter {
     this.loadManifest(manifestPath);
     const chatEngine = getOrCreateChatEngine(kernel, this.contextEngine, this.chainEngine);
     this.chainEngine = new ChainEngine(kernel, chatEngine, this.contextEngine);
-    this.batchEngine = new BatchEngine(kernel, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient, this.dbEngine));
+    this.batchEngine = new BatchEngine(kernel, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient, this.dbEngine, this.awsService));
     this.batchEngine.loadJobsFromStorage().catch(() => {});
   }
 
@@ -185,6 +188,9 @@ export class CommandInterpreter {
       case 'db':
       case 'database':
         return await handleDatabaseCommands(args, this.dbEngine);
+
+      case 'aws':
+        return await handleAwsTerminal(this.awsService, args);
 
       case 'ollama': {
         const service = this.kernel.getService<OllamaService>('ollama');
