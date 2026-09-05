@@ -85,6 +85,10 @@
       "description": "Prompt & Response Structure Engine (Use 'structure help' or 'help structure')"
     },
     {
+      "command": "batch",
+      "description": "Map-Reduce Batch File Processing Engine (Use 'batch help' or 'help batch')"
+    },
+    {
       "command": "chain",
       "description": "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')"
     },
@@ -250,6 +254,40 @@
         "Target JSON Schema Object Structure:\n  {\n    \"type\": \"object\",\n    \"properties\": {\n      \"summary\": { \"type\": \"string\" },\n      \"score\": { \"type\": \"number\" },\n      \"actionItems\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }\n    },\n    \"required\": [\"summary\", \"score\"]\n  }\n",
         "CLI Single Quote Wrapper:\n  structure create code_eval \"Code Evaluator\" --schema '{\"type\":\"object\",\"properties\":{\"summary\":{\"type\":\"string\"},\"score\":{\"type\":\"number\"}},\"required\":[\"summary\"]}'\n",
         "CLI Escaped Quote Wrapper:\n  structure create score_out \"Score Output\" --schema \"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"score\\\":{\\\"type\\\":\\\"number\\\"}}}\""
+      ]
+    },
+    "batch": {
+      "id": "batch",
+      "name": "Map-Reduce Batch Processing Engine",
+      "version": "1.0.0",
+      "status": "running",
+      "capabilities": ["deterministic-prefilter", "sliding-window-chunking", "rolling-accumulation", "map-reduce-synthesis"],
+      "commands": [
+        {
+          "command": "batch list",
+          "description": "List registered batch file processing jobs"
+        },
+        {
+          "command": "batch create <id> <name> <dir>",
+          "description": "Create a new batch job definition",
+          "options": [
+            { "flag": "--pattern <regex>", "description": "Deterministic pre-filter regex pattern" },
+            { "flag": "--ext <ts,js,json>", "description": "Filter by file extension list" }
+          ]
+        },
+        {
+          "command": "batch run <id>",
+          "description": "Execute Map-Reduce batch processing pipeline over candidate files"
+        },
+        {
+          "command": "batch report <id>",
+          "description": "Display generated rolling synthesis report"
+        }
+      ],
+      "examples": [
+        "batch create scan_src \"Scan Src Engine\" ./src --pattern \"Engine\" --ext ts",
+        "batch run scan_src",
+        "batch report scan_src"
       ]
     },
     "chain": {

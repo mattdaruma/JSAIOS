@@ -14,6 +14,7 @@ import { handleComfyTerminal } from '../terminal/services/ComfyTerminalAdapter';
 import { handleCopilotTerminal } from '../terminal/services/CopilotTerminalAdapter';
 import { handleContextTerminal } from '../terminal/context/ContextTerminalAdapter';
 import { handleStructureCommands } from '../terminal/structure/structureCommands';
+import { handleBatchCommands } from '../terminal/batch/batchCommands';
 import { handleChainTerminal } from '../terminal/chain/ChainTerminalAdapter';
 import { handlePlayJingle } from '../terminal/audio/AudioPlayerAdapter';
 import { handleHelpCommand } from './helpers/renderHelp';
@@ -21,6 +22,8 @@ import { getCompletions } from './helpers/getCompletions';
 import { tokenizeCommandLine } from './helpers/tokenizeCommandLine';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import { ChainEngine } from '../../engines/chain/ChainEngine';
+import { BatchEngine } from '../../engines/batch/BatchEngine';
+import { FileBatchStorage } from '../storage/FileBatchStorage';
 import { getOrCreateChatEngine } from '../factories/createChatEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
 import type { ComfyUIService } from '../../services/ai/comfyui/ComfyUIService';
@@ -39,6 +42,7 @@ export interface TerminalManifestConfig {
 export class CommandInterpreter {
   private contextEngine: ContextEngine = new ContextEngine();
   private chainEngine: ChainEngine = new ChainEngine(undefined, undefined, this.contextEngine);
+  private batchEngine: BatchEngine = new BatchEngine(undefined, new FileBatchStorage());
 
   private config: TerminalManifestConfig = {
     version: '1.0.0',
@@ -57,6 +61,7 @@ export class CommandInterpreter {
       { command: 'chat', description: "JSAIOS Interactive Chat Engine (Use 'chat help' or 'help chat')" },
       { command: 'context', description: "Context Management Engine (Use 'context help' or 'help context')" },
       { command: 'structure', description: "Prompt & Response Structure Engine (Use 'structure help' or 'help structure')" },
+      { command: 'batch', description: "Map-Reduce Batch File Processing Engine (Use 'batch help' or 'help batch')" },
       { command: 'chain', description: "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')" },
       { command: 'jingle', description: 'Play system startup audio sample jingle' },
       { command: 'clear', description: 'Clear terminal output screen' },
@@ -68,6 +73,8 @@ export class CommandInterpreter {
     this.loadManifest(manifestPath);
     const chatEngine = getOrCreateChatEngine(kernel, this.contextEngine, this.chainEngine);
     this.chainEngine = new ChainEngine(kernel, chatEngine, this.contextEngine);
+    this.batchEngine = new BatchEngine(kernel, new FileBatchStorage());
+    this.batchEngine.loadJobsFromStorage().catch(() => {});
   }
 
   private loadManifest(customManifestPath?: string): void {
@@ -157,6 +164,9 @@ export class CommandInterpreter {
 
       case 'structure':
         return handleStructureCommands(args, this.contextEngine);
+
+      case 'batch':
+        return await handleBatchCommands(args, this.batchEngine);
 
       case 'chain':
         return handleChainTerminal(args, this.chainEngine);

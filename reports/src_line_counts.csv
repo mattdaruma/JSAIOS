@@ -3,7 +3,8 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",248,212,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",243,204,13,250,false
 "src/adapters/terminal/chain/chainCommands.ts","chainCommands.ts",".ts","TypeScript Logic",221,185,6,250,false
-"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",194,165,5,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",204,174,5,250,false
+"src/engines/batch/BatchEngine.ts","BatchEngine.ts",".ts","TypeScript Logic",189,163,7,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",183,161,5,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",179,165,5,250,false
 "src/adapters/storage/FileContextStorage.ts","FileContextStorage.ts",".ts","TypeScript Logic",178,161,13,250,false
@@ -31,6 +32,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/terminal/context/ContextTerminalAdapter.ts","ContextTerminalAdapter.ts",".ts","TypeScript Logic",103,92,3,250,false
 "src/adapters/terminal/services/ComfyTerminalAdapter.ts","ComfyTerminalAdapter.ts",".ts","TypeScript Logic",102,82,4,250,false
 "src/engines/chain/helpers/types.ts","types.ts",".ts","TypeScript Logic",96,82,10,250,false
+"src/adapters/storage/FileBatchStorage.ts","FileBatchStorage.ts",".ts","TypeScript Logic",95,84,7,250,false
 "src/shell/browser/hooks/useSearchableList.ts","useSearchableList.ts",".ts","TypeScript Logic",94,81,8,250,false
 "src/adapters/terminal/services/parseComfyOptions.ts","parseComfyOptions.ts",".ts","TypeScript Logic",90,82,5,250,false
 "src/services/ai/AIService.ts","AIService.ts",".ts","TypeScript Logic",90,79,4,250,false
@@ -44,6 +46,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/services/ai/ollama/OllamaService.ts","OllamaService.ts",".ts","TypeScript Logic",82,72,4,250,false
 "src/shell/browser/BrowserClientAdapter.ts","BrowserClientAdapter.ts",".ts","TypeScript Logic",82,69,4,250,false
 "src/shell/browser/components/SearchableDataContainer.tsx","SearchableDataContainer.tsx",".tsx","React Component",82,74,4,250,false
+"src/adapters/terminal/batch/batchCommands.ts","batchCommands.ts",".ts","TypeScript Logic",79,64,4,250,false
 "src/engines/chat/helpers/types.ts","types.ts",".ts","TypeScript Logic",78,70,6,250,false
 "src/shell/browser/components/Input.tsx","Input.tsx",".tsx","React Component",77,70,4,250,false
 "src/adapters/daemon/DaemonClientAdapter.ts","DaemonClientAdapter.ts",".ts","TypeScript Logic",76,64,5,250,false
@@ -53,6 +56,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/storage/FileSessionStorage.ts","FileSessionStorage.ts",".ts","TypeScript Logic",75,63,5,250,false
 "src/adapters/terminal/chat/chatDescriptor.ts","chatDescriptor.ts",".ts","TypeScript Logic",75,72,4,250,false
 "src/services/ai/copilot/CopilotService.ts","CopilotService.ts",".ts","TypeScript Logic",75,65,4,250,false
+"src/engines/batch/helpers/SemanticChunker.ts","SemanticChunker.ts",".ts","TypeScript Logic",73,60,5,250,false
 "src/services/ai/comfyui/helpers/connectComfyWebSocket.ts","connectComfyWebSocket.ts",".ts","TypeScript Logic",73,60,6,250,false
 "src/adapters/terminal/services/CopilotTerminalAdapter.ts","CopilotTerminalAdapter.ts",".ts","TypeScript Logic",71,57,4,250,false
 "src/kernel/daemon/helpers/DaemonLogger.ts","DaemonLogger.ts",".ts","TypeScript Logic",71,58,5,250,false
@@ -73,6 +77,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/terminal/chain/ChainTerminalAdapter.ts","ChainTerminalAdapter.ts",".ts","TypeScript Logic",58,53,3,250,false
 "src/kernel/ServiceRegistry.ts","ServiceRegistry.ts",".ts","TypeScript Logic",58,48,22,250,false
 "src/services/ai/copilot/helpers/fetchCopilotToken.ts","fetchCopilotToken.ts",".ts","TypeScript Logic",58,47,4,250,false
+"src/engines/batch/helpers/types.ts","types.ts",".ts","TypeScript Logic",57,51,4,250,false
 "src/shell/browser/components/Textarea.tsx","Textarea.tsx",".tsx","React Component",57,50,4,250,false
 "src/adapters/terminal/chat/handleChatConfig.ts","handleChatConfig.ts",".ts","TypeScript Logic",56,45,4,250,false
 "src/shell/browser/components/TableView.tsx","TableView.tsx",".tsx","React Component",56,51,4,250,false
@@ -82,6 +87,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/adapters/terminal/chat/handleChatSend.ts","handleChatSend.ts",".ts","TypeScript Logic",53,46,4,250,false
 "src/services/ai/copilot/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",52,44,5,250,false
 "src/adapters/terminal/services/OllamaTerminalAdapter.ts","OllamaTerminalAdapter.ts",".ts","TypeScript Logic",51,41,4,250,false
+"src/engines/batch/helpers/FileScanner.ts","FileScanner.ts",".ts","TypeScript Logic",51,43,4,250,false
 "src/shell/browser/components/PaginationFooter.tsx","PaginationFooter.tsx",".tsx","React Component",50,43,4,250,false
 "src/adapters/factories/createChatEngine.ts","createChatEngine.ts",".ts","TypeScript Logic",48,43,5,250,false
 "src/shell/terminal/helpers/printLogAbovePrompt.ts","printLogAbovePrompt.ts",".ts","TypeScript Logic",47,37,11,250,false
@@ -92,6 +98,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/shell/terminal/formatters/PlainTerminalFormatter.ts","PlainTerminalFormatter.ts",".ts","TypeScript Logic",44,34,4,250,false
 "src/shell/terminal/helpers/getTerminalFormatter.ts","getTerminalFormatter.ts",".ts","TypeScript Logic",44,35,5,250,false
 "src/adapters/terminal/chat/handleChatHistory.ts","handleChatHistory.ts",".ts","TypeScript Logic",43,33,4,250,false
+"src/engines/batch/helpers/RollingAccumulator.ts","RollingAccumulator.ts",".ts","TypeScript Logic",43,35,4,250,false
 "src/shell/browser/components/Button.tsx","Button.tsx",".tsx","React Component",43,37,4,250,false
 "src/shell/browser/components/Modal.tsx","Modal.tsx",".tsx","React Component",43,38,4,250,false
 "src/services/ai/comfyui/helpers/listWorkflows.ts","listWorkflows.ts",".ts","TypeScript Logic",42,36,5,250,false
