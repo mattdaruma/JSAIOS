@@ -23,7 +23,7 @@ export function handleBatchCommands(args: string[], batchEngine: BatchEngine): s
       const name = args[2] || id;
       const dir = args[3] || './src';
 
-      if (!id) return 'Usage: batch create <id> <name> <directory> [--pattern <regex> --ext <ts,js>]';
+      if (!id) return 'Usage: batch create <id> <name> <target> [--source <type>] [--pattern <regex>] [--ext <ts,js>]';
 
       let patternFilter: string | undefined;
       const patternIdx = args.indexOf('--pattern');
@@ -33,12 +33,26 @@ export function handleBatchCommands(args: string[], batchEngine: BatchEngine): s
       const extIdx = args.indexOf('--ext');
       if (extIdx !== -1 && args[extIdx + 1]) fileExtensions = args[extIdx + 1].split(',').map(e => e.trim());
 
-      const job = batchEngine.createJob(id, name, dir, patternFilter, fileExtensions);
+      let sourceType: string | undefined;
+      const sourceIdx = args.indexOf('--source');
+      if (sourceIdx !== -1 && args[sourceIdx + 1]) sourceType = args[sourceIdx + 1].trim();
+
+      const job = batchEngine.createJob(
+        id,
+        name,
+        dir,
+        patternFilter,
+        fileExtensions,
+        'ollama',
+        'llama3',
+        sourceType
+      );
       return [
         `=== Batch Job Created ===`,
         `Job ID     : ${job.id}`,
         `Name       : ${job.name}`,
-        `Directory  : ${job.targetDirectory}`,
+        `Target     : ${job.targetDirectory}`,
+        sourceType ? `Source Type: ${sourceType}` : 'Source Type: Auto-Detect',
         patternFilter ? `Pattern    : ${patternFilter}` : 'Pattern    : None (All files)'
       ].join('\n');
     }

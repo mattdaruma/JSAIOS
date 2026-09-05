@@ -91,4 +91,65 @@ describe('BatchEngine Map-Reduce Infrastructure', () => {
     const reportOut = await handleBatchCommands(['report', 'job2'], engine);
     expect(reportOut).toContain('Job 2');
   });
+
+  it('should fetch items via HttpBatchSource using HTTP REST', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = (async (url: string) => {
+      if (url.endsWith('.json')) {
+        return {
+          ok: true,
+          text: async () => JSON.stringify(['https://api.example.com/file1.ts'])
+        } as any;
+      }
+      return {
+        ok: true,
+        text: async () => 'console.log("remote http content");'
+      } as any;
+    }) as any;
+
+    try {
+      const storage = new FileBatchStorage(path.join(testDir, 'jobs'));
+      const engine = new BatchEngine(undefined, storage);
+      engine.createJob('remote_job', 'Remote Job', 'https://api.example.com/manifest.json', undefined, undefined, 'ollama', 'llama3', 'http');
+
+      const report = await engine.executeBatchJob('remote_job');
+      expect(report).toContain('Remote Job');
+      expect(report).toContain('Target Files    : 1');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it('should fetch GitHub repository items via GitHubBatchSource', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = (async (url: string) => {
+      if (url.includes('/git/trees/')) {
+        return {
+          ok: true,
+          json: async () => ({
+            tree: [
+              { type: 'blob', path: 'src/main.ts' },
+              { type: 'blob', path: 'README.md' }
+            ]
+          })
+        } as any;
+      }
+      return {
+        ok: true,
+        text: async () => 'export function main() { return 42; }'
+      } as any;
+    }) as any;
+
+    try {
+      const storage = new FileBatchStorage(path.join(testDir, 'jobs'));
+      const engine = new BatchEngine(undefined, storage);
+      engine.createJob('gh_job', 'GitHub Job', 'github://octocat/Hello-World', undefined, ['ts']);
+
+      const report = await engine.executeBatchJob('gh_job');
+      expect(report).toContain('GitHub Job');
+      expect(report).toContain('Target Files    : 1');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
 });

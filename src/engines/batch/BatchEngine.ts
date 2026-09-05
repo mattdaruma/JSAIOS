@@ -4,22 +4,25 @@
  * and accumulates findings into token-aware rolling summary reports.
  */
 
-import fs from 'fs';
 import type { HoneyKernel } from '../../kernel/HoneyKernel';
 import type { AIService } from '../../services/ai/AIService';
 import type { BatchJobDefinition, BatchJobStatus, IBatchStorage } from './helpers/types';
-import { scanCandidateFiles } from './helpers/FileScanner';
 import { chunkFileContent } from './helpers/SemanticChunker';
 import { RollingAccumulator } from './helpers/RollingAccumulator';
+import { BatchSourceRegistry } from '../../adapters/batch/BatchSourceRegistry';
 
 export class BatchEngine {
   private jobs: Map<string, BatchJobDefinition> = new Map();
   private statuses: Map<string, BatchJobStatus> = new Map();
+  private sourceRegistry: BatchSourceRegistry;
 
   constructor(
     private kernel?: HoneyKernel,
-    private storageAdapter?: IBatchStorage
-  ) {}
+    private storageAdapter?: IBatchStorage,
+    sourceRegistry?: BatchSourceRegistry
+  ) {
+    this.sourceRegistry = sourceRegistry || new BatchSourceRegistry();
+  }
 
   public registerJob(job: BatchJobDefinition): void {
     this.jobs.set(job.id, job);
@@ -43,12 +46,16 @@ export class BatchEngine {
     patternFilter?: string,
     fileExtensions?: string[],
     providerId: string = 'ollama',
-    model: string = 'llama3'
+    model: string = 'llama3',
+    sourceType?: string,
+    headers?: Record<string, string>
   ): BatchJobDefinition {
     const job: BatchJobDefinition = {
       id,
       name,
       targetDirectory,
+      sourceType,
+      headers,
       patternFilter,
       fileExtensions,
       providerId,
@@ -89,20 +96,27 @@ export class BatchEngine {
     const job = this.jobs.get(jobId);
     if (!job) throw new Error(`Batch job '${jobId}' not found.`);
 
-    const files = scanCandidateFiles(job.targetDirectory, job.patternFilter, job.fileExtensions);
+    const items = await this.sourceRegistry.fetchBatchItems(
+      job.targetDirectory,
+      job.patternFilter,
+      job.fileExtensions,
+      job.sourceType,
+      job.headers
+    );
+
     const accumulator = new RollingAccumulator();
 
     const status: BatchJobStatus = {
       jobId: job.id,
       status: 'running',
-      totalFilesFound: files.length,
+      totalFilesFound: items.length,
       filesProcessed: 0,
       chunksProcessed: 0,
       totalFindings: 0
     };
     this.statuses.set(job.id, status);
 
-    if (files.length === 0) {
+    if (items.length === 0) {
       status.status = 'completed';
       const emptyReport = accumulator.generateReport(job.name, 0, 0);
       status.summaryReport = emptyReport;
@@ -117,15 +131,8 @@ export class BatchEngine {
 
     let totalChunksCount = 0;
 
-    for (const filePath of files) {
-      let content = '';
-      try {
-        content = fs.readFileSync(filePath, 'utf-8');
-      } catch {
-        continue;
-      }
-
-      const chunks = chunkFileContent(filePath, content, job.maxChunkChars || 4000, job.overlapPercent || 15);
+    for (const item of items) {
+      const chunks = chunkFileContent(item.displayName, item.content, job.maxChunkChars || 4000, job.overlapPercent || 15);
       totalChunksCount += chunks.length;
 
       for (const chunk of chunks) {
@@ -162,10 +169,10 @@ export class BatchEngine {
       }
 
       status.filesProcessed++;
-      if (onProgress) onProgress(status.filesProcessed, files.length);
+      if (onProgress) onProgress(status.filesProcessed, items.length);
     }
 
-    const report = accumulator.generateReport(job.name, files.length, totalChunksCount);
+    const report = accumulator.generateReport(job.name, items.length, totalChunksCount);
     status.status = 'completed';
     status.totalFindings = accumulator.getFindings().length;
     status.summaryReport = report;

@@ -3,10 +3,29 @@
  * Domain contracts for Map-Reduce file scanning, sliding window chunking, and rolling accumulation.
  */
 
+export interface BatchItem {
+  uri: string;
+  displayName: string;
+  content: string;
+}
+
+export interface IBatchSourceAdapter {
+  sourceType: string;
+  canHandle(target: string): boolean;
+  fetchItems(
+    target: string,
+    patternFilter?: string,
+    fileExtensions?: string[],
+    headers?: Record<string, string>
+  ): Promise<BatchItem[]>;
+}
+
 export interface BatchJobDefinition {
   id: string;
   name: string;
   targetDirectory: string;
+  sourceType?: string; // e.g. 'local', 'http', 'github', 'manifest'
+  headers?: Record<string, string>; // Optional HTTP auth headers
   patternFilter?: string; // Optional regex pattern for candidate file filtering
   fileExtensions?: string[]; // e.g. ['ts', 'js', 'json']
   maxChunkChars?: number; // Max characters per chunk (default: 4000)
