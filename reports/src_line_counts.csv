@@ -3,7 +3,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/engines/chat/ChatEngine.ts","ChatEngine.ts",".ts","TypeScript Logic",248,212,6,250,false
 "src/engines/context/ContextEngine.ts","ContextEngine.ts",".ts","TypeScript Logic",243,204,13,250,false
 "src/adapters/terminal/chain/chainCommands.ts","chainCommands.ts",".ts","TypeScript Logic",221,185,6,250,false
-"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",204,174,5,250,false
+"src/adapters/interpreter/CommandInterpreter.ts","CommandInterpreter.ts",".ts","TypeScript Logic",211,180,5,250,false
 "src/engines/batch/BatchEngine.ts","BatchEngine.ts",".ts","TypeScript Logic",196,170,7,250,false
 "src/services/ai/comfyui/helpers/inspectWorkflow.ts","inspectWorkflow.ts",".ts","TypeScript Logic",183,161,5,250,false
 "src/engines/chat/helpers/chatOptions.ts","chatOptions.ts",".ts","TypeScript Logic",179,165,5,250,false
@@ -48,10 +48,12 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/services/ai/comfyui/helpers/buildWorkflow.ts","buildWorkflow.ts",".ts","TypeScript Logic",84,79,4,250,false
 "src/services/ai/copilot/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",84,73,5,250,false
 "src/adapters/batch/sources/ConfluenceBatchSource.ts","ConfluenceBatchSource.ts",".ts","TypeScript Logic",83,65,6,250,false
+"src/adapters/terminal/mcp/mcpCommands.ts","mcpCommands.ts",".ts","TypeScript Logic",82,69,4,250,false
 "src/services/ai/ollama/OllamaService.ts","OllamaService.ts",".ts","TypeScript Logic",82,72,4,250,false
 "src/shell/browser/BrowserClientAdapter.ts","BrowserClientAdapter.ts",".ts","TypeScript Logic",82,69,4,250,false
 "src/shell/browser/components/SearchableDataContainer.tsx","SearchableDataContainer.tsx",".tsx","React Component",82,74,4,250,false
 "src/adapters/batch/sources/JiraBatchSource.ts","JiraBatchSource.ts",".ts","TypeScript Logic",79,62,5,250,false
+"src/adapters/mcp/McpClientAdapter.ts","McpClientAdapter.ts",".ts","TypeScript Logic",79,63,4,250,false
 "src/engines/chat/helpers/types.ts","types.ts",".ts","TypeScript Logic",78,70,6,250,false
 "src/shell/browser/components/Input.tsx","Input.tsx",".tsx","React Component",77,70,4,250,false
 "src/adapters/daemon/DaemonClientAdapter.ts","DaemonClientAdapter.ts",".ts","TypeScript Logic",76,64,5,250,false
@@ -72,13 +74,15 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/kernel/EventBus.ts","EventBus.ts",".ts","TypeScript Logic",67,57,14,250,false
 "src/engines/context/helpers/ContextPackManager.ts","ContextPackManager.ts",".ts","TypeScript Logic",66,56,4,250,false
 "src/engines/context/helpers/StructureManager.ts","StructureManager.ts",".ts","TypeScript Logic",64,54,4,250,false
+"src/adapters/batch/BatchSourceRegistry.ts","BatchSourceRegistry.ts",".ts","TypeScript Logic",63,53,5,250,false
+"src/adapters/batch/sources/McpBatchSource.ts","McpBatchSource.ts",".ts","TypeScript Logic",62,50,4,250,false
 "src/adapters/interpreter/helpers/getCompletions.ts","getCompletions.ts",".ts","TypeScript Logic",62,52,4,250,false
 "src/adapters/interpreter/helpers/tokenizeCommandLine.ts","tokenizeCommandLine.ts",".ts","TypeScript Logic",62,50,4,250,false
+"src/adapters/mcp/McpServerAdapter.ts","McpServerAdapter.ts",".ts","TypeScript Logic",62,55,4,250,false
 "src/adapters/terminal/context/addPrompt.ts","addPrompt.ts",".ts","TypeScript Logic",62,50,4,250,false
 "src/shell/browser/adapters/BrowserLocalAdapter.ts","BrowserLocalAdapter.ts",".ts","TypeScript Logic",62,53,8,250,false
 "src/shell/browser/components/Checkbox.tsx","Checkbox.tsx",".tsx","React Component",62,55,4,250,false
 "src/services/ai/comfyui/helpers/generateMedia.ts","generateMedia.ts",".ts","TypeScript Logic",61,50,5,250,false
-"src/adapters/batch/BatchSourceRegistry.ts","BatchSourceRegistry.ts",".ts","TypeScript Logic",60,50,5,250,false
 "src/shell/browser/storage/LocalStorageSessionStorage.ts","LocalStorageSessionStorage.ts",".ts","TypeScript Logic",60,52,5,250,false
 "src/shell/browser/components/CodeHighlightBlock.tsx","CodeHighlightBlock.tsx",".tsx","React Component",59,52,5,250,false
 "src/adapters/terminal/chain/ChainTerminalAdapter.ts","ChainTerminalAdapter.ts",".ts","TypeScript Logic",58,53,3,250,false
@@ -92,6 +96,7 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/bootloaders/terminalBootloader.ts","terminalBootloader.ts",".ts","TypeScript Logic",54,43,5,250,false
 "src/adapters/terminal/chat/handleChatSend.ts","handleChatSend.ts",".ts","TypeScript Logic",53,46,4,250,false
 "src/services/ai/copilot/helpers/fetchModels.ts","fetchModels.ts",".ts","TypeScript Logic",52,44,5,250,false
+"src/adapters/mcp/types.ts","types.ts",".ts","TypeScript Logic",51,44,4,250,false
 "src/adapters/terminal/services/OllamaTerminalAdapter.ts","OllamaTerminalAdapter.ts",".ts","TypeScript Logic",51,41,4,250,false
 "src/engines/batch/helpers/FileScanner.ts","FileScanner.ts",".ts","TypeScript Logic",51,43,4,250,false
 "src/shell/browser/components/PaginationFooter.tsx","PaginationFooter.tsx",".tsx","React Component",50,43,4,250,false

@@ -16,6 +16,7 @@ import { handleContextTerminal } from '../terminal/context/ContextTerminalAdapte
 import { handleStructureCommands } from '../terminal/structure/structureCommands';
 import { handleBatchCommands } from '../terminal/batch/batchCommands';
 import { handleChainTerminal } from '../terminal/chain/ChainTerminalAdapter';
+import { handleMcpCommands } from '../terminal/mcp/mcpCommands';
 import { handlePlayJingle } from '../terminal/audio/AudioPlayerAdapter';
 import { handleHelpCommand } from './helpers/renderHelp';
 import { getCompletions } from './helpers/getCompletions';
@@ -23,6 +24,8 @@ import { tokenizeCommandLine } from './helpers/tokenizeCommandLine';
 import { ContextEngine } from '../../engines/context/ContextEngine';
 import { ChainEngine } from '../../engines/chain/ChainEngine';
 import { BatchEngine } from '../../engines/batch/BatchEngine';
+import { McpClientAdapter } from '../mcp/McpClientAdapter';
+import { BatchSourceRegistry } from '../batch/BatchSourceRegistry';
 import { FileBatchStorage } from '../storage/FileBatchStorage';
 import { getOrCreateChatEngine } from '../factories/createChatEngine';
 import type { OllamaService } from '../../services/ai/ollama/OllamaService';
@@ -42,7 +45,8 @@ export interface TerminalManifestConfig {
 export class CommandInterpreter {
   private contextEngine: ContextEngine = new ContextEngine();
   private chainEngine: ChainEngine = new ChainEngine(undefined, undefined, this.contextEngine);
-  private batchEngine: BatchEngine = new BatchEngine(undefined, new FileBatchStorage());
+  private mcpClient: McpClientAdapter = new McpClientAdapter();
+  private batchEngine: BatchEngine = new BatchEngine(undefined, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient));
 
   private config: TerminalManifestConfig = {
     version: '1.0.0',
@@ -73,7 +77,7 @@ export class CommandInterpreter {
     this.loadManifest(manifestPath);
     const chatEngine = getOrCreateChatEngine(kernel, this.contextEngine, this.chainEngine);
     this.chainEngine = new ChainEngine(kernel, chatEngine, this.contextEngine);
-    this.batchEngine = new BatchEngine(kernel, new FileBatchStorage());
+    this.batchEngine = new BatchEngine(kernel, new FileBatchStorage(), new BatchSourceRegistry(this.mcpClient));
     this.batchEngine.loadJobsFromStorage().catch(() => {});
   }
 
@@ -170,6 +174,9 @@ export class CommandInterpreter {
 
       case 'chain':
         return handleChainTerminal(args, this.chainEngine);
+
+      case 'mcp':
+        return await handleMcpCommands(args, this.mcpClient);
 
       case 'ollama': {
         const service = this.kernel.getService<OllamaService>('ollama');

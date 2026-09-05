@@ -93,6 +93,10 @@
       "description": "Multi-Step Workflow Chain Engine (Use 'chain help' or 'help chain')"
     },
     {
+      "command": "mcp",
+      "description": "Model Context Protocol Engine & Gateway (Use 'mcp help' or 'help mcp')"
+    },
+    {
       "command": "jingle",
       "description": "Play system startup audio sample jingle"
     },
