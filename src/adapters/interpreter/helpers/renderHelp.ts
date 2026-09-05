@@ -30,6 +30,14 @@ export function renderDescriptorHelp(descriptor: ServiceDescriptor): string {
     lines.push('  No commands documented.');
   }
 
+  if (descriptor.examples && descriptor.examples.length > 0) {
+    lines.push('');
+    lines.push(' Examples:');
+    for (const ex of descriptor.examples) {
+      lines.push(`   ${ex}`);
+    }
+  }
+
   lines.push('\n=======================================================================');
   lines.push(` 💡 Tip: Type 'help' to return to top-level system command reference.`);
   lines.push('=======================================================================');

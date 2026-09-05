@@ -237,13 +237,17 @@
           "command": "structure create <id> <name>",
           "description": "Create a new structure asset",
           "options": [
-            { "flag": "--schema \"<json_str>\"", "description": "Pass inline JSON schema string" }
+            { "flag": "--schema '<json_str>'", "description": "Pass inline JSON schema string (e.g. --schema '{\"type\":\"object\",\"properties\":{\"summary\":{\"type\":\"string\"}}}')" }
           ]
         },
         {
           "command": "structure delete <id>",
           "description": "Delete a structure asset"
         }
+      ],
+      "examples": [
+        "structure create code_eval \"Code Evaluator\" --schema '{\"type\":\"object\",\"properties\":{\"summary\":{\"type\":\"string\"}}}'",
+        "structure create score_out \"Score Output\" --schema \"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"score\\\":{\\\"type\\\":\\\"number\\\"}}}\""
       ]
     },
     "chain": {

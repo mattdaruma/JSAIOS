@@ -17,10 +17,10 @@ RelativePath,Filename,Extension,Category,TotalLines,NonEmptyLines,CommentLines,M
 "src/kernel/HoneyKernel.ts","HoneyKernel.ts",".ts","TypeScript Logic",136,115,29,250,false
 "src/adapters/terminal/services/parseOllamaOptions.ts","parseOllamaOptions.ts",".ts","TypeScript Logic",131,123,4,250,false
 "src/shell/browser/components/SearchControlBar.tsx","SearchControlBar.tsx",".tsx","React Component",130,122,5,250,false
+"src/adapters/interpreter/helpers/renderHelp.ts","renderHelp.ts",".ts","TypeScript Logic",124,102,4,250,false
 "src/adapters/terminal/context/packCommands.ts","packCommands.ts",".ts","TypeScript Logic",124,100,4,250,false
+"src/kernel/types.ts","types.ts",".ts","TypeScript Logic",122,104,4,250,false
 "src/services/ai/comfyui/helpers/applyWorkflowOverrides.ts","applyWorkflowOverrides.ts",".ts","TypeScript Logic",122,104,10,250,false
-"src/kernel/types.ts","types.ts",".ts","TypeScript Logic",121,103,4,250,false
-"src/adapters/interpreter/helpers/renderHelp.ts","renderHelp.ts",".ts","TypeScript Logic",116,95,4,250,false
 "src/services/ai/ollama/helpers/generateText.ts","generateText.ts",".ts","TypeScript Logic",113,95,7,250,false
 "src/shell/browser/components/BrowserApp.tsx","BrowserApp.tsx",".tsx","React Component",113,101,5,250,false
 "src/engines/context/helpers/types.ts","types.ts",".ts","TypeScript Logic",111,95,4,250,false

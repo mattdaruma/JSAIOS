@@ -24,6 +24,7 @@ export interface ServiceDescriptor {
   status: ServiceStatus;
   capabilities: string[];
   commands?: CommandDoc[];
+  examples?: string[];
 }
 
 export interface IKernelService {
