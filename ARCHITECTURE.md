@@ -73,3 +73,11 @@ In accordance with JSAIOS Teeny Tiny Code Files Philosophy:
 - **Driving Shell Isolation (`src/shell/`)**: Driving shells (`src/shell/terminal/`, `src/shell/browser/`, `src/shell/server/`) MUST NEVER import from sibling shell directories. Shells live in different execution environments (Node vs Browser vs Express) and cross-shell imports break web bundling.
 - **Driven Service Isolation (`src/services/`)**: REST service drivers MUST NEVER import from sibling service drivers.
 - **Core Engine Isolation (`src/engines/`)**: Core domain engines (`src/engines/batch/`, `src/engines/chain/`, `src/engines/database/`) MUST NOT use direct static sibling imports. Use constructor dependency injection of output interfaces/ports, or orchestrate via `HoneyKernel` / driving shells.
+
+### 7. The Deterministic State Paradigm (Probabilistic AI vs. Deterministic State)
+JSAIOS strictly separates probabilistic LLM text generation from deterministic application state:
+- **LLMs Are Not Databases**: LLM prompt transcripts MUST NOT serve as the single source of truth for numerical variables, user inventories, RPG game stats, or business state.
+- **Structured Intent Parsing (`StructureEngine`)**: Enforces JSON schema outputs for AI actions (`{ action: "update_status", val: 42 }`).
+- **Deterministic Truth (`DatabaseEngine` & `IDatabaseAdapter`)**: Validates and commits state mutations to structured database records (SQLite / PostgREST).
+- **Context Injection (`ContextEngine`)**: Dynamically injects verified DB state back into system prompt directives on demand, eliminating context drift, token bloat, and state hallucination.
+
